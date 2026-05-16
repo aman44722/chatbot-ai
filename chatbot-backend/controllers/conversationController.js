@@ -1,0 +1,74 @@
+const Conversation = require("../models/Conversation");
+
+// GET /api/conversation/list  (authenticated — returns conversations for this user's chatbotId)
+exports.getConversations = async (req, res) => {
+    try {
+        const chatbotId = req.user.id;
+        const conversations = await Conversation.find({ chatbotId })
+            .select("sessionId userName status updatedAt messages")
+            .sort({ updatedAt: -1 });
+        res.json({ conversations });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+};
+
+// GET /api/conversation/:id  (authenticated)
+exports.getConversationById = async (req, res) => {
+    try {
+        const chatbotId = req.user.id;
+        const conversation = await Conversation.findOne({ _id: req.params.id, chatbotId });
+        if (!conversation) return res.status(404).json({ message: "Conversation not found" });
+        res.json({ conversation });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch conversation" });
+    }
+};
+
+// POST /api/conversation/init
+exports.initConversation = async (req, res) => {
+    const { chatbotId, sessionId, flow } = req.body;
+
+    let convo = await Conversation.findOne({ chatbotId, sessionId });
+
+    if (!convo) {
+        convo = await Conversation.create({
+            chatbotId,
+            sessionId,
+            mode: "flow",
+            status: "active",
+            flow,          // ✅ SAVE FLOW HERE
+            messages: [],
+        });
+    }
+
+    res.json({ ok: true, created: !convo });
+};
+
+
+// POST /api/conversation/message
+exports.saveMessage = async (req, res) => {
+    const { chatbotId, sessionId, sender, text, questionId } = req.body;
+
+    const convo = await Conversation.findOne({ chatbotId, sessionId });
+    if (!convo) return res.status(404).json({ ok: false });
+
+    convo.messages.push({ sender, text, questionId });
+
+    // 🔥 USERNAME CAPTURE
+    if (sender === "user" && questionId) {
+        const q = convo.flow?.find(
+            f => f.id === questionId && f.isUserName === true
+        );
+
+        if (q) {
+            convo.userName = text;
+            console.log("✅ USER NAME SET:", text);
+        }
+    }
+
+    await convo.save();
+    res.json({ ok: true });
+};
+
+

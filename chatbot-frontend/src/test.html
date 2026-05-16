@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Chatbot Embed Test</title>
+
+  <!-- 👇 Your chatbot embed script -->
+  <script>
+    var chatbot_id = 25252;
+    (function () {
+      var t, e, a = document,
+          s = "chatbot-script";
+      t = a.createElement("script");
+      t.id = s;
+      t.type = "text/javascript";
+      t.src = "http://localhost:3000/chatbot-plugin.js"; // 👈 Local plugin path
+      e = a.getElementsByTagName("script")[0];
+      e.parentNode.insertBefore(t, e);
+    })();
+  </script>
+
+</head>
+<body>
+  <h1>Testing Chatbot Embed</h1>
+  <p>If your chatbot appears in bottom-right corner, it's working ✅</p>
+</body>
+</html>

@@ -1,0 +1,119 @@
+const mongoose = require("mongoose");
+
+
+// Question Sub-schema
+const QuestionSchema = new mongoose.Schema({
+    id: { type: String, required: true },
+    type: { type: String, required: true }, // e.g. text, email, datePicker
+    // label: { type: String, required: true },
+    required: { type: Boolean, default: false },
+    text: { type: String, default: "" },
+    flexDirection: { type: String, default: 'row' },
+    media: { type: String, default: '' },
+    options: { type: [mongoose.Schema.Types.Mixed], default: [] },
+    skipOption: { type: Boolean, default: 'false' },
+    errorMessage: { type: String, default: '' },
+    validations: {
+        minLength: { type: Number },
+        maxLength: { type: Number },
+        pattern: { type: String },
+    },
+    settings: {
+        dateFormat: { type: String },
+        range: {
+            min: { type: Number },
+            max: { type: Number },
+        },
+        uploadLimit: { type: Number },
+        showTime: { type: Boolean },
+        apiEndpoint: { type: String },
+    },
+    language: { type: String, default: "en" }
+}, { _id: false });
+
+const userSchema = new mongoose.Schema(
+    {
+        email: {
+            type: String,
+            required: [true, "Email is required"],
+            unique: true,
+            lowercase: true,
+            trim: true,
+        },
+        install: {
+            whitelist: { type: [String], default: [] },
+            blacklist: { type: [String], default: [] },
+            chatbotId: { type: String } // optional; auto-fill if missing
+        },
+        password: {
+            type: String,
+            required: [true, "Password is required"],
+        },
+        website: {
+            type: String,
+            required: [true, "Website URL is required"],
+            trim: true,
+        },
+        fullName: {
+            type: String,
+            required: [true, "Full name is required"],
+            trim: true,
+        },
+        phone: {
+            type: String,
+            required: [true, "Phone number is required"],
+            trim: true,
+        },
+        countryCode: {
+            type: String,
+            required: [true, "Country code is required"],
+            trim: true,
+        },
+        termsAccepted: {
+            type: Boolean,
+            required: [true, "You must accept the terms and conditions"],
+        },
+        gst: {
+            type: String,
+        },
+        botSettings: {
+            botName: { type: String, default: 'chatbot' },
+            welcomeText: { type: String, default: 'Hey' },
+            description: { type: String, default: 'Descriptions' },
+            font: { type: String, default: 'Nanum Gothic Coding' },
+            fontSize: { type: String, default: '14px' },
+            companyLogo: { type: String, default: 'https://cdn-icons-png.flaticon.com/512/4712/4712027.png' },
+            avatar: { type: String, default: null },
+            botPosition: { type: String, default: 'right' },
+            selectedBubbleStyle: { type: String, default: 'style1' },
+            borderRadius: { type: String, default: '10px' },
+            textAlign: { type: String, default: 'left' },
+            themeColors: {
+                header: { type: String, default: "#006C74" },
+                question: { type: String, default: "#ffffff" },
+                answer: { type: String, default: "#007bff" },
+                option: { type: String, default: "#007bff" },
+                optionBorder: { type: String, default: "#444c5c" },
+                chatBackground: { type: String, default: "#ffffff" },
+            },
+            overlayOpacity: { type: Number, default: 0 },
+            chatColor: {
+                r: { type: Number, default: 255 },
+                g: { type: Number, default: 255 },
+                b: { type: Number, default: 255 },
+                a: { type: Number, default: 1 },
+            },
+            uploadedImage: { type: String, default: null },
+        },
+        flowSetupSetting: {
+            question: {
+                list: [QuestionSchema]// ✅ Your new updated structure goes here
+            }
+        }
+    },
+    {
+        timestamps: true,
+    }
+);
+
+module.exports = mongoose.model("User", userSchema);

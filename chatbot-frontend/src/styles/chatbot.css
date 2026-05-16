@@ -1,0 +1,96 @@
+/* Basic Chat Container Styling */
+.chatbot-popup {
+  width: 100%;
+  max-width: 500px;
+  background-color: #fff;
+  box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  margin: 0 auto;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Chat Window */
+.chat-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+/* Individual Messages */
+.message {
+  padding: 10px 15px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+}
+
+.user-message {
+  align-self: flex-end;
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.bot-message {
+  align-self: flex-start;
+  background-color: #e0e0e0;
+  color: #212121;
+}
+
+/* Input Area Styling */
+.message-input {
+  padding: 10px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  width: 80%;
+  outline: none;
+  margin-right: 10px;
+}
+
+#send-message {
+  padding: 10px 20px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  font-weight: bold;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+#send-message:hover {
+  background-color: #0056b3;
+}
+
+/* Custom button styles (for service selection) */
+button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  border: none;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  margin: 5px;
+  font-weight: bold;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+button:active {
+  background-color: #003c75;
+}
+
+/* Add more CSS to handle the transitions or animations */
+
+
+.css-v0zvw4-MuiListItemIcon-root {
+    min-width: 35px;}

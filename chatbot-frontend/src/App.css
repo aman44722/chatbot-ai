@@ -1,0 +1,399 @@
+/* Home Page CSS */
+
+/* Reset & Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: #fff;
+  color: #333;
+  line-height: 1.6;
+}
+
+h4 {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.paragraph {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 28px;
+}
+
+.headings {
+  font-size: 34px;
+  line-height: 40px;
+  font-weight: 600;
+}
+
+.gap {
+  display: grid;
+  gap: 20px;
+}
+
+.gap-20 {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.gap-50 {
+  display: flex;
+  flex-direction: column;
+  gap: 50px;
+  align-items: center;
+}
+
+.flex-reverse {
+  flex-direction: row-reverse;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.card-icon svg {
+  height: 40px;
+  width: 40px;
+}
+
+/* Colors */
+
+.soft-blue-bg {
+  background-color: #4F46E5;
+}
+
+.soft-blue {
+  color: #4F46E5;
+}
+
+.white {
+  color: #ffffff;
+}
+
+.purple {
+  background-color: #7B04C2;
+}
+
+.card-heading {
+  font-size: 24px;
+  font-weight: 600;
+  color: #ffffff;
+  text-align: center;
+}
+
+.card-paragraph {
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  color: #ffffff;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 5%;
+  background-color: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.logo {
+  cursor: pointer;
+}
+
+.nav a {
+  margin-left: 1.5rem;
+  text-decoration: none;
+  color: #333;
+  font-weight: 500;
+}
+
+.nav a:hover {
+  color: #324CEC;
+}
+
+.background-light-purple {
+  background: #EEEDFF;
+}
+
+/* Hero Section */
+.before-header {
+  text-align: center;
+  align-items: center;
+  padding: 20px 0;
+  background-color: #4F46E5;
+  color: #f0f4ff;
+  font-size: 14px;
+  font-family: 'Inter', sans-serif;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4rem 5%;
+  flex-wrap: nowrap;
+  border-top: 1px solid #4F46E5;
+  border-bottom: 1px solid #4F46E5;
+}
+
+.hero h1 {
+  font-size: 55px;
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: #4F46E5;
+}
+
+.hero p {
+  color: black;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+}
+
+.purple {
+  color: #7f56d9;
+}
+
+.heroButtons {
+  display: flex;
+  gap: 15px;
+}
+
+.primaryBtn {
+  padding: 12px 22px;
+  background-color: #4F46E5 !important;
+  color: #fff !important;
+  border: 1px solid #4F46E5 !important;
+  border: none;
+  border-radius: 6px !important;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+.primaryBtn:hover {
+  background-color: transparent !important;
+  color: #4a6cf7 !important;
+  border: 1px solid #4a6cf7 !important;
+}
+
+.secondaryBtn {
+  padding: 12px 22px;
+  border: 1px solid #4F46E5 !important;
+  background-color: transparent;
+  color: #4F46E5 !important;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.secondaryBtn:hover {
+  background-color: #4a6cf7 !important;
+  border: 1px solid #4a6cf7 !important;
+  color: #fff !important;
+}
+
+/* General Section */
+
+.section {
+  padding: 2rem 5%;
+  margin: 4rem 0;
+}
+
+/* Partners Section */
+
+.partners-section {
+  width: 100%;
+  overflow: hidden;
+  background: #fff;
+}
+
+.partners-wrapper {
+  display: flex;
+  gap: 50px;
+  width: max-content;
+  animation: scroll-logos 15s linear infinite;
+}
+
+.partner-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 0 0 auto;
+  min-width: 120px;
+}
+
+.partner-logo img {
+  width: auto;
+  height: 50px;
+  object-fit: contain;
+}
+
+
+@keyframes scroll-logos {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+
+
+
+/* NLP Card Grid */
+.cardGrid {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 50px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 2rem 1.5rem 1.5rem 1.5rem;
+  flex: 1 1 30%;
+  border-radius: 12px;
+  min-width: 250px;
+  min-height: 320px;
+  height: calc(40vh - 100px);
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+}
+
+.card-icon {
+  position: absolute;
+  top: -2px;
+  left: 0px;
+  width: 60px;
+  height: 60px;
+  background-color: #ffffff00;
+  border-radius: 50%;
+  border: 4px solid #f4f4f400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 70px;
+  height: 65px;
+  background-color: #f4f4f4;
+  border-bottom-right-radius: 50%;
+  z-index: 1;
+}
+
+/* Natural Language Section */
+
+.natural-l-para {
+  width: 70%;
+  text-align: -webkit-center;
+  padding-top: 25px;
+  justify-self: center;
+}
+
+/* Chatbot */
+
+.flex-regular {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  padding-top: 50px;
+}
+
+.chatbot {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+.first-section {
+  gap: 10px;
+  flex-direction: column;
+  display: flex;
+}
+
+/* Vision Cards */
+.cvGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Computer Vision Section */
+
+.cv-first-section {
+  gap: 10px;
+  flex-direction: column;
+  display: flex;
+  background: #ffffff;
+  padding: 40px 75px;
+  border-radius: 10px 0px 0px 10px;
+}
+
+
+/* Speech Boxes */
+.text-to-speech {
+  display: flex;
+  align-items: center;
+  gap: 50px;
+}
+
+.speechRow {
+  border-radius: 20px;
+  padding: 45px 85px;
+}
+
+.speechBox {
+  background: linear-gradient(135deg, #4a00e0, #8e2de2);
+  color: white;
+  padding: 45px 85px;
+  border-radius: 12px;
+  flex: 1 1 40%;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+/* Document Understanding */
+.docRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  gap: 45px;
+}
+
+
+/* Footer */
+.footer {
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.9rem;
+  background-color: #f4f4f4;
+  color: #555;
+  margin-top: 3rem;
+}
+
+.footer-section {
+  padding: 2rem 5%;
+}
+
+.footer-space-btwn {
+  justify-content: space-between;
+}

@@ -1,0 +1,21 @@
+# Dependencies
+chatbot-backend/node_modules/
+chatbot-frontend/node_modules/
+
+# Environment files (secrets)
+chatbot-backend/.env
+chatbot-frontend/.env
+
+# Build output
+chatbot-frontend/build/
+
+# Claude Code local settings
+.claude/
+
+# Misc
+.DS_Store
+*.log
+Desktop/
+*.zip
+**/front.txt
+**/document.txt

@@ -1,0 +1,6 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/" # Assuming package.json is at the root
+    schedule:
+      interval: "weekly" # Or "daily" or "monthly" based on your preference
