@@ -27,7 +27,8 @@ exports.getConversationById = async (req, res) => {
 
 // POST /api/conversation/init
 exports.initConversation = async (req, res) => {
-    const { chatbotId, sessionId, flow } = req.body;
+    const { chatbotId, sessionId, flow, userName } = req.body;
+    console.log("📥 INIT called — chatbotId:", chatbotId, "| userName:", userName);
 
     let convo = await Conversation.findOne({ chatbotId, sessionId });
 
@@ -37,12 +38,20 @@ exports.initConversation = async (req, res) => {
             sessionId,
             mode: "flow",
             status: "active",
-            flow,          // ✅ SAVE FLOW HERE
+            flow,
             messages: [],
+            ...(userName ? { userName } : {}),
         });
+        console.log("✅ Conversation created — userName saved:", convo.userName);
+    } else if (userName && !convo.userName) {
+        convo.userName = userName;
+        await convo.save();
+        console.log("✅ Existing conversation updated — userName:", convo.userName);
+    } else {
+        console.log("ℹ️ Conversation already exists — userName:", convo.userName);
     }
 
-    res.json({ ok: true, created: !convo });
+    res.json({ ok: true });
 };
 
 
