@@ -6,7 +6,6 @@ const authRoutes = require('./routes/authRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
 
 dotenv.config();
-connectDB();
 
 const app = express();
 app.use(cors({
@@ -14,6 +13,16 @@ app.use(cors({
     credentials: true,
 }));
 app.use(express.json());
+
+// ensure DB is connected before every request (safe for serverless cold starts)
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+        next();
+    } catch (err) {
+        res.status(500).json({ message: "Database connection failed" });
+    }
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/conversation', conversationRoutes);
