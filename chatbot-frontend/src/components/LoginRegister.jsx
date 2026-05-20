@@ -14,8 +14,8 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { loginUser, registerUser } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 
 const countryCodes = [
@@ -87,14 +87,13 @@ const AuthForm = () => {
     }
 
     try {
-      const endpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
-      const response = await axios.post(endpoint, payload);
+      const response = isLogin ? await loginUser(payload) : await registerUser(payload);
 
-      localStorage.setItem("userId", response.data.user._id);
-      login(response.data);
+      localStorage.setItem("userId", response.user._id);
+      login(response);
       navigate("/app/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.message || "An error occurred");
+      setError(typeof err === "string" ? err : err?.message || "An error occurred");
     }
   };
 
