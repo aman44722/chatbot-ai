@@ -1,175 +1,150 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  Box,
-  Grid,
-  Paper,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Divider,
-  Chip,
-  Avatar,
-  Stack
+  Box, Grid, Paper, Typography, List, ListItem, ListItemText,
+  Divider, Chip, Avatar, CircularProgress
 } from '@mui/material';
 import ChatIcon from '@mui/icons-material/Chat';
 import PeopleIcon from '@mui/icons-material/People';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
-import BarChartIcon from '@mui/icons-material/BarChart';
-import SettingsIcon from '@mui/icons-material/Settings';
-
+import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import { fetchConversations } from '../api/conversationApi';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Dashboard = () => {
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchConversations()
+      .then(setConversations)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const totalChats = conversations.length;
+  const totalLeads = conversations.filter(c => c.userName).length;
+  const totalUsers = new Set(conversations.map(c => c.sessionId)).size;
+  const activeChats = conversations.filter(c => c.status === 'active').length;
+  const recentChats = [...conversations]
+    .sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt))
+    .slice(0, 6);
+  const namedUsers = conversations.filter(c => c.userName).slice(0, 4);
+
+  const stats = [
+    { title: 'Total Chats', value: totalChats, color: '#3ca344', icon: <ChatIcon fontSize="large" /> },
+    { title: 'Total Users', value: totalUsers, color: '#1976d2', icon: <PeopleIcon fontSize="large" /> },
+    { title: 'Total Leads', value: totalLeads, color: '#f57c00', icon: <AssignmentIndIcon fontSize="large" /> },
+    { title: 'Active Now', value: activeChats, color: '#9c27b0', icon: <TrendingUpIcon fontSize="large" /> },
+  ];
+
+  if (loading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+      <CircularProgress />
+    </Box>
+  );
+
   return (
-    <Box sx={{ background: '#F6F9FF', padding: '20px', borderRadius: '10px', }}>
+    <Box sx={{ background: '#F6F9FF', padding: '20px', borderRadius: '10px' }}>
       <Typography variant="h4" gutterBottom sx={{ fontWeight: 700 }}>
-        Welcome, Admin 👋
+        Welcome, {user?.user?.fullName || 'Admin'} 👋
       </Typography>
       <Typography variant="subtitle1" gutterBottom sx={{ color: 'gray' }}>
-        Here’s a quick summary of your chatbot performance.
+        Here's a quick summary of your chatbot performance.
       </Typography>
 
-      {/* 🟢 Summary Cards with Icons */}
       <Grid container spacing={3} mt={2}>
-        {[
-          {
-            title: 'Total Chats',
-            value: '1,204',
-            color: '#3ca344',
-            icon: <ChatIcon fontSize="large" />
-          },
-          {
-            title: 'Total Users',
-            value: '865',
-            color: '#1976d2',
-            icon: <PeopleIcon fontSize="large" />
-          },
-          {
-            title: 'Total Leads',
-            value: '147',
-            color: '#f57c00',
-            icon: <AssignmentIndIcon fontSize="large" />
-          },
-          {
-            title: 'Analytics',
-            value: '4 Graphs',
-            color: '#9c27b0',
-            icon: <BarChartIcon fontSize="large" />
-          },
-          {
-            title: 'Settings',
-            value: '4 Modules',
-            color: '#607d8b',
-            icon: <SettingsIcon fontSize="large" />
-          }
-        ].map((item, i) => (
-          <Grid item xs={12} sm={6} md={4} lg={3} key={i}>
-            <Paper
-              elevation={4}
-              sx={{
-                p: 3,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 2,
-                borderRadius: 3,
-                color: '#fff',
-                backgroundColor: item.color,
-                transition: 'transform 0.2s ease-in-out',
-                '&:hover': { transform: 'scale(1.03)' }
-              }}
-            >
+        {stats.map((item, i) => (
+          <Grid item xs={12} sm={6} md={3} key={i}>
+            <Paper elevation={4} sx={{
+              p: 3, display: 'flex', alignItems: 'center', gap: 2,
+              borderRadius: 3, color: '#fff', backgroundColor: item.color,
+              transition: 'transform 0.2s', '&:hover': { transform: 'scale(1.03)' }
+            }}>
               <Avatar sx={{ bgcolor: '#fff', color: item.color }}>{item.icon}</Avatar>
               <Box>
                 <Typography variant="subtitle2">{item.title}</Typography>
-                <Typography variant="h5" fontWeight={700}>
-                  {item.value}
-                </Typography>
+                <Typography variant="h5" fontWeight={700}>{item.value}</Typography>
               </Box>
             </Paper>
           </Grid>
         ))}
       </Grid>
 
-
-      {/* 🔄 Middle Section */}
-      <Grid container spacing={3} mt={4}>
-        {/* 📩 Recent Chats */}
-        <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              📩 Recent Chats
-            </Typography>
-            <List dense>
-              {['Amit Sharma', 'Riya Mehta', 'Deep Patel', 'Sneha Verma'].map((name, i) => (
-                <ListItem key={i}>
-                  <ListItemText
-                    primary={name}
-                    secondary="Hi, I need help with your chatbot..."
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-        </Grid>
-
-        {/* 📊 Lead Overview */}
-        <Grid item xs={12} md={6}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6" gutterBottom>
-              📈 Lead Capture Overview
-            </Typography>
-            <Typography variant="body1" mb={1}>This Month: <b>52</b> new leads</Typography>
-            <Typography variant="body1">Last Month: <b>38</b></Typography>
-            <Divider sx={{ my: 2 }} />
-            <Chip label="Conversion Rate: 23%" color="success" variant="outlined" />
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* 🔽 Bottom Section */}
       <Grid container spacing={3} mt={3}>
-        {/* 👥 Top Active Users */}
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} md={7}>
           <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6">👥 Top Active Users</Typography>
-            <List dense>
-              {['Prakash D.', 'Sonal P.', 'Zaid Khan'].map((user, i) => (
-                <ListItem key={i}>
-                  <ListItemText primary={user} secondary="Active in last 24 hours" />
-                </ListItem>
-              ))}
-            </List>
+            <Typography variant="h6" gutterBottom>📩 Recent Conversations</Typography>
+            {recentChats.length === 0 ? (
+              <Typography color="text.secondary" py={2}>
+                No conversations yet. Share your chatbot link to get started.
+              </Typography>
+            ) : (
+              <List dense disablePadding>
+                {recentChats.map((c, i) => (
+                  <React.Fragment key={c._id}>
+                    <ListItem
+                      button
+                      onClick={() => navigate(`/app/conversations/${c._id}`)}
+                      sx={{ borderRadius: 2, py: 1.5, '&:hover': { bgcolor: '#f0f4ff' } }}
+                    >
+                      <Avatar sx={{ mr: 2, bgcolor: '#1976d2', width: 36, height: 36, fontSize: 15 }}>
+                        {(c.userName || 'A')[0].toUpperCase()}
+                      </Avatar>
+                      <ListItemText
+                        primary={c.userName || `Anonymous (${c.sessionId.slice(-6)})`}
+                        secondary={`${c.messages?.length || 0} messages • ${new Date(c.updatedAt).toLocaleDateString()}`}
+                      />
+                      <Chip
+                        label={c.status}
+                        size="small"
+                        color={c.status === 'active' ? 'success' : 'default'}
+                      />
+                    </ListItem>
+                    {i < recentChats.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+              </List>
+            )}
           </Paper>
         </Grid>
 
-        {/* 🛠 System Logs */}
-        <Grid item xs={12} md={4}>
-          <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6">🛠 System Logs</Typography>
-            <List dense>
-              {[
-                '✅ New user added: amit@gmail.com',
-                '✏️ Admin updated chatbot response',
-                '💾 System backup completed'
-              ].map((log, i) => (
-                <ListItem key={i}>
-                  <ListItemText primary={log} />
-                </ListItem>
-              ))}
-            </List>
+        <Grid item xs={12} md={5}>
+          <Paper elevation={3} sx={{ p: 3, borderRadius: 3, mb: 2 }}>
+            <Typography variant="h6" gutterBottom>📈 Lead Summary</Typography>
+            <Typography variant="body1" mb={1}>Total Leads: <b>{totalLeads}</b></Typography>
+            <Typography variant="body1" mb={1}>Total Conversations: <b>{totalChats}</b></Typography>
+            <Divider sx={{ my: 2 }} />
+            <Chip
+              label={`Conversion: ${totalChats > 0 ? Math.round((totalLeads / totalChats) * 100) : 0}%`}
+              color="success"
+              variant="outlined"
+            />
           </Paper>
-        </Grid>
 
-        {/* 🚧 Coming Soon */}
-        <Grid item xs={12} md={4}>
           <Paper elevation={3} sx={{ p: 3, borderRadius: 3 }}>
-            <Typography variant="h6">🚧 Upcoming Features</Typography>
-            <List dense>
-              <ListItem><ListItemText primary="✅ Chat Filters & Search" /></ListItem>
-              <ListItem><ListItemText primary="✅ Firebase Login" /></ListItem>
-              <ListItem><ListItemText primary="✅ Export Leads to CSV" /></ListItem>
-              <ListItem><ListItemText primary="✅ Notification Alerts" /></ListItem>
-            </List>
+            <Typography variant="h6" gutterBottom>👥 Named Users</Typography>
+            {namedUsers.length === 0 ? (
+              <Typography color="text.secondary" variant="body2" py={1}>
+                No named users yet.
+              </Typography>
+            ) : (
+              <List dense disablePadding>
+                {namedUsers.map((c, i) => (
+                  <ListItem key={i} sx={{ px: 0 }}>
+                    <Avatar sx={{ mr: 1.5, width: 30, height: 30, fontSize: 13, bgcolor: '#f57c00' }}>
+                      {c.userName[0].toUpperCase()}
+                    </Avatar>
+                    <ListItemText
+                      primary={c.userName}
+                      secondary={new Date(c.updatedAt).toLocaleDateString()}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            )}
           </Paper>
         </Grid>
       </Grid>

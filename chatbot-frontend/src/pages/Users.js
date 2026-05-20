@@ -1,56 +1,94 @@
-// src/pages/Users.js
-import React, { useState } from 'react';
-import { db } from '../firebase/firebaseConfig';
-import { setDoc, doc, serverTimestamp,addDoc,collection } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate for redirect
+import React, { useEffect, useState } from 'react';
+import {
+  Box, Paper, Typography, List, ListItem, ListItemAvatar, ListItemText,
+  Avatar, Chip, TextField, InputAdornment, CircularProgress, Divider
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import { fetchConversations } from '../api/conversationApi';
+import { useNavigate } from 'react-router-dom';
 
 const Users = () => {
-  const [userData, setUserData] = useState({
-    name: "",
-    email: "",
-  });
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Initialize useNavigate hook
+  useEffect(() => {
+    fetchConversations()
+      .then(setConversations)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const filtered = conversations.filter(c =>
+    (c.userName || c.sessionId).toLowerCase().includes(search.toLowerCase())
+  );
 
-    // Generate a unique chatId for each new user
-    const chatId = `chat_${Date.now()}`; // Unique chatId, can also be based on email/phone
-
-    // Save user details in Firestore under the chat document
-    await setDoc(doc(db, 'chats', chatId), {
-      ...userData,
-      createdAt: serverTimestamp(),
-    });
-
-    // Send a default welcome message to the user's chat
-    await addDoc(collection(db, `chats/${chatId}/messages`), {
-      sender: "admin",
-      text: "👋 Hello! Welcome to A2 Digital. How can we assist you today?",
-      timestamp: serverTimestamp(),
-    });
-
-    // Redirect the user to their unique chat page
-    navigate(`/usertest/${chatId}`); // Redirect to dynamic chatId route
-  };
+  if (loading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
+      <CircularProgress />
+    </Box>
+  );
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Name"
-        value={userData.name}
-        onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h5" fontWeight={700} mb={0.5}>Users</Typography>
+      <Typography color="text.secondary" mb={3}>
+        {conversations.length} total users who interacted with your chatbot
+      </Typography>
+
+      <TextField
+        placeholder="Search users..."
+        size="small"
+        fullWidth
+        sx={{ mb: 3 }}
+        value={search}
+        onChange={e => setSearch(e.target.value)}
+        InputProps={{
+          startAdornment: <InputAdornment position="start"><SearchIcon /></InputAdornment>
+        }}
       />
-      <input
-        type="email"
-        placeholder="Email"
-        value={userData.email}
-        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
-      />
-      <button type="submit">Register</button>
-    </form>
+
+      <Paper elevation={2} sx={{ borderRadius: 3 }}>
+        {filtered.length === 0 ? (
+          <Box sx={{ p: 5, textAlign: 'center' }}>
+            <Typography color="text.secondary">No users yet.</Typography>
+          </Box>
+        ) : (
+          <List disablePadding>
+            {filtered.map((c, i) => (
+              <React.Fragment key={c._id}>
+                <ListItem
+                  button
+                  onClick={() => navigate(`/app/conversations/${c._id}`)}
+                  sx={{ py: 1.5, '&:hover': { bgcolor: '#f5f7ff' } }}
+                >
+                  <ListItemAvatar>
+                    <Avatar sx={{ bgcolor: c.userName ? '#1976d2' : '#9e9e9e' }}>
+                      {(c.userName || '?')[0].toUpperCase()}
+                    </Avatar>
+                  </ListItemAvatar>
+                  <ListItemText
+                    primary={
+                      <Typography fontWeight={500}>
+                        {c.userName || `Anonymous (${c.sessionId.slice(-8)})`}
+                      </Typography>
+                    }
+                    secondary={`${c.messages?.length || 0} messages • ${new Date(c.updatedAt).toLocaleString()}`}
+                  />
+                  <Chip
+                    label={c.status}
+                    size="small"
+                    color={c.status === 'active' ? 'success' : 'default'}
+                  />
+                </ListItem>
+                {i < filtered.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </List>
+        )}
+      </Paper>
+    </Box>
   );
 };
 

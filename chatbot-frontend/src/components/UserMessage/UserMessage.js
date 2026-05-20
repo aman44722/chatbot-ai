@@ -1,68 +1,293 @@
-// src/pages/UserMessage.js
-import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom'; // Use this hook to access chatId from URL
-import { db } from '../../firebase/firebaseConfig';
-import { collection, addDoc, serverTimestamp, onSnapshot, query, orderBy } from 'firebase/firestore';
-import { Box, TextField, Button, Typography, Paper } from '@mui/material';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import { Box, TextField, Button, Typography, CircularProgress, Avatar } from '@mui/material';
+import SendIcon from '@mui/icons-material/Send';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+
+const AUTH_API = process.env.REACT_APP_AUTH_API || 'http://localhost:5000/api/auth';
+const CONV_API = AUTH_API.replace('/api/auth', '/api/conversation');
+const SESSION_ID = 'sess_' + Math.random().toString(36).slice(2) + Date.now();
 
 const UserMessage = () => {
-  const { chatId } = useParams(); // Access chatId from the URL
+  const { chatId } = useParams();
+  const [botSettings, setBotSettings] = useState({});
+  const [flow, setFlow] = useState([]);
   const [messages, setMessages] = useState([]);
   const [text, setText] = useState('');
-  const chatBodyRef = useRef(null);
+  const [step, setStep] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [done, setDone] = useState(false);
 
-  // Fetch chat messages in real-time
+  // Pre-chat state
+  const [preChatDone, setPreChatDone] = useState(false);
+  const [userName, setUserName] = useState('');
+  const [nameInput, setNameInput] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [startingChat, setStartingChat] = useState(false);
+
+  const chatBodyRef = useRef(null);
+  const initializedRef = useRef(false);
+  const nameInputRef = useRef(null);
+
+  // Load bot settings on mount (don't init conversation yet)
   useEffect(() => {
-    const q = query(collection(db, `chats/${chatId}/messages`), orderBy("timestamp"));
-    const unsub = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => doc.data());
-      setMessages(data);
-    });
-    return () => unsub();
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
+    const loadSettings = async () => {
+      try {
+        const res = await axios.get(`${AUTH_API}/user/${chatId}`);
+        const user = res.data;
+        setBotSettings(user.botSettings || {});
+        setFlow(user.flowSetupSetting?.question?.list || []);
+      } catch (err) {
+        console.error('Widget load error:', err);
+        setBotSettings({});
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSettings();
   }, [chatId]);
 
-  const handleSend = async () => {
-    if (!text.trim()) return;
-
-    // Save user message to Firestore
-    await addDoc(collection(db, `chats/${chatId}/messages`), {
-      sender: "user",
-      text,
-      timestamp: serverTimestamp(),
-    });
-
-    setText('');
-  };
-
   useEffect(() => {
-    // Scroll to bottom every time new message arrives
-    setTimeout(() => {
-      if (chatBodyRef.current) {
-        chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
-      }
-    }, 100);
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
   }, [messages]);
 
-  return (
-    <div className="chatbot-popup" style={{ maxWidth: 600, margin: "30px auto" }}>
-      <div className="chat-body" ref={chatBodyRef} style={{ height: "400px", overflowY: "auto", padding: 10 }}>
-        {messages.map((msg, i) => (
-          <div key={i} className={`message ${msg.sender === "user" ? "user-message" : "bot-message"}`}>
-            <div className="message">{msg.text}</div>
-          </div>
-        ))}
-      </div>
+  // Focus name input when pre-chat screen shows
+  useEffect(() => {
+    if (!loading && !preChatDone && nameInputRef.current) {
+      setTimeout(() => nameInputRef.current?.focus(), 300);
+    }
+  }, [loading, preChatDone]);
 
-      <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
-        <TextField
-          fullWidth
-          value={text}
-          placeholder="Type your message..."
-          onChange={(e) => setText(e.target.value)}
-        />
-        <Button variant="contained" onClick={handleSend}>Send</Button>
+  const pushMessage = useCallback((sender, msgText, questionId = null) => {
+    setMessages(prev => [...prev, { sender, text: msgText, questionId }]);
+    axios.post(`${CONV_API}/message`, {
+      chatbotId: chatId,
+      sessionId: SESSION_ID,
+      sender,
+      text: msgText,
+      questionId,
+    }).catch(console.error);
+  }, [chatId]);
+
+  const handleStartChat = async () => {
+    const name = nameInput.trim();
+    if (!name) {
+      setNameError('Please enter your name to continue.');
+      return;
+    }
+    setNameError('');
+    setStartingChat(true);
+
+    try {
+      await axios.post(`${CONV_API}/init`, {
+        chatbotId: chatId,
+        sessionId: SESSION_ID,
+        flow,
+        userName: name,
+      });
+
+      setUserName(name);
+      setPreChatDone(true);
+
+      const welcome = botSettings.welcomeText || `Hi ${name}! How can I help you?`;
+      setMessages([{ sender: 'bot', text: welcome }]);
+
+      if (flow.length > 0) {
+        setTimeout(() => {
+          setMessages(prev => [...prev, { sender: 'bot', text: flow[0].text, questionId: flow[0].id }]);
+        }, 700);
+      }
+    } catch (err) {
+      console.error('Chat start error:', err);
+      setNameError('Something went wrong. Please try again.');
+    } finally {
+      setStartingChat(false);
+    }
+  };
+
+  const handleSend = async () => {
+    if (!text.trim() || done) return;
+    const userText = text.trim();
+    const currentQ = flow[step];
+    setText('');
+
+    pushMessage('user', userText, currentQ?.id);
+
+    const nextStep = step + 1;
+    setStep(nextStep);
+
+    if (nextStep < flow.length) {
+      setTimeout(() => {
+        const nextQ = flow[nextStep];
+        setMessages(prev => [...prev, { sender: 'bot', text: nextQ.text, questionId: nextQ.id }]);
+      }, 600);
+    } else {
+      setTimeout(() => {
+        setMessages(prev => [...prev, { sender: 'bot', text: "Thank you! We'll get back to you soon." }]);
+        setDone(true);
+      }, 600);
+    }
+  };
+
+  if (loading) return (
+    <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <CircularProgress />
+    </Box>
+  );
+
+  const colors = botSettings.themeColors || {};
+  const headerColor = colors.header || '#006C74';
+  const answerColor = colors.answer || '#007bff';
+  const questionColor = colors.question || '#ffffff';
+  const chatBg = colors.chatBackground || '#f5f5f5';
+  const isLightQuestion = questionColor === '#ffffff' || questionColor === '#fff';
+
+  return (
+    <Box sx={{
+      maxWidth: 480, mx: 'auto', mt: 4,
+      borderRadius: 3, overflow: 'hidden',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+      fontFamily: botSettings.font || 'inherit',
+    }}>
+      {/* Header */}
+      <Box sx={{ bgcolor: headerColor, color: '#fff', p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+        {botSettings.companyLogo ? (
+          <img
+            src={botSettings.companyLogo}
+            alt="logo"
+            style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover' }}
+          />
+        ) : (
+          <Avatar sx={{ width: 40, height: 40, bgcolor: 'rgba(255,255,255,0.2)', fontSize: 18, fontWeight: 700 }}>
+            {(botSettings.botName || 'C')[0].toUpperCase()}
+          </Avatar>
+        )}
+        <Box>
+          <Typography fontWeight={700} fontSize={15}>{botSettings.botName || 'Chatbot'}</Typography>
+          {botSettings.description && (
+            <Typography variant="caption" sx={{ opacity: 0.85 }}>{botSettings.description}</Typography>
+          )}
+        </Box>
+        {preChatDone && userName && (
+          <Box sx={{ ml: 'auto', textAlign: 'right' }}>
+            <Typography variant="caption" sx={{ opacity: 0.75, fontSize: 11 }}>Chatting as</Typography>
+            <Typography fontSize={13} fontWeight={600}>{userName}</Typography>
+          </Box>
+        )}
       </Box>
-    </div>
+
+      {/* ─── PRE-CHAT SCREEN ─── */}
+      {!preChatDone ? (
+        <Box sx={{ bgcolor: chatBg, p: 3, minHeight: 380, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <Box sx={{ textAlign: 'center', mb: 3 }}>
+            <Avatar sx={{ width: 64, height: 64, mx: 'auto', mb: 2, bgcolor: headerColor, fontSize: 28, fontWeight: 700 }}>
+              {(botSettings.botName || 'C')[0].toUpperCase()}
+            </Avatar>
+            <Typography fontWeight={700} fontSize={18} mb={0.5}>
+              {botSettings.botName || 'Chat with us'}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {botSettings.description || 'We usually reply instantly'}
+            </Typography>
+          </Box>
+
+          <Box sx={{ bgcolor: '#fff', borderRadius: 2.5, p: 2.5, boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
+            <Typography fontWeight={600} fontSize={14} mb={1.5}>
+              Before we start, what's your name?
+            </Typography>
+            <TextField
+              inputRef={nameInputRef}
+              fullWidth
+              size="small"
+              placeholder="Enter your name..."
+              value={nameInput}
+              onChange={e => { setNameInput(e.target.value); setNameError(''); }}
+              onKeyDown={e => e.key === 'Enter' && handleStartChat()}
+              error={!!nameError}
+              helperText={nameError}
+              sx={{ mb: 1.5, '& .MuiOutlinedInput-root': { borderRadius: 2 } }}
+            />
+            <Button
+              fullWidth
+              variant="contained"
+              onClick={handleStartChat}
+              disabled={startingChat || !nameInput.trim()}
+              endIcon={startingChat ? <CircularProgress size={16} color="inherit" /> : <ArrowForwardIcon />}
+              sx={{
+                borderRadius: 2, py: 1.2, fontWeight: 700, fontSize: 14,
+                bgcolor: headerColor, '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' },
+                textTransform: 'none',
+              }}
+            >
+              {startingChat ? 'Starting...' : 'Start Chat'}
+            </Button>
+          </Box>
+        </Box>
+      ) : (
+        <>
+          {/* Messages */}
+          <Box
+            ref={chatBodyRef}
+            sx={{ height: 380, overflowY: 'auto', p: 2, bgcolor: chatBg }}
+          >
+            {messages.map((msg, i) => (
+              <Box
+                key={i}
+                sx={{
+                  display: 'flex',
+                  justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                  mb: 1.5,
+                }}
+              >
+                <Box sx={{
+                  maxWidth: '75%', px: 2, py: 1,
+                  borderRadius: msg.sender === 'user'
+                    ? '18px 18px 4px 18px'
+                    : '18px 18px 18px 4px',
+                  bgcolor: msg.sender === 'user' ? answerColor : questionColor,
+                  color: msg.sender === 'user'
+                    ? '#fff'
+                    : (isLightQuestion ? '#222' : '#fff'),
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                  border: isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none',
+                }}>
+                  <Typography variant="body2" sx={{ lineHeight: 1.5 }}>{msg.text}</Typography>
+                </Box>
+              </Box>
+            ))}
+          </Box>
+
+          {/* Input */}
+          <Box sx={{ p: 1.5, borderTop: '1px solid #eee', bgcolor: '#fff', display: 'flex', gap: 1 }}>
+            <TextField
+              fullWidth
+              size="small"
+              value={text}
+              placeholder={done ? 'Conversation complete ✓' : 'Type your answer...'}
+              onChange={e => setText(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+              disabled={done}
+              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+            />
+            <Button
+              variant="contained"
+              onClick={handleSend}
+              disabled={done || !text.trim()}
+              sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: headerColor, '&:hover': { bgcolor: headerColor } }}
+            >
+              <SendIcon fontSize="small" />
+            </Button>
+          </Box>
+        </>
+      )}
+    </Box>
   );
 };
 
