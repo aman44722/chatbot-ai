@@ -24,8 +24,7 @@ import NumberTab from "./BasicTabs/NumberTab/NumberTab";
 import EmailTab from "./BasicTabs/EmailTab/EmailTab";
 import MultipleChoiceTab from "./BasicTabs/MultipleChoiceTab/MultipleChoiceTab";
 import MobileNumberTab from "./BasicTabs/MobileNumberTab/MobileNumberTab";
-import OptionList from "./BasicTabs/SingleChoiceTab/Options/OptionInputRow";
-import ShowOptionsButtons from "./BasicTabs/SingleChoiceTab/Options/ShowOptionsButtons";
+import SingleChoiceTab from "./BasicTabs/SingleChoiceTab/SingleChoiceTab";
 
 const typeLabels = {
   question: "Question",
@@ -88,6 +87,11 @@ const EditQuestionPopup = ({
   const [skipOption, setSkipOption] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [validations, setValidations] = useState({});
+  const [style, setStyle] = useState("button");
+  const [defaultSelected, setDefaultSelected] = useState(null);
+  const [shuffleOptions, setShuffleOptions] = useState(false);
+  const [otherOption, setOtherOption] = useState(false);
+  const [imageChoices, setImageChoices] = useState([]);
 
   useEffect(() => {
     if (editingItem) {
@@ -98,6 +102,11 @@ const EditQuestionPopup = ({
       setMedia(editingItem.media || "");
       setErrorMessage(editingItem.errorMessage || "");
       setValidations(editingItem.validations || {});
+      setStyle(editingItem.style || "button");
+      setDefaultSelected(editingItem.defaultSelected ?? null);
+      setShuffleOptions(editingItem.shuffleOptions || false);
+      setOtherOption(editingItem.otherOption || false);
+      setImageChoices(editingItem.imageChoices || []);
     }
   }, [editingItem]);
 
@@ -132,6 +141,11 @@ const EditQuestionPopup = ({
       media: media || "",
       errorMessage,
       validations,
+      style,
+      defaultSelected,
+      shuffleOptions,
+      otherOption,
+      imageChoices: imageChoices || [],
     });
 
     console.log("options - ", options);
@@ -158,19 +172,17 @@ const EditQuestionPopup = ({
           setValidations={setValidations}
         />
       ) : editingItem?.type === "single_choice" ? (
-        <Box>
-          <ShowOptionsButtons
-            flexDirection={flexDirection}
-            setFlexDirection={setFlexDirection}
-          />
-          <OptionList value={options} onChange={setOptions} />
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3, mt: 2 }}>
-            <Switch checked={skipOption} onChange={handleSwitchChange} />
-            <Typography sx={{ fontWeight: 500, color: "#6b7280" }}>
-              {skipOption ? "Give Skip Option" : "Do Not Give Skip Option"}
-            </Typography>
-          </Box>
-        </Box>
+        <SingleChoiceTab
+          skipOption={skipOption} setSkipOption={setSkipOption}
+          errorMessage={errorMessage} setErrorMessage={setErrorMessage}
+          options={options} setOptions={setOptions}
+          flexDirection={flexDirection} setFlexDirection={setFlexDirection}
+          style={style} setStyle={setStyle}
+          defaultSelected={defaultSelected} setDefaultSelected={setDefaultSelected}
+          shuffleOptions={shuffleOptions} setShuffleOptions={setShuffleOptions}
+          otherOption={otherOption} setOtherOption={setOtherOption}
+          imageChoices={imageChoices} setImageChoices={setImageChoices}
+        />
       ) : editingItem?.type === "email_feild" ? (
         <EmailTab
           skipOption={skipOption}

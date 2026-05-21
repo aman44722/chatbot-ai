@@ -28,6 +28,11 @@ const QuestionSchema = new mongoose.Schema({
         showTime: { type: Boolean },
         apiEndpoint: { type: String },
     },
+    style: { type: String, default: 'button' },
+    defaultSelected: { type: Number, default: null },
+    shuffleOptions: { type: Boolean, default: false },
+    otherOption: { type: Boolean, default: false },
+    imageChoices: { type: [mongoose.Schema.Types.Mixed], default: [] },
     language: { type: String, default: "en" }
 }, { _id: false });
 
