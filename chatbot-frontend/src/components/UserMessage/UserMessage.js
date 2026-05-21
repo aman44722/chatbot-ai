@@ -637,46 +637,74 @@ const UserMessage = () => {
 
               {/* Option buttons */}
               {hasOptions && (
-                <Box sx={{ px: 2, pb: 1, pt: 0.5, background: chatBg, display: 'flex', flexWrap: 'wrap', gap: 1, borderTop: '1px solid #eee', alignItems: 'center' }}>
-                  {currentQ.options.map((opt, i) => (
-                    <Button
-                      key={i}
-                      size="small"
-                      onClick={() => handleOptionSelect(getOptionLabel(opt))}
-                      sx={{
-                        borderRadius: `${borderRadius}px`,
-                        bgcolor: optionColor,
-                        color: '#fff',
-                        border: `2px solid ${optionBorderColor}`,
-                        textAlign,
-                        fontSize,
-                        textTransform: 'none',
-                        px: 2, py: 0.8,
-                        '&:hover': { bgcolor: optionColor, filter: 'brightness(0.9)' },
-                      }}
-                    >
-                      {getOptionLabel(opt)}
-                    </Button>
-                  ))}
-                  {currentQ?.skipOption && (
-                    <Button
-                      size="small"
-                      startIcon={<SkipNextIcon fontSize="small" />}
-                      onClick={handleSkip}
-                      sx={{
-                        borderRadius: `${borderRadius}px`,
-                        color: '#666',
-                        border: '2px dashed #ccc',
-                        textTransform: 'none',
-                        fontSize,
-                        fontWeight: 500,
-                        px: 2, py: 0.8,
-                        '&:hover': { borderColor: '#999', bgcolor: '#f5f5f5' },
-                      }}
-                    >
-                      Skip
-                    </Button>
-                  )}
+                <Box sx={{ px: 2, pb: 1.5, pt: 1, background: chatBg, borderTop: '1px solid #eee' }}>
+                  <Box sx={{
+                    display: 'flex', flexWrap: 'wrap', gap: 1,
+                    justifyContent: 'center',
+                  }}>
+                    {currentQ.options.map((opt, i) => (
+                      <Button
+                        key={i}
+                        onClick={() => handleOptionSelect(getOptionLabel(opt))}
+                        sx={{
+                          borderRadius: `${Math.max(borderRadius, 8)}px`,
+                          background: `linear-gradient(135deg, ${optionColor}, ${optionColor}dd)`,
+                          color: '#fff',
+                          border: 'none',
+                          textAlign: 'center',
+                          fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
+                          textTransform: 'none',
+                          fontWeight: 600,
+                          px: 2.5, py: 1,
+                          minWidth: 80,
+                          flex: '0 1 auto',
+                          boxShadow: `0 3px 10px ${optionColor}30`,
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            transform: 'translateY(-2px)',
+                            boxShadow: `0 6px 20px ${optionColor}50`,
+                            background: `linear-gradient(135deg, ${optionColor}, ${optionColor})`,
+                            filter: 'brightness(1.05)',
+                          },
+                          '&:active': {
+                            transform: 'translateY(0)',
+                          },
+                        }}
+                      >
+                        {getOptionLabel(opt)}
+                      </Button>
+                    ))}
+                    {currentQ?.skipOption && (
+                      <Button
+                        startIcon={<SkipNextIcon fontSize="small" />}
+                        onClick={handleSkip}
+                        sx={{
+                          borderRadius: `${Math.max(borderRadius, 8)}px`,
+                          color: '#888',
+                          border: '2px dashed #d0d0d0',
+                          textTransform: 'none',
+                          fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
+                          fontWeight: 500,
+                          px: 2, py: 0.9,
+                          bgcolor: 'transparent',
+                          transition: 'all 0.2s ease',
+                          '&:hover': {
+                            borderColor: optionColor,
+                            color: optionColor,
+                            bgcolor: `${optionColor}08`,
+                          },
+                        }}
+                      >
+                        Skip
+                      </Button>
+                    )}
+                  </Box>
+                  <Typography
+                    variant="caption"
+                    sx={{ display: 'block', textAlign: 'center', mt: 1, color: '#aaa', fontSize: 11 }}
+                  >
+                    Tap an option to continue
+                  </Typography>
                 </Box>
               )}
 
