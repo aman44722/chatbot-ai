@@ -75,7 +75,7 @@ const EditQuestionPopup = ({
     onUpdate({
       ...editingItem,
       text,
-      options,
+      options: options || [],
       skipOption,
       flexDirection,
       media: media || "",
