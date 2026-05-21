@@ -114,7 +114,7 @@ const BotPreviewDialogPopup = ({ open, onClose, droppedItems }) => {
                 setCurrentQuestionIndex(0);
                 setUserMessages([]);
                 setInputText("");
-                setSkipClicked(false);
+                setSkipClicked(new Array(droppedItems.length).fill(false));
                 setIsTyping(false);
               }}
             >

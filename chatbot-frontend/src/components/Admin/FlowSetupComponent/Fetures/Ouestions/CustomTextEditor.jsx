@@ -8,7 +8,6 @@ import FormatUnderlinedIcon from "@mui/icons-material/FormatUnderlined";
 import LinkIcon from "@mui/icons-material/Link";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import DOMPurify from "dompurify";
-import OptionList from "./BasicTabs/SingleChoiceTab/Options/OptionInputRow";
 
 const CustomTextEditor = ({ value, onChange }) => {
   const editorRef = useRef(null);
@@ -95,8 +94,6 @@ const CustomTextEditor = ({ value, onChange }) => {
 
       {/* Editable Area */}
       <Box
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
         ref={editorRef}
         contentEditable
         suppressContentEditableWarning

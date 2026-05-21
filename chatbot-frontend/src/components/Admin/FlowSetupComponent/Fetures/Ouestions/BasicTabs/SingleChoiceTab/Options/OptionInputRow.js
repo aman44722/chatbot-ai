@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, IconButton, Input, TextField } from "@mui/material";
+import { Box, Button, IconButton, TextField } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const OptionInputRow = ({ value, onChange }) => {
@@ -15,12 +15,18 @@ const OptionInputRow = ({ value, onChange }) => {
     return []; // Return an empty array if the value is neither string nor array
   });
 
+  // Sync local state when value prop changes (e.g. editing a different question)
+  useEffect(() => {
+    if (Array.isArray(value)) {
+      setOptions(value);
+    }
+  }, [value]);
+
   // Add a new option
   const addOption = () => {
-    const addNewOption = "new option"; // Default to "new option" or a dynamic value
-    const updatedOptions = [...options, addNewOption];
-    setOptions(updatedOptions); // Directly set as an array
-    onChange(updatedOptions); // Pass updated options as an array
+    const updatedOptions = [...options, ""];
+    setOptions(updatedOptions);
+    onChange(updatedOptions);
   };
 
   // Handle option text change

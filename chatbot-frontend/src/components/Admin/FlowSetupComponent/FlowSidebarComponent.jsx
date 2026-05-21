@@ -3,8 +3,7 @@ import { Box, Typography } from "@mui/material";
 import { useDrag } from "react-dnd";
 
 // Icons
-import AddIcon from "@mui/icons-material/Add";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+
 import QuestionMarkIcon from "@mui/icons-material/QuestionMark";
 import EmailIcon from "@mui/icons-material/Email";
 import DoneAllIcon from "@mui/icons-material/DoneAll";
@@ -249,12 +248,6 @@ const FlowSidebarComponent = () => {
             Main Flow
           </label>
         </Box>
-        <AddIcon
-          sx={{ cursor: "pointer", fontSize: "18px", color: "#6B7280", mr: 1 }}
-        />
-        <ContentCopyIcon
-          sx={{ cursor: "pointer", fontSize: "18px", color: "#6B7280" }}
-        />
       </Box>
 
       {/* Title */}

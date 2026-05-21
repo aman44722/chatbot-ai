@@ -34,7 +34,7 @@ const Item = styled(Box)(({ theme }) => ({
 
 const MediaTabComponent = ({ media, setMedia, questionChanged }) => {
   const [selectedGifUrl, setSelectedGifUrl] = useState(media ? media : picImg);
-  const [searchTerm, setSearchTerm] = useState("good morning");
+  const [searchTerm, setSearchTerm] = useState("");
   const [gifs, setGifs] = useState([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);

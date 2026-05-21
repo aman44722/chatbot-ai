@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 
-const options = [
-  "row",   // Represents flexDirection: "column"
-  "column", // Represents flexDirection: "row"
-
-];
+const options = ["column", "row"];
 
 const ShowOptionsButtons = ({ flexDirection, setFlexDirection }) => {
   // Load the selected flexDirection from localStorage on initial render

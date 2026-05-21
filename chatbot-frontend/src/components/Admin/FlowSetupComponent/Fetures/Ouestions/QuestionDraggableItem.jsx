@@ -14,11 +14,6 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CallSplitIcon from "@mui/icons-material/CallSplit";
 import { useSnackbar } from "notistack";
 
-// Unique ID generation function
-const generateUniqueId = () => {
-  return "q" + Math.random().toString(36).substr(2, 9); // Unique ID generation logic
-};
-
 const ItemType = "DROPPED_ITEM";
 
 const QuestionDraggableItem = ({
@@ -29,7 +24,6 @@ const QuestionDraggableItem = ({
   onDelete,
   onDuplicate,
   onConditional,
-  addUniqueQuestion, // Function to handle adding a new question with unique ID
 }) => {
   const ref = useRef(null);
   const { enqueueSnackbar } = useSnackbar();
@@ -91,15 +85,6 @@ const QuestionDraggableItem = ({
   });
 
   drag(drop(ref));
-
-  // Add unique ID to the new question when it is dragged
-  const handleDrag = () => {
-    const newQuestion = {
-      ...item,
-      id: generateUniqueId(), // Assign a new unique ID
-    };
-    addUniqueQuestion(newQuestion); // Add the new question with unique ID to the list
-  };
 
   return (
     <>

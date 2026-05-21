@@ -1,19 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { DndProvider, useDrop } from "react-dnd";
+import { useDrop } from "react-dnd";
 import {
   Box,
   Typography,
-  IconButton,
   TextField,
-  Switch,
   Select,
   MenuItem,
   Button,
-  Dialog,
 } from "@mui/material";
 
 import { useSnackbar } from "notistack";
-import { HTML5Backend } from "react-dnd-html5-backend";
 
 import "./Style.css";
 
@@ -21,8 +17,6 @@ import EditQuestionPopup from "./Fetures/Ouestions/EditQuestionPopup";
 import BotPreviewDialogPopup from "./Fetures/Ouestions/BotPreviewDialogPopup";
 import QuestionDraggableItem from "./Fetures/Ouestions/QuestionDraggableItem";
 import { fetchUserById, updateUserDetails } from "../../../api/authApi";
-import { useDispatch } from "react-redux";
-import { updateSetting } from "../../../redux/botSettingsSlice";
 import { toast, ToastContainer } from "react-toastify";
 
 const FlowCanvasComponent = () => {
@@ -36,16 +30,6 @@ const FlowCanvasComponent = () => {
   const [language, setLanguage] = useState("en");
   const [openPreview, setOpenPreview] = useState(false);
   const [errorMessage, setErrorMessage] = useState(false);
-
-  const [botName, setBotName] = useState("Chatbot");
-  const [textAlign, setTextAlign] = useState("textAlign");
-  const [description, setDescription] = useState("Assistant");
-  const [welcomeText, setWelcomeText] = useState(
-    "Hi there! How can I help you?"
-  );
-  const [botLogo, setBotLogo] = useState(
-    "https://cdn-icons-png.flaticon.com/512/4712/4712035.png"
-  );
 
   const [{ isOver }, dropRef] = useDrop(() => ({
     accept: "COMPONENT",
@@ -67,7 +51,6 @@ const FlowCanvasComponent = () => {
       isOver: monitor.isOver(),
     }),
   }));
-  const dispatch = useDispatch();
   // Handle editing a question
   const handleEdit = (item) => {
     setEditingItem(item);
@@ -251,11 +234,12 @@ const FlowCanvasComponent = () => {
             : "Data not found!"}
         </Typography>
       ) : (
-        <DndProvider backend={HTML5Backend}>
-          {filteredItems.map((item, index) => (
+        filteredItems.map((item) => {
+          const originalIndex = droppedItems.findIndex((di) => di.id === item.id);
+          return (
             <QuestionDraggableItem
               key={item.id}
-              index={index}
+              index={originalIndex}
               item={item}
               moveItem={(from, to) => {
                 const updated = [...droppedItems];
@@ -268,8 +252,8 @@ const FlowCanvasComponent = () => {
               onDuplicate={handleDuplicate}
               onConditional={handleConditionalFlow}
             />
-          ))}
-        </DndProvider>
+          );
+        })
       )}
 
       {/* Edit Popup */}
@@ -287,14 +271,6 @@ const FlowCanvasComponent = () => {
         open={openPreview}
         onClose={() => setOpenPreview(false)}
         droppedItems={droppedItems}
-        botName={botName}
-        description={description}
-        welcomeText={welcomeText}
-        botAvatar={botLogo}
-        textAlign={textAlign}
-        // pass setErrorMessage function
-        // flexDirection={flexDirection}
-        onUpdate={handleUpdate}
       />
     </Box>
   );

@@ -1,7 +1,11 @@
 import { Box, Switch, TextField, Typography } from '@mui/material'
 import React from 'react'
 
-const MobileNumberTab = () => {
+const MobileNumberTab = ({ skipOption, setSkipOption }) => {
+    const handleSwitchChange = (event) => {
+        setSkipOption(event.target.checked);
+    };
+
     return (
         <>
             <Box
@@ -12,8 +16,8 @@ const MobileNumberTab = () => {
                     gap: 2,
                 }}
             >
-                <Typography>MobileNumberTab</Typography>
-                <Switch />
+                <Typography>{skipOption ? "Give Skip Option" : "Do Not Give Skip Option"}</Typography>
+                <Switch checked={skipOption} onChange={handleSwitchChange} />
             </Box>
 
             <Box sx={{ display: "flex", gap: 2 }}>

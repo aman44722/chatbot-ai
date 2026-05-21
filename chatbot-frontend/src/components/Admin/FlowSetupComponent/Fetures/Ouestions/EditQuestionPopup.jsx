@@ -14,13 +14,11 @@ import {
 import React, { useEffect, useState } from "react";
 import MediaTabComponent from "../../MediaUploadComponet/MediaTabComponent";
 import CustomTextEditor from "./CustomTextEditor";
-// import SingleChoiceTab from "./BasicTabs/SingleChoiceTab/SingleChoiceTab";
 import QuestionTab from "./BasicTabs/QuestionTab/QuestionTab";
 import NumberTab from "./BasicTabs/NumberTab/NumberTab";
 import EmailTab from "./BasicTabs/EmailTab/EmailTab";
 import MultipleChoiceTab from "./BasicTabs/MultipleChoiceTab/MultipleChoiceTab";
 import MobileNumberTab from "./BasicTabs/MobileNumberTab/MobileNumberTab";
-// import SingleChoiceTab from "./BasicTabs/SingleChoiceTab/SingleChoiceTab";
 import OptionList from "./BasicTabs/SingleChoiceTab/Options/OptionInputRow";
 import ShowOptionsButtons from "./BasicTabs/SingleChoiceTab/Options/ShowOptionsButtons";
 import picImg from "./picture.svg";
@@ -33,11 +31,10 @@ const EditQuestionPopup = ({
 }) => {
   const [tabIndex, setTabIndex] = useState(0);
   const [text, setText] = useState("");
-  const [options, setOptions] = useState("New Option");
+  const [options, setOptions] = useState([]);
   const [flexDirection, setFlexDirection] = useState("column");
   const [media, setMedia] = useState({ picImg });
   const [skipOption, setSkipOption] = useState(false);
-  const [inputText, setInputText] = useState("Please enter a valid answer");
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
@@ -66,23 +63,21 @@ const EditQuestionPopup = ({
       return;
     }
 
-    // Check if options is an array or string and validate accordingly
     if (Array.isArray(options)) {
       if (options.some((option) => option.trim() === "")) {
+        setErrorMessage("Options cannot be empty");
         return;
       }
-    } else if (typeof options === "string" && options.trim() === "") {
-      return;
     }
 
-    // Pass media as "" if removed, otherwise pass the media URL
     onUpdate({
       ...editingItem,
       text,
       options,
-      skipOption, // Pass updated skipOption state
+      skipOption,
       flexDirection,
-      media: media || "", // Ensure empty string is sent if removed
+      media: media || "",
+      errorMessage,
     });
 
     console.log("options - ", options);
@@ -138,11 +133,20 @@ const EditQuestionPopup = ({
                 setErrorMessage={setErrorMessage}
               />
             ) : editingItem?.type === "multiple_choice" ? (
-              <MultipleChoiceTab />
+              <MultipleChoiceTab
+                skipOption={skipOption}
+                setSkipOption={setSkipOption}
+              />
             ) : editingItem?.type === "mobile_number" ? (
-              <MobileNumberTab />
+              <MobileNumberTab
+                skipOption={skipOption}
+                setSkipOption={setSkipOption}
+              />
             ) : editingItem?.type === "number" ? (
-              <NumberTab />
+              <NumberTab
+                skipOption={skipOption}
+                setSkipOption={setSkipOption}
+              />
             ) : (
               <Box
                 sx={{ display: "flex", alignItems: "center", mb: 2, gap: 2 }}
