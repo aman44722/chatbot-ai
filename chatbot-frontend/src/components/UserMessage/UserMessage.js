@@ -220,6 +220,24 @@ const UserMessage = () => {
     }
   };
 
+  const handleOptionSelect = (optionText) => {
+    if (done || liveRequested) return;
+    const currentQ = flow[step];
+    pushMessage('user', optionText, currentQ?.id);
+    const nextStep = step + 1;
+    setStep(nextStep);
+    if (nextStep < flow.length) {
+      setTimeout(() => {
+        setMessages(prev => [...prev, { sender: 'bot', text: flow[nextStep].text, questionId: flow[nextStep].id }]);
+      }, 600);
+    } else {
+      setTimeout(() => {
+        setMessages(prev => [...prev, { sender: 'bot', text: "Thank you! We'll get back to you soon." }]);
+        setDone(true);
+      }, 600);
+    }
+  };
+
   const handleSend = async () => {
     if (!text.trim()) return;
     const userText = text.trim();
@@ -269,7 +287,29 @@ const UserMessage = () => {
   const answerColor = colors.answer || '#007bff';
   const questionColor = colors.question || '#ffffff';
   const chatBg = colors.chatBackground || '#f5f5f5';
+  const optionColor = colors.option || '#007bff';
+  const optionBorderColor = colors.optionBorder || '#444c5c';
   const isLightQuestion = questionColor === '#ffffff' || questionColor === '#fff';
+  const bubbleStyle = botSettings.selectedBubbleStyle || 'style1';
+  const borderRadius = botSettings.borderRadius != null ? Number(botSettings.borderRadius) : 10;
+  const textAlign = botSettings.textAlign || 'left';
+  const fontSize = botSettings.fontSize || '14px';
+  const overlayOpacity = botSettings.overlayOpacity || 0;
+  const avatarUrl = botSettings.avatar || botSettings.companyLogo || '';
+
+  const getBubbleRadius = (sender) => {
+    switch (bubbleStyle) {
+      case 'style2': return '20px';
+      case 'style3': return sender === 'user' ? '12px 12px 0px 12px' : '12px 12px 12px 0px';
+      case 'style4': return sender === 'user' ? '12px 12px 12px 0px' : '12px 12px 0px 12px';
+      default: return sender === 'user' ? '8px 8px 0px 8px' : '8px 8px 8px 0px';
+    }
+  };
+
+  const getOptionLabel = (opt) => typeof opt === 'string' ? opt : (opt?.label || opt?.value || String(opt));
+
+  const currentQ = flow[step];
+  const hasOptions = !done && !liveRequested && (currentQ?.options?.length > 0);
 
   return (
     <Box sx={{
@@ -277,6 +317,7 @@ const UserMessage = () => {
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
       fontFamily: botSettings.font || 'inherit',
+      fontSize,
     }}>
       {/* Header */}
       <Box sx={{ bgcolor: headerColor, color: '#fff', p: 2, display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -357,8 +398,11 @@ const UserMessage = () => {
           {/* Messages */}
           <Box
             ref={chatBodyRef}
-            sx={{ flex: 1, overflowY: 'auto', p: 2, bgcolor: chatBg }}
+            sx={{ flex: 1, overflowY: 'auto', p: 2, bgcolor: chatBg, position: 'relative' }}
           >
+            {overlayOpacity > 0 && (
+              <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `rgba(0,0,0,${overlayOpacity / 100})`, zIndex: 0 }} />
+            )}
             {messages.map((msg, i) => (
               <Box
                 key={i}
@@ -366,26 +410,33 @@ const UserMessage = () => {
                   display: 'flex',
                   justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
                   mb: 1.5,
+                  position: 'relative',
+                  zIndex: 1,
                 }}
               >
                 {msg.sender === 'admin' && (
                   <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', maxWidth: '75%' }}>
                     <Typography variant="caption" sx={{ fontSize: 10, color: '#e65100', fontWeight: 700, mb: 0.3, px: 1 }}>Support Agent</Typography>
-                    <Box sx={{ px: 2, py: 1, borderRadius: '18px 18px 18px 4px', bgcolor: '#fff3e0', border: '1px solid #ffcc80', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
-                      <Typography variant="body2" sx={{ lineHeight: 1.5, color: '#bf360c' }}>{msg.text}</Typography>
+                    <Box sx={{ px: 2, py: 1, borderRadius: getBubbleRadius('bot'), bgcolor: '#fff3e0', border: '1px solid #ffcc80', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                      <Typography variant="body2" sx={{ lineHeight: 1.5, color: '#bf360c', fontSize }}>{msg.text}</Typography>
                     </Box>
                   </Box>
                 )}
                 {msg.sender !== 'admin' && (
-                  <Box sx={{
-                    maxWidth: '75%', px: 2, py: 1,
-                    borderRadius: msg.sender === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
-                    bgcolor: msg.sender === 'user' ? answerColor : questionColor,
-                    color: msg.sender === 'user' ? '#fff' : (isLightQuestion ? '#222' : '#fff'),
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                    border: isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none',
-                  }}>
-                    <Typography variant="body2" sx={{ lineHeight: 1.5 }}>{msg.text}</Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 0.8, maxWidth: '75%' }}>
+                    {msg.sender === 'bot' && avatarUrl && (
+                      <img src={avatarUrl} alt="bot" style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+                    )}
+                    <Box sx={{
+                      px: 2, py: 1,
+                      borderRadius: getBubbleRadius(msg.sender),
+                      bgcolor: msg.sender === 'user' ? answerColor : questionColor,
+                      color: msg.sender === 'user' ? '#fff' : (isLightQuestion ? '#222' : '#fff'),
+                      boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                      border: isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none',
+                    }}>
+                      <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize }}>{msg.text}</Typography>
+                    </Box>
                   </Box>
                 )}
               </Box>
@@ -459,22 +510,48 @@ const UserMessage = () => {
                 </Box>
               )}
 
+              {/* Option buttons */}
+              {hasOptions && (
+                <Box sx={{ px: 2, pb: 1, pt: 0.5, bgcolor: chatBg, display: 'flex', flexWrap: 'wrap', gap: 1, borderTop: '1px solid #eee' }}>
+                  {currentQ.options.map((opt, i) => (
+                    <Button
+                      key={i}
+                      size="small"
+                      onClick={() => handleOptionSelect(getOptionLabel(opt))}
+                      sx={{
+                        borderRadius: `${borderRadius}px`,
+                        bgcolor: optionColor,
+                        color: '#fff',
+                        border: `2px solid ${optionBorderColor}`,
+                        textAlign,
+                        fontSize,
+                        textTransform: 'none',
+                        px: 2, py: 0.8,
+                        '&:hover': { bgcolor: optionColor, filter: 'brightness(0.9)' },
+                      }}
+                    >
+                      {getOptionLabel(opt)}
+                    </Button>
+                  ))}
+                </Box>
+              )}
+
               {/* Input */}
               <Box sx={{ p: 1.5, borderTop: liveRequested ? '2px solid #e65100' : '1px solid #eee', bgcolor: '#fff', display: 'flex', gap: 1 }}>
                 <TextField
                   fullWidth
                   size="small"
                   value={text}
-                  placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : 'Type your answer...'}
+                  placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : hasOptions ? 'Select an option above...' : 'Type your answer...'}
                   onChange={e => setText(e.target.value)}
                   onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                  disabled={done && !liveRequested}
+                  disabled={(done && !liveRequested) || hasOptions}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                 />
                 <Button
                   variant="contained"
                   onClick={handleSend}
-                  disabled={(done && !liveRequested) || !text.trim()}
+                  disabled={(done && !liveRequested) || !text.trim() || hasOptions}
                   sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: liveRequested ? '#e65100' : headerColor, '&:hover': { bgcolor: liveRequested ? '#bf360c' : headerColor } }}
                 >
                   <SendIcon fontSize="small" />

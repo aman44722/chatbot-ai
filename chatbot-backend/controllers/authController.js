@@ -337,11 +337,10 @@ exports.getInstallSnippet = async (req, res) => {
 
         const chatbotId = user.install?.chatbotId || String(user._id);
 
-        // Snippet only contains the chatbotId and API base URL.
-        // Widget fetches full settings at runtime — snippet stays small regardless of image sizes.
         const apiBase = process.env.API_BASE_URL || "http://localhost:5000/api/auth";
+        const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
         const snippet = `<script>
-window.A2BOT_CONFIG = { id: "${chatbotId}", api: "${apiBase}" };
+window.A2BOT_CONFIG = { id: "${chatbotId}", api: "${apiBase}", origin: "${frontendUrl}" };
 </script>
 <script src="https://cdn.a2bot.com/widget.js" async></script>`;
 

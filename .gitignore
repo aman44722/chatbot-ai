@@ -19,3 +19,5 @@ Desktop/
 *.zip
 **/front.txt
 **/document.txt
+
+.vercel
