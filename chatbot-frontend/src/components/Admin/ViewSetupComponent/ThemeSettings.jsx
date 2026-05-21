@@ -24,7 +24,7 @@ const ThemeSettings = ({
     },
     {
       title: "Blue",
-      colors: ["#505DD3", "#ffffff", "#F8F8F8", "#0076FF", "0076FF"],
+      colors: ["#505DD3", "#ffffff", "#F8F8F8", "#0076FF", "#0076FF"],
     },
     {
       title: "Orange",

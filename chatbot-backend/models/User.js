@@ -86,7 +86,7 @@ const userSchema = new mongoose.Schema(
             avatar: { type: String, default: null },
             botPosition: { type: String, default: 'right' },
             selectedBubbleStyle: { type: String, default: 'style1' },
-            borderRadius: { type: String, default: '10px' },
+            borderRadius: { type: Number, default: 10 },
             textAlign: { type: String, default: 'left' },
             themeColors: {
                 header: { type: String, default: "#006C74" },
