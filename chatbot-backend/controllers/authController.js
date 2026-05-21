@@ -146,8 +146,8 @@ exports.updateLayoutSettings = async (req, res) => {
             user,
         });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ message: "Error updating user" });
+        console.error("Error updating user:", err.message);
+        res.status(500).json({ message: err.message || "Error updating user" });
     }
 };
 

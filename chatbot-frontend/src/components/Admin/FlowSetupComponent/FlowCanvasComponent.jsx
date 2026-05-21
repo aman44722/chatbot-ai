@@ -102,10 +102,13 @@ const FlowCanvasComponent = () => {
     if (!userID || !token) {
       throw new Error("Missing userId or token");
     }
+    const cleanItems = droppedItems.map(({ icon, label, defaultLabel, ...rest }) => ({
+      ...rest,
+    }));
     const userPayload = {
       flowSetupSetting: {
         question: {
-          list: JSON.parse(JSON.stringify(droppedItems)), // Serialize the droppedItems correctly
+          list: cleanItems,
         },
       },
     };
