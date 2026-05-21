@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import axios from 'axios';
 import { Box, TextField, Button, Typography, CircularProgress, Avatar, Divider, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
+import SkipNextIcon from '@mui/icons-material/SkipNext';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
@@ -301,11 +302,7 @@ const UserMessage = () => {
     }
   };
 
-  const handleOptionSelect = (optionText) => {
-    if (done || liveRequested) return;
-    const currentQ = flow[step];
-    pushMessage('user', optionText, currentQ?.id);
-    const nextStep = step + 1;
+  const advanceStep = (nextStep) => {
     setStep(nextStep);
     if (nextStep < flow.length) {
       setTimeout(() => {
@@ -317,6 +314,20 @@ const UserMessage = () => {
         setDone(true);
       }, 600);
     }
+  };
+
+  const handleOptionSelect = (optionText) => {
+    if (done || liveRequested) return;
+    const currentQ = flow[step];
+    pushMessage('user', optionText, currentQ?.id);
+    advanceStep(step + 1);
+  };
+
+  const handleSkip = () => {
+    if (done || liveRequested) return;
+    const currentQ = flow[step];
+    pushMessage('user', '⏭️ Skipped', currentQ?.id);
+    advanceStep(step + 1);
   };
 
   const handleSend = async () => {
@@ -640,7 +651,7 @@ const UserMessage = () => {
 
               {/* Option buttons */}
               {hasOptions && (
-                <Box sx={{ px: 2, pb: 1, pt: 0.5, background: chatBg, display: 'flex', flexWrap: 'wrap', gap: 1, borderTop: '1px solid #eee' }}>
+                <Box sx={{ px: 2, pb: 1, pt: 0.5, background: chatBg, display: 'flex', flexWrap: 'wrap', gap: 1, borderTop: '1px solid #eee', alignItems: 'center' }}>
                   {currentQ.options.map((opt, i) => (
                     <Button
                       key={i}
@@ -661,6 +672,25 @@ const UserMessage = () => {
                       {getOptionLabel(opt)}
                     </Button>
                   ))}
+                  {currentQ?.skipOption && (
+                    <Button
+                      size="small"
+                      startIcon={<SkipNextIcon fontSize="small" />}
+                      onClick={handleSkip}
+                      sx={{
+                        borderRadius: `${borderRadius}px`,
+                        color: '#666',
+                        border: '2px dashed #ccc',
+                        textTransform: 'none',
+                        fontSize,
+                        fontWeight: 500,
+                        px: 2, py: 0.8,
+                        '&:hover': { borderColor: '#999', bgcolor: '#f5f5f5' },
+                      }}
+                    >
+                      Skip
+                    </Button>
+                  )}
                 </Box>
               )}
 
@@ -676,6 +706,21 @@ const UserMessage = () => {
                   disabled={(done && !liveRequested) || hasOptions}
                   sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                 />
+                {!hasOptions && !done && !liveRequested && currentQ?.skipOption && (
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<SkipNextIcon fontSize="small" />}
+                    onClick={handleSkip}
+                    sx={{
+                      borderRadius: 3, textTransform: 'none', fontWeight: 500, fontSize: 13,
+                      color: '#666', borderColor: '#ccc', whiteSpace: 'nowrap',
+                      '&:hover': { borderColor: '#999', bgcolor: '#f5f5f5' },
+                    }}
+                  >
+                    Skip
+                  </Button>
+                )}
                 <Button
                   variant="contained"
                   onClick={handleSend}
