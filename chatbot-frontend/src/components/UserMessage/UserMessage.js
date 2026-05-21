@@ -1,20 +1,45 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Box, TextField, Button, Typography, CircularProgress, Avatar, Divider } from '@mui/material';
+import { Box, TextField, Button, Typography, CircularProgress, Avatar, Divider, Tooltip } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ReplayIcon from '@mui/icons-material/Replay';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
 
 const AUTH_API = process.env.REACT_APP_AUTH_API || 'http://localhost:5000/api/auth';
 const CONV_API = AUTH_API.replace('/api/auth', '/api/conversation');
-const SESSION_ID = 'sess_' + Math.random().toString(36).slice(2) + Date.now();
+
+const getOrCreateSid = (chatId) => {
+  const key = `a2bot_sid_${chatId}`;
+  let sid = localStorage.getItem(key);
+  if (!sid) {
+    sid = 'sess_' + Math.random().toString(36).slice(2) + Date.now();
+    localStorage.setItem(key, sid);
+  }
+  return sid;
+};
+const saveState = (chatId, state) => {
+  try { localStorage.setItem(`a2bot_state_${chatId}`, JSON.stringify(state)); } catch {}
+};
+const loadState = (chatId) => {
+  try { return JSON.parse(localStorage.getItem(`a2bot_state_${chatId}`)) || null; } catch { return null; }
+};
+const clearSession = (chatId) => {
+  localStorage.removeItem(`a2bot_sid_${chatId}`);
+  localStorage.removeItem(`a2bot_state_${chatId}`);
+};
 
 const UserMessage = () => {
   const { chatId } = useParams();
+
+  const sessionIdRef = useRef(null);
+  if (!sessionIdRef.current) sessionIdRef.current = getOrCreateSid(chatId);
+  const SESSION_ID = sessionIdRef.current;
+
   const [botSettings, setBotSettings] = useState({});
   const [flow, setFlow] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -51,6 +76,27 @@ const UserMessage = () => {
         const user = res.data;
         setBotSettings(user.botSettings || {});
         setFlow(user.flowSetupSetting?.question?.list || []);
+
+        // Restore existing session if one is saved
+        const saved = loadState(chatId);
+        if (saved) {
+          try {
+            const convRes = await axios.get(`${CONV_API}/session/${chatId}/${sessionIdRef.current}`);
+            if (convRes.data.ok) {
+              setMessages(convRes.data.messages || []);
+              setPreChatDone(saved.preChatDone || false);
+              setUserName(saved.userName || '');
+              setStep(saved.step || 0);
+              setDone(saved.done || false);
+              setLiveRequested(saved.liveRequested || false);
+              if (convRes.data.status === 'closed') setChatClosed(true);
+            } else {
+              clearSession(chatId);
+            }
+          } catch {
+            clearSession(chatId);
+          }
+        }
       } catch (err) {
         console.error('Widget load error:', err);
         setBotSettings({});
@@ -97,6 +143,13 @@ const UserMessage = () => {
     return () => clearInterval(statusPollingRef.current);
   }, [preChatDone, liveRequested, chatClosed, chatId]);
 
+  // Persist session state to localStorage whenever key state changes
+  useEffect(() => {
+    if (preChatDone) {
+      saveState(chatId, { preChatDone, userName, step, done, liveRequested });
+    }
+  }, [preChatDone, userName, step, done, liveRequested, chatId]);
+
   // Cleanup all polling on unmount
   useEffect(() => {
     return () => {
@@ -104,6 +157,24 @@ const UserMessage = () => {
       if (statusPollingRef.current) clearInterval(statusPollingRef.current);
     };
   }, []);
+
+  const handleNewChat = () => {
+    if (livePollingRef.current) clearInterval(livePollingRef.current);
+    if (statusPollingRef.current) clearInterval(statusPollingRef.current);
+    clearSession(chatId);
+    const newSid = 'sess_' + Math.random().toString(36).slice(2) + Date.now();
+    localStorage.setItem(`a2bot_sid_${chatId}`, newSid);
+    sessionIdRef.current = newSid;
+    setMessages([]);
+    setPreChatDone(false);
+    setUserName('');
+    setNameInput('');
+    setStep(0);
+    setDone(false);
+    setLiveRequested(false);
+    setChatClosed(false);
+    setReopening(false);
+  };
 
   const pushMessage = useCallback((sender, msgText, questionId = null) => {
     setMessages(prev => [...prev, { sender, text: msgText, questionId }]);
@@ -332,18 +403,29 @@ const UserMessage = () => {
             {(botSettings.botName || 'C')[0].toUpperCase()}
           </Avatar>
         )}
-        <Box>
+        <Box sx={{ flex: 1 }}>
           <Typography fontWeight={700} fontSize={15}>{botSettings.botName || 'Chatbot'}</Typography>
           {botSettings.description && (
             <Typography variant="caption" sx={{ opacity: 0.85 }}>{botSettings.description}</Typography>
           )}
         </Box>
         {preChatDone && userName && (
-          <Box sx={{ ml: 'auto', textAlign: 'right' }}>
-            <Typography variant="caption" sx={{ opacity: 0.75, fontSize: 11 }}>Chatting as</Typography>
-            <Typography fontSize={13} fontWeight={600}>{userName}</Typography>
-          </Box>
+          <Typography fontSize={12} sx={{ opacity: 0.8, mr: 0.5 }}>{userName}</Typography>
         )}
+        <Tooltip title="New Chat" placement="left">
+          <Box
+            onClick={handleNewChat}
+            sx={{
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 30, height: 30, borderRadius: '50%',
+              bgcolor: 'rgba(255,255,255,0.15)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
+              flexShrink: 0,
+            }}
+          >
+            <AddCommentOutlinedIcon sx={{ fontSize: 16, color: '#fff' }} />
+          </Box>
+        </Tooltip>
       </Box>
 
       {/* ─── PRE-CHAT SCREEN ─── */}
