@@ -605,7 +605,10 @@ const UserMessage = () => {
               }),
             }}
           >
-            {messages.map((msg, i) => (
+            {messages.map((msg, i) => {
+              const msgQuestion = msg.sender === 'bot' && msg.questionId ? flow.find(f => f.id === msg.questionId) : null;
+              const msgMedia = msgQuestion?.media;
+              return (
               <Box
                 key={i}
                 sx={{
@@ -624,26 +627,41 @@ const UserMessage = () => {
                     </Box>
                   </Box>
                 )}
-                    {msg.sender !== 'admin' && (
+                {msg.sender !== 'admin' && (
                   <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 0.8, maxWidth: '75%' }}>
                     {msg.sender === 'bot' && !msg.isError && avatarUrl && (
                       <img src={avatarUrl} alt="bot" style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                     )}
-                    <Box sx={{
-                      px: 2, py: 1,
-                      borderRadius: getBubbleRadius(msg.sender),
-                      bgcolor: msg.isError ? '#fef2f2' : (msg.sender === 'user' ? answerColor : questionColor),
-                      color: msg.isError ? '#dc2626' : (msg.sender === 'user' ? '#fff' : (isLightQuestion ? '#222' : '#fff')),
-                      boxShadow: msg.isError ? '0 1px 4px rgba(220,38,38,0.12)' : '0 1px 4px rgba(0,0,0,0.08)',
-                      border: msg.isError ? '1px solid #fecaca' : (isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none'),
-                      fontSize: msg.isError ? 13 : undefined,
-                    }}>
-                      <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize }}>{msg.text}</Typography>
+                    <Box>
+                      {msgMedia && (
+                        <Box sx={{
+                          borderRadius: '8px 8px 0 0',
+                          overflow: 'hidden',
+                          border: isLightQuestion ? '1px solid #e0e0e0' : 'none',
+                          borderBottom: 'none',
+                        }}>
+                          <img src={msgMedia} alt="media" style={{ width: '100%', maxHeight: 180, objectFit: 'cover', display: 'block' }} />
+                        </Box>
+                      )}
+                      <Box sx={{
+                        px: 2, py: 1,
+                        borderTopLeftRadius: msgMedia ? 0 : undefined,
+                        borderTopRightRadius: msgMedia ? 0 : undefined,
+                        borderRadius: msgMedia ? '0 0 8px 8px' : getBubbleRadius(msg.sender),
+                        bgcolor: msg.isError ? '#fef2f2' : (msg.sender === 'user' ? answerColor : questionColor),
+                        color: msg.isError ? '#dc2626' : (msg.sender === 'user' ? '#fff' : (isLightQuestion ? '#222' : '#fff')),
+                        boxShadow: msg.isError ? '0 1px 4px rgba(220,38,38,0.12)' : '0 1px 4px rgba(0,0,0,0.08)',
+                        border: msg.isError ? '1px solid #fecaca' : (isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none'),
+                        fontSize: msg.isError ? 13 : undefined,
+                      }}>
+                        <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize }}>{msg.text}</Typography>
+                      </Box>
                     </Box>
                   </Box>
                 )}
               </Box>
-            ))}
+            );
+            })}
           </Box>
 
           {/* ─── CHAT CLOSED STATE ─── */}

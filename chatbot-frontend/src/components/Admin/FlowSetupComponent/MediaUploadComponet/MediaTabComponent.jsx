@@ -16,7 +16,6 @@ import axios from "axios";
 import picImg from "./picture.svg"; // placeholder image
 import { toast } from "react-toastify";
 
-// Replace with your Giphy API Key
 const GIPHY_API_KEY = "lADTumhthnqlLrBtIItDmB5PFDCns3iy";
 
 const Item = styled(Box)(({ theme }) => ({
@@ -84,22 +83,17 @@ const MediaTabComponent = ({ media, setMedia, questionChanged }) => {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const isSizeOk = file.size < 5 * 1024 * 1024;
-      const img = new Image();
-      img.src = URL.createObjectURL(file);
-
-      img.onload = () => {
-        const isDimensionOk = img.width <= 1024 && img.height <= 1024;
-        if (!isSizeOk) return toast.error("File must be under 5MB");
-        if (!isDimensionOk) return toast.error("Max 1024×1024 px allowed");
-
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          setMedia(reader.result);
-          setSelectedGifUrl("");
-        };
-        reader.readAsDataURL(file);
+      if (file.size > 100 * 1024) {
+        toast.error("File must be under 100KB");
+        e.target.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMedia(reader.result);
+        setSelectedGifUrl("");
       };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -131,39 +125,53 @@ const MediaTabComponent = ({ media, setMedia, questionChanged }) => {
           padding: "20px",
           textAlign: "center",
           position: "relative",
+          cursor: "pointer",
+          "&:hover": { borderColor: "#2563eb", bgcolor: "#f8faff" },
         }}
+        onClick={() => document.getElementById("upload-image-input").click()}
       >
         <input
-          id="upload-image"
+          id="upload-image-input"
           type="file"
           accept="image/*"
           style={{ display: "none" }}
           onChange={handleFileChange}
         />
-        {media && (
+        {media ? (
           <>
-            <label htmlFor="upload-image" style={{ cursor: "pointer" }}>
-              <img
-                src={media || picImg} // Fallback to picImg if media is empty or invalid
-                alt="upload"
-                style={{ width: "60px", height: "60px", marginBottom: "10px" }}
-              />
-              <Typography>Upload max 1024×1024 px, under 5MB</Typography>
-            </label>
+            <img
+              src={media}
+              alt="uploaded"
+              style={{ maxWidth: "100%", maxHeight: "120px", borderRadius: "8px", objectFit: "contain" }}
+            />
+            <Typography sx={{ mt: 1, fontSize: 12, color: "#666" }}>
+              Click to change · Max 100KB
+            </Typography>
             <IconButton
               size="small"
-              onClick={handleRemoveMedia}
+              onClick={(e) => { e.stopPropagation(); handleRemoveMedia(); }}
               sx={{
                 position: "absolute",
                 top: "8px",
                 right: "8px",
                 background: "#fff",
                 boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+                "&:hover": { bgcolor: "#fee2e2" },
               }}
             >
               <CloseIcon fontSize="small" />
             </IconButton>
           </>
+        ) : (
+          <Box sx={{ py: 2 }}>
+            <img src={picImg} alt="upload" style={{ width: 48, height: 48, marginBottom: 8, opacity: 0.5 }} />
+            <Typography sx={{ fontWeight: 500, fontSize: 14, color: "#444" }}>
+              Click to upload image
+            </Typography>
+            <Typography sx={{ fontSize: 12, color: "#999" }}>
+              Max 100KB
+            </Typography>
+          </Box>
         )}
       </Box>
 
