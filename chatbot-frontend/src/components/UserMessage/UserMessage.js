@@ -77,25 +77,36 @@ const UserMessage = () => {
         setBotSettings(user.botSettings || {});
         setFlow(user.flowSetupSetting?.question?.list || []);
 
-        // Restore existing session if one is saved
+        // Restore only IN-PROGRESS sessions (not completed ones)
         const saved = loadState(chatId);
-        if (saved) {
+        const flowList = user.flowSetupSetting?.question?.list || [];
+        const isRestorable = saved && saved.preChatDone && !saved.done && !saved.chatClosed;
+        if (isRestorable) {
           try {
             const convRes = await axios.get(`${CONV_API}/session/${chatId}/${sessionIdRef.current}`);
-            if (convRes.data.ok) {
+            if (convRes.data.ok && convRes.data.status !== 'closed') {
+              // Clamp step to current flow length in case flow was edited
+              const validStep = Math.min(saved.step || 0, flowList.length);
               setMessages(convRes.data.messages || []);
-              setPreChatDone(saved.preChatDone || false);
+              setPreChatDone(true);
               setUserName(saved.userName || '');
-              setStep(saved.step || 0);
-              setDone(saved.done || false);
+              setStep(validStep);
+              setDone(validStep >= flowList.length);
               setLiveRequested(saved.liveRequested || false);
-              if (convRes.data.status === 'closed') setChatClosed(true);
+            } else if (convRes.data.status === 'closed') {
+              setMessages(convRes.data.messages || []);
+              setPreChatDone(true);
+              setUserName(saved.userName || '');
+              setChatClosed(true);
             } else {
               clearSession(chatId);
             }
           } catch {
             clearSession(chatId);
           }
+        } else if (saved) {
+          // Completed or invalid session — clear it so fresh flow questions show
+          clearSession(chatId);
         }
       } catch (err) {
         console.error('Widget load error:', err);
@@ -146,9 +157,9 @@ const UserMessage = () => {
   // Persist session state to localStorage whenever key state changes
   useEffect(() => {
     if (preChatDone) {
-      saveState(chatId, { preChatDone, userName, step, done, liveRequested });
+      saveState(chatId, { preChatDone, userName, step, done, liveRequested, chatClosed });
     }
-  }, [preChatDone, userName, step, done, liveRequested, chatId]);
+  }, [preChatDone, userName, step, done, liveRequested, chatClosed, chatId]);
 
   // Cleanup all polling on unmount
   useEffect(() => {
