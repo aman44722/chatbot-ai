@@ -302,6 +302,21 @@ const UserMessage = () => {
     }
   };
 
+  const getValidationHint = (question) => {
+    if (!question) return '';
+    const { type, validations } = question;
+    const hints = [];
+
+    if (type === 'email_feild') hints.push('Valid email required (user@example.com)');
+    if (type === 'number') hints.push('Numeric value only');
+    if (type === 'mobile_number') hints.push('Digits only');
+    if (validations?.minLength != null) hints.push(`Min ${validations.minLength}${type === 'number' ? ' value' : ' chars'}`);
+    if (validations?.maxLength != null) hints.push(`Max ${validations.maxLength}${type === 'number' ? ' value' : ' chars'}`);
+    if (validations?.pattern) hints.push('Custom pattern required');
+
+    return hints.join(' · ');
+  };
+
   const validateAnswer = (answer, question) => {
     if (!question) return { valid: true };
     const { type, validations } = question;
@@ -780,40 +795,49 @@ const UserMessage = () => {
               )}
 
               {/* Input */}
-              <Box sx={{ p: 1.5, borderTop: liveRequested ? '2px solid #e65100' : '1px solid #eee', bgcolor: '#fff', display: 'flex', gap: 1 }}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  value={text}
-                  placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : hasOptions ? 'Select an option above...' : 'Type your answer...'}
-                  onChange={e => setText(e.target.value)}
-                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                  disabled={(done && !liveRequested) || hasOptions}
-                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                />
-                {!hasOptions && !done && !liveRequested && currentQ?.skipOption && (
-                  <Button
-                    variant="outlined"
+              <Box sx={{ p: 1.5, borderTop: liveRequested ? '2px solid #e65100' : '1px solid #eee', bgcolor: '#fff' }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    fullWidth
                     size="small"
-                    startIcon={<SkipNextIcon fontSize="small" />}
-                    onClick={handleSkip}
-                    sx={{
-                      borderRadius: 3, textTransform: 'none', fontWeight: 500, fontSize: 13,
-                      color: '#666', borderColor: '#ccc', whiteSpace: 'nowrap',
-                      '&:hover': { borderColor: '#999', bgcolor: '#f5f5f5' },
-                    }}
+                    value={text}
+                    placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : hasOptions ? 'Select an option above...' : 'Type your answer...'}
+                    onChange={e => setText(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                    disabled={(done && !liveRequested) || hasOptions}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                  />
+                  {!hasOptions && !done && !liveRequested && currentQ?.skipOption && (
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      startIcon={<SkipNextIcon fontSize="small" />}
+                      onClick={handleSkip}
+                      sx={{
+                        borderRadius: 3, textTransform: 'none', fontWeight: 500, fontSize: 13,
+                        color: '#666', borderColor: '#ccc', whiteSpace: 'nowrap',
+                        '&:hover': { borderColor: '#999', bgcolor: '#f5f5f5' },
+                      }}
+                    >
+                      Skip
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    onClick={handleSend}
+                    disabled={(done && !liveRequested) || !text.trim() || hasOptions}
+                    sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: liveRequested ? '#e65100' : headerColor, '&:hover': { bgcolor: liveRequested ? '#bf360c' : headerColor } }}
                   >
-                    Skip
+                    <SendIcon fontSize="small" />
                   </Button>
+                </Box>
+                {!hasOptions && !done && !liveRequested && currentQ && (
+                  <Box sx={{ mt: 0.8, display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                    <Typography sx={{ fontSize: 11, color: '#e67e22', fontWeight: 500 }}>
+                      ⚠️ {getValidationHint(currentQ) || 'Required field'}
+                    </Typography>
+                  </Box>
                 )}
-                <Button
-                  variant="contained"
-                  onClick={handleSend}
-                  disabled={(done && !liveRequested) || !text.trim() || hasOptions}
-                  sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: liveRequested ? '#e65100' : headerColor, '&:hover': { bgcolor: liveRequested ? '#bf360c' : headerColor } }}
-                >
-                  <SendIcon fontSize="small" />
-                </Button>
               </Box>
             </>
           )}
