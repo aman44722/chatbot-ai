@@ -7,6 +7,7 @@ const {
     initConversation,
     saveMessage,
     updateConversationStatus,
+    requestLiveAgent,
 } = require("../controllers/conversationController");
 
 // Protected — owner sees only their conversations
@@ -17,5 +18,6 @@ router.patch("/:id/status", authenticate, updateConversationStatus);
 // Public — called by the embedded widget
 router.post("/init", initConversation);
 router.post("/message", saveMessage);
+router.post("/request-live", requestLiveAgent);
 
 module.exports = router;

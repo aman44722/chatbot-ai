@@ -60,7 +60,7 @@ exports.updateConversationStatus = async (req, res) => {
     try {
         const chatbotId = req.user.id;
         const { status } = req.body;
-        if (!["active", "closed"].includes(status)) {
+        if (!["active", "closed", "live_requested"].includes(status)) {
             return res.status(400).json({ message: "Invalid status" });
         }
         const convo = await Conversation.findOneAndUpdate(
@@ -72,6 +72,22 @@ exports.updateConversationStatus = async (req, res) => {
         res.json({ ok: true, status: convo.status });
     } catch (err) {
         res.status(500).json({ message: "Failed to update status" });
+    }
+};
+
+// POST /api/conversation/request-live  (public — called by widget)
+exports.requestLiveAgent = async (req, res) => {
+    const { chatbotId, sessionId } = req.body;
+    try {
+        const convo = await Conversation.findOneAndUpdate(
+            { chatbotId, sessionId },
+            { status: "live_requested" },
+            { new: true }
+        );
+        if (!convo) return res.status(404).json({ ok: false, message: "Conversation not found" });
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to request live agent" });
     }
 };
 

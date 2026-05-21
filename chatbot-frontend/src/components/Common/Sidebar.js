@@ -32,15 +32,35 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
   const [activeChatsCount, setActiveChatsCount] = useState(0);
+  const [liveCount, setLiveCount] = useState(0);
+  const prevLiveCount = React.useRef(0);
+
+  useEffect(() => {
+    if (Notification.permission === "default") {
+      Notification.requestPermission();
+    }
+  }, []);
 
   useEffect(() => {
     const load = () => {
       fetchConversations()
-        .then(convos => setActiveChatsCount(convos.filter(c => c.status === "active").length))
+        .then(convos => {
+          const active = convos.filter(c => c.status === "active").length;
+          const live = convos.filter(c => c.status === "live_requested").length;
+          setActiveChatsCount(active);
+          setLiveCount(live);
+          if (live > prevLiveCount.current && Notification.permission === "granted") {
+            new Notification("🔴 Live Agent Requested", {
+              body: `${live - prevLiveCount.current} user(s) want to chat with a live agent!`,
+              icon: "/favicon.ico",
+            });
+          }
+          prevLiveCount.current = live;
+        })
         .catch(() => {});
     };
     load();
-    const interval = setInterval(load, 30000);
+    const interval = setInterval(load, 15000);
     return () => clearInterval(interval);
   }, []);
 
@@ -89,7 +109,12 @@ const Sidebar = () => {
     {
       text: 'Chats',
       icon: (
-        <Badge badgeContent={activeChatsCount} color="error" max={99} sx={{ '& .MuiBadge-badge': { fontSize: 9, minWidth: 16, height: 16 } }}>
+        <Badge
+          badgeContent={liveCount > 0 ? liveCount : activeChatsCount}
+          color={liveCount > 0 ? "warning" : "error"}
+          max={99}
+          sx={{ '& .MuiBadge-badge': { fontSize: 9, minWidth: 16, height: 16 } }}
+        >
           <ChatIcon fontSize='10px' sx={{
             background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
           }} />

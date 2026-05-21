@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Box, TextField, Button, Typography, CircularProgress, Avatar } from '@mui/material';
+import { Box, TextField, Button, Typography, CircularProgress, Avatar, Divider } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 
 const AUTH_API = process.env.REACT_APP_AUTH_API || 'http://localhost:5000/api/auth';
 const CONV_API = AUTH_API.replace('/api/auth', '/api/conversation');
@@ -18,6 +20,8 @@ const UserMessage = () => {
   const [step, setStep] = useState(0);
   const [loading, setLoading] = useState(true);
   const [done, setDone] = useState(false);
+  const [liveRequested, setLiveRequested] = useState(false);
+  const [liveLoading, setLiveLoading] = useState(false);
 
   // Pre-chat state
   const [preChatDone, setPreChatDone] = useState(false);
@@ -109,6 +113,25 @@ const UserMessage = () => {
       setNameError('Something went wrong. Please try again.');
     } finally {
       setStartingChat(false);
+    }
+  };
+
+  const handleRequestLive = async () => {
+    setLiveLoading(true);
+    try {
+      await axios.post(`${CONV_API}/request-live`, {
+        chatbotId: chatId,
+        sessionId: SESSION_ID,
+      });
+      setLiveRequested(true);
+      setMessages(prev => [...prev, {
+        sender: 'bot',
+        text: '✅ A live agent has been notified. We\'ll connect you shortly!',
+      }]);
+    } catch (err) {
+      console.error('Live request error:', err);
+    } finally {
+      setLiveLoading(false);
     }
   };
 
@@ -264,13 +287,49 @@ const UserMessage = () => {
             ))}
           </Box>
 
+          {/* Live Agent Card — shows after flow is done */}
+          {done && (
+            <Box sx={{ px: 2, pb: 1.5, bgcolor: '#fff' }}>
+              <Divider sx={{ mb: 1.5 }} />
+              {liveRequested ? (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: '#e8f5e9', borderRadius: 2 }}>
+                  <CheckCircleOutlineIcon sx={{ color: '#2e7d32', fontSize: 22 }} />
+                  <Box>
+                    <Typography fontSize={13} fontWeight={700} color="#2e7d32">Agent Notified!</Typography>
+                    <Typography fontSize={12} color="text.secondary">We'll connect you shortly.</Typography>
+                  </Box>
+                </Box>
+              ) : (
+                <Box sx={{ p: 1.5, bgcolor: '#f4f6fb', borderRadius: 2 }}>
+                  <Typography fontSize={12} color="text.secondary" mb={1}>
+                    Need more help? Connect with a live agent.
+                  </Typography>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    size="small"
+                    startIcon={liveLoading ? <CircularProgress size={14} color="inherit" /> : <SupportAgentIcon fontSize="small" />}
+                    onClick={handleRequestLive}
+                    disabled={liveLoading}
+                    sx={{
+                      borderRadius: 2, textTransform: 'none', fontWeight: 700, fontSize: 13,
+                      bgcolor: headerColor, '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' },
+                    }}
+                  >
+                    {liveLoading ? 'Requesting...' : 'Chat with Live Agent'}
+                  </Button>
+                </Box>
+              )}
+            </Box>
+          )}
+
           {/* Input */}
           <Box sx={{ p: 1.5, borderTop: '1px solid #eee', bgcolor: '#fff', display: 'flex', gap: 1 }}>
             <TextField
               fullWidth
               size="small"
               value={text}
-              placeholder={done ? 'Conversation complete ✓' : 'Type your answer...'}
+              placeholder={done ? 'Flow complete ✓' : 'Type your answer...'}
               onChange={e => setText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
               disabled={done}

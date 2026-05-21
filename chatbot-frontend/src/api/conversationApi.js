@@ -23,3 +23,8 @@ export const updateConversationStatus = async (id, status) => {
     const res = await axios.patch(`${API}/${id}/status`, { status }, authHeader());
     return res.data;
 };
+
+export const requestLiveAgent = async (chatbotId, sessionId) => {
+    const res = await axios.post(`${API}/request-live`, { chatbotId, sessionId });
+    return res.data;
+};

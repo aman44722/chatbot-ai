@@ -18,7 +18,8 @@ const WHITE = "#ffffff";
 const BLUE = "#5b5ea6";
 const LIGHT_BLUE = "#eef0ff";
 const GREEN = "#2e7d32";
-const TABS = ["All", "Active", "Closed"];
+const TABS = ["All", "Live", "Active", "Closed"];
+const ORANGE = "#e65100";
 
 function MessageSkeleton() {
   const rows = [
@@ -131,11 +132,13 @@ export default function Chats() {
 
   const activeCount = conversations.filter(c => c.status === "active").length;
   const closedCount = conversations.filter(c => c.status === "closed").length;
+  const liveCount = conversations.filter(c => c.status === "live_requested").length;
 
   const filtered = conversations
     .filter(c => {
       if (tab === "Active") return c.status === "active";
       if (tab === "Closed") return c.status === "closed";
+      if (tab === "Live") return c.status === "live_requested";
       return true;
     })
     .filter(c =>
@@ -175,7 +178,7 @@ export default function Chats() {
           {/* Tabs */}
           <Box sx={{ display: "flex", gap: 0.5, mb: 2, bgcolor: PANEL_BG, borderRadius: 2, p: 0.5 }}>
             {TABS.map((t) => {
-              const count = t === "Active" ? activeCount : t === "Closed" ? closedCount : conversations.length;
+              const count = t === "Active" ? activeCount : t === "Closed" ? closedCount : t === "Live" ? liveCount : conversations.length;
               return (
                 <Box
                   key={t}
@@ -184,15 +187,17 @@ export default function Chats() {
                     flex: 1, textAlign: "center",
                     px: 1, py: 0.6, borderRadius: 1.5, fontSize: 12, fontWeight: 600,
                     cursor: "pointer",
-                    bgcolor: tab === t ? WHITE : "transparent",
-                    color: tab === t ? BLUE : "#888",
+                    bgcolor: tab === t ? WHITE : t === "Live" && liveCount > 0 ? "#fff3e0" : "transparent",
+                    color: tab === t ? (t === "Live" ? ORANGE : BLUE) : t === "Live" && liveCount > 0 ? ORANGE : "#888",
                     boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                    animation: t === "Live" && liveCount > 0 && tab !== "Live" ? "pulse 1.5s ease infinite" : "none",
+                    "@keyframes pulse": { "0%,100%": { opacity: 1 }, "50%": { opacity: 0.55 } },
                     transition: "all 0.15s",
                   }}
                 >
                   {t}
                   {count > 0 && (
-                    <Box component="span" sx={{ ml: 0.5, fontSize: 10, opacity: 0.7 }}>({count})</Box>
+                    <Box component="span" sx={{ ml: 0.5, fontSize: 10, opacity: 0.7, color: t === "Live" ? ORANGE : "inherit" }}>({count})</Box>
                   )}
                 </Box>
               );
@@ -244,6 +249,7 @@ export default function Chats() {
               const isActive = c._id === activeId;
               const isLoading = isActive && loadingConvo;
               const isClosed = c.status === "closed";
+              const isLive = c.status === "live_requested";
               return (
                 <ListItem
                   key={c._id}
@@ -251,8 +257,9 @@ export default function Chats() {
                   onClick={() => handleSelect(c._id)}
                   sx={{
                     borderRadius: 2.5, mb: 0.5, px: 1.5, py: 1.2,
-                    bgcolor: isActive ? LIGHT_BLUE : "transparent",
-                    "&:hover": { bgcolor: isActive ? LIGHT_BLUE : PANEL_BG },
+                    bgcolor: isLive ? "#fff3e0" : isActive ? LIGHT_BLUE : "transparent",
+                    borderLeft: isLive ? `3px solid ${ORANGE}` : "3px solid transparent",
+                    "&:hover": { bgcolor: isLive ? "#ffe0b2" : isActive ? LIGHT_BLUE : PANEL_BG },
                     transition: "background 0.15s",
                     opacity: isClosed ? 0.65 : 1,
                   }}
@@ -289,6 +296,9 @@ export default function Chats() {
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                       {isClosed && (
                         <Chip label="closed" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: "#888", bgcolor: "#f0f0f0" }} />
+                      )}
+                      {isLive && (
+                        <Chip label="🔴 Live" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: ORANGE, bgcolor: "#fff3e0", fontWeight: 700 }} />
                       )}
                       <Typography fontSize={12} color="text.secondary" noWrap sx={{ maxWidth: 150 }}>
                         {lastMsg}
