@@ -1,19 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Box, Typography, Avatar, TextField, InputAdornment,
-  List, ListItem, Chip, Divider, IconButton, CircularProgress
+  List, ListItem, Chip, Divider, IconButton, CircularProgress,
+  Badge, Button, Tooltip
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import AddIcon from "@mui/icons-material/Add";
 import SendIcon from "@mui/icons-material/Send";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
-import { fetchConversations, fetchConversationById } from "../api/conversationApi";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import ReplayIcon from "@mui/icons-material/Replay";
+import RefreshIcon from "@mui/icons-material/Refresh";
+import { fetchConversations, fetchConversationById, updateConversationStatus } from "../api/conversationApi";
 
 const PANEL_BG = "#f4f6fb";
 const WHITE = "#ffffff";
 const BLUE = "#5b5ea6";
 const LIGHT_BLUE = "#eef0ff";
+const GREEN = "#2e7d32";
+const TABS = ["All", "Active", "Closed"];
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -42,12 +47,27 @@ export default function Chats() {
   const [activeId, setActiveId] = useState(null);
   const [convo, setConvo] = useState(null);
   const [search, setSearch] = useState("");
+  const [tab, setTab] = useState("All");
   const [loadingConvo, setLoadingConvo] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const messagesEndRef = React.useRef(null);
 
-  useEffect(() => {
-    fetchConversations().then(setConversations).catch(console.error);
+  const loadConversations = useCallback(async (silent = false) => {
+    if (!silent) setRefreshing(true);
+    try {
+      const data = await fetchConversations();
+      setConversations(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
+
+  useEffect(() => {
+    loadConversations();
+  }, [loadConversations]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -68,9 +88,35 @@ export default function Chats() {
     }
   };
 
-  const filtered = conversations.filter(c =>
-    (c.userName || c.sessionId || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const handleStatusToggle = async () => {
+    if (!activeId || !convo) return;
+    const newStatus = convo.status === "active" ? "closed" : "active";
+    setStatusUpdating(true);
+    try {
+      await updateConversationStatus(activeId, newStatus);
+      setConvo(prev => ({ ...prev, status: newStatus }));
+      setConversations(prev =>
+        prev.map(c => c._id === activeId ? { ...c, status: newStatus } : c)
+      );
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
+  const activeCount = conversations.filter(c => c.status === "active").length;
+  const closedCount = conversations.filter(c => c.status === "closed").length;
+
+  const filtered = conversations
+    .filter(c => {
+      if (tab === "Active") return c.status === "active";
+      if (tab === "Closed") return c.status === "closed";
+      return true;
+    })
+    .filter(c =>
+      (c.userName || c.sessionId || "").toLowerCase().includes(search.toLowerCase())
+    );
 
   const activeConvo = conversations.find(c => c._id === activeId);
   const userMessages = convo?.messages?.filter(m => m.sender === "user").length || 0;
@@ -87,28 +133,46 @@ export default function Chats() {
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <ChatBubbleOutlineIcon sx={{ color: BLUE, fontSize: 20 }} />
               <Typography fontWeight={700} fontSize={16}>Chats</Typography>
+              {activeCount > 0 && (
+                <Chip
+                  label={activeCount}
+                  size="small"
+                  sx={{ bgcolor: "#e8f5e9", color: GREEN, fontWeight: 700, height: 20, fontSize: 11 }}
+                />
+              )}
             </Box>
-            <IconButton size="small" sx={{ bgcolor: LIGHT_BLUE, color: BLUE, "&:hover": { bgcolor: "#dde0ff" } }}>
-              <AddIcon fontSize="small" />
-            </IconButton>
+            <Tooltip title="Refresh">
+              <IconButton size="small" onClick={() => loadConversations()} disabled={refreshing}>
+                <RefreshIcon fontSize="small" sx={{ color: BLUE, animation: refreshing ? "spin 1s linear infinite" : "none" }} />
+              </IconButton>
+            </Tooltip>
           </Box>
 
           {/* Tabs */}
-          <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
-            {["All", "Active", "Closed"].map((tab, i) => (
-              <Box
-                key={tab}
-                sx={{
-                  px: 1.5, py: 0.5, borderRadius: 2, fontSize: 12, fontWeight: 600,
-                  cursor: "pointer",
-                  bgcolor: i === 0 ? BLUE : "transparent",
-                  color: i === 0 ? "#fff" : "#888",
-                  "&:hover": { bgcolor: i === 0 ? BLUE : LIGHT_BLUE }
-                }}
-              >
-                {tab}
-              </Box>
-            ))}
+          <Box sx={{ display: "flex", gap: 0.5, mb: 2, bgcolor: PANEL_BG, borderRadius: 2, p: 0.5 }}>
+            {TABS.map((t) => {
+              const count = t === "Active" ? activeCount : t === "Closed" ? closedCount : conversations.length;
+              return (
+                <Box
+                  key={t}
+                  onClick={() => setTab(t)}
+                  sx={{
+                    flex: 1, textAlign: "center",
+                    px: 1, py: 0.6, borderRadius: 1.5, fontSize: 12, fontWeight: 600,
+                    cursor: "pointer",
+                    bgcolor: tab === t ? WHITE : "transparent",
+                    color: tab === t ? BLUE : "#888",
+                    boxShadow: tab === t ? "0 1px 4px rgba(0,0,0,0.1)" : "none",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {t}
+                  {count > 0 && (
+                    <Box component="span" sx={{ ml: 0.5, fontSize: 10, opacity: 0.7 }}>({count})</Box>
+                  )}
+                </Box>
+              );
+            })}
           </Box>
 
           {/* Search */}
@@ -127,20 +191,23 @@ export default function Chats() {
         </Box>
 
         <Typography variant="caption" color="text.secondary" sx={{ px: 2.5, mb: 1, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
-          Recent Chats
+          {tab} · {filtered.length}
         </Typography>
 
         {/* User List */}
         <List disablePadding sx={{ overflowY: "auto", flex: 1, px: 1 }}>
           {filtered.length === 0 ? (
             <Box sx={{ p: 3, textAlign: "center" }}>
-              <Typography variant="body2" color="text.secondary">No conversations yet.</Typography>
+              <Typography variant="body2" color="text.secondary">
+                {tab === "Active" ? "No active chats." : tab === "Closed" ? "No closed chats." : "No conversations yet."}
+              </Typography>
             </Box>
           ) : (
             filtered.map((c) => {
               const name = c.userName || `Session ${c.sessionId?.slice(-6)}`;
               const lastMsg = c.messages?.[c.messages.length - 1]?.text || "No messages";
               const isActive = c._id === activeId;
+              const isClosed = c.status === "closed";
               return (
                 <ListItem
                   key={c._id}
@@ -151,13 +218,22 @@ export default function Chats() {
                     bgcolor: isActive ? LIGHT_BLUE : "transparent",
                     "&:hover": { bgcolor: isActive ? LIGHT_BLUE : PANEL_BG },
                     transition: "background 0.15s",
+                    opacity: isClosed ? 0.65 : 1,
                   }}
                 >
-                  <Avatar
-                    sx={{ width: 42, height: 42, mr: 1.5, bgcolor: avatarColor(name), fontSize: 16, fontWeight: 700 }}
+                  <Badge
+                    variant="dot"
+                    color="success"
+                    invisible={isClosed}
+                    overlap="circular"
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                   >
-                    {getInitial(name)}
-                  </Avatar>
+                    <Avatar
+                      sx={{ width: 42, height: 42, mr: 1.5, bgcolor: avatarColor(name), fontSize: 16, fontWeight: 700 }}
+                    >
+                      {getInitial(name)}
+                    </Avatar>
+                  </Badge>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <Typography fontSize={13.5} fontWeight={isActive ? 700 : 600} noWrap sx={{ maxWidth: 120 }}>
@@ -165,9 +241,14 @@ export default function Chats() {
                       </Typography>
                       <Typography fontSize={11} color="text.secondary">{timeAgo(c.updatedAt)}</Typography>
                     </Box>
-                    <Typography fontSize={12} color="text.secondary" noWrap sx={{ maxWidth: 160 }}>
-                      {lastMsg}
-                    </Typography>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                      {isClosed && (
+                        <Chip label="closed" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: "#888", bgcolor: "#f0f0f0" }} />
+                      )}
+                      <Typography fontSize={12} color="text.secondary" noWrap sx={{ maxWidth: 150 }}>
+                        {lastMsg}
+                      </Typography>
+                    </Box>
                   </Box>
                 </ListItem>
               );
@@ -203,10 +284,30 @@ export default function Chats() {
                 </Typography>
               </Box>
               <Chip
-                label={activeConvo?.status || "active"}
+                label={convo?.status || "active"}
                 size="small"
-                color={activeConvo?.status === "active" ? "success" : "default"}
+                color={convo?.status === "active" ? "success" : "default"}
               />
+              <Tooltip title={convo?.status === "active" ? "Close conversation" : "Reopen conversation"}>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  startIcon={convo?.status === "active" ? <CheckCircleIcon /> : <ReplayIcon />}
+                  onClick={handleStatusToggle}
+                  disabled={statusUpdating}
+                  sx={{
+                    textTransform: "none", fontSize: 12,
+                    borderColor: convo?.status === "active" ? "#c62828" : GREEN,
+                    color: convo?.status === "active" ? "#c62828" : GREEN,
+                    "&:hover": {
+                      bgcolor: convo?.status === "active" ? "#ffebee" : "#e8f5e9",
+                      borderColor: convo?.status === "active" ? "#c62828" : GREEN,
+                    }
+                  }}
+                >
+                  {statusUpdating ? "..." : convo?.status === "active" ? "Close" : "Reopen"}
+                </Button>
+              </Tooltip>
             </Box>
 
             {/* Messages */}
@@ -225,7 +326,7 @@ export default function Chats() {
                         <Box>
                           <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: "block", textAlign: isUser ? "right" : "left" }}>
                             {isUser ? (activeConvo?.userName || "User") : "Bot"}
-                            {m.createdAt && ` • ${new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                            {m.createdAt && ` · ${new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
                           </Typography>
                           <Box sx={{
                             px: 2, py: 1.2,
@@ -251,12 +352,16 @@ export default function Chats() {
               <TextField
                 fullWidth
                 size="small"
-                placeholder="This is a view-only chat — responses are automated by your flow."
+                placeholder={
+                  convo?.status === "closed"
+                    ? "Conversation is closed."
+                    : "This is a view-only chat — responses are automated by your flow."
+                }
                 disabled
                 InputProps={{ sx: { borderRadius: 3, bgcolor: PANEL_BG, fontSize: 13 } }}
                 sx={{ "& fieldset": { border: "none" } }}
               />
-              <IconButton sx={{ bgcolor: BLUE, color: "#fff", "&:hover": { bgcolor: "#4a4d8f" }, borderRadius: 2.5 }}>
+              <IconButton sx={{ bgcolor: convo?.status === "closed" ? "#eee" : BLUE, color: convo?.status === "closed" ? "#aaa" : "#fff", "&:hover": { bgcolor: convo?.status === "closed" ? "#eee" : "#4a4d8f" }, borderRadius: 2.5 }} disabled={convo?.status === "closed"}>
                 <SendIcon fontSize="small" />
               </IconButton>
             </Box>
@@ -280,8 +385,34 @@ export default function Chats() {
                 {activeConvo?.sessionId?.slice(-12)}
               </Typography>
               <Box sx={{ mt: 1 }}>
-                <Chip label={activeConvo?.status} size="small" color={activeConvo?.status === "active" ? "success" : "default"} />
+                <Chip
+                  label={convo?.status}
+                  size="small"
+                  color={convo?.status === "active" ? "success" : "default"}
+                />
               </Box>
+            </Box>
+
+            <Divider sx={{ mb: 2 }} />
+
+            {/* Action Buttons */}
+            <Box sx={{ mb: 2 }}>
+              <Button
+                fullWidth
+                variant={convo?.status === "active" ? "outlined" : "contained"}
+                color={convo?.status === "active" ? "error" : "success"}
+                size="small"
+                startIcon={convo?.status === "active" ? <CheckCircleIcon /> : <ReplayIcon />}
+                onClick={handleStatusToggle}
+                disabled={statusUpdating}
+                sx={{ textTransform: "none", borderRadius: 2, mb: 1 }}
+              >
+                {statusUpdating
+                  ? "Updating..."
+                  : convo?.status === "active"
+                  ? "Close Conversation"
+                  : "Reopen Conversation"}
+              </Button>
             </Box>
 
             <Divider sx={{ mb: 2 }} />
@@ -296,6 +427,7 @@ export default function Chats() {
               { label: "Bot Questions", value: botMessages },
               { label: "Started", value: new Date(convo.createdAt || convo.updatedAt).toLocaleDateString() },
               { label: "Last Active", value: timeAgo(convo.updatedAt) },
+              { label: "Status", value: convo.status },
             ].map((item) => (
               <Box key={item.label} sx={{ display: "flex", justifyContent: "space-between", py: 1, borderBottom: "1px solid #f5f5f5" }}>
                 <Typography variant="body2" color="text.secondary">{item.label}</Typography>
@@ -305,7 +437,7 @@ export default function Chats() {
 
             <Divider sx={{ my: 2 }} />
 
-            {/* Messages Preview */}
+            {/* Recent Answers */}
             <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
               Recent Answers
             </Typography>

@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-// import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
 
 import './style.css';
 import {
@@ -9,7 +8,9 @@ import {
   ListItemIcon,
   ListItemText,
   Collapse,
+  Badge,
 } from '@mui/material';
+import { fetchConversations } from '../../api/conversationApi';
 import ChatIcon from '@mui/icons-material/Chat';
 import PeopleIcon from '@mui/icons-material/People';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -30,6 +31,18 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const Sidebar = () => {
   const navigate = useNavigate();
   const [openDropdown, setOpenDropdown] = useState(null);
+  const [activeChatsCount, setActiveChatsCount] = useState(0);
+
+  useEffect(() => {
+    const load = () => {
+      fetchConversations()
+        .then(convos => setActiveChatsCount(convos.filter(c => c.status === "active").length))
+        .catch(() => {});
+    };
+    load();
+    const interval = setInterval(load, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
 
   const toggleDropdown = (text) => {
@@ -75,9 +88,13 @@ const Sidebar = () => {
     },
     {
       text: 'Chats',
-      icon: <ChatIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: (
+        <Badge badgeContent={activeChatsCount} color="error" max={99} sx={{ '& .MuiBadge-badge': { fontSize: 9, minWidth: 16, height: 16 } }}>
+          <ChatIcon fontSize='10px' sx={{
+            background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
+          }} />
+        </Badge>
+      ),
       path: '/chats',
     },
     {

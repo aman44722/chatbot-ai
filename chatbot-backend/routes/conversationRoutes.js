@@ -6,11 +6,13 @@ const {
     getConversationById,
     initConversation,
     saveMessage,
+    updateConversationStatus,
 } = require("../controllers/conversationController");
 
 // Protected — owner sees only their conversations
 router.get("/list", authenticate, getConversations);
 router.get("/:id", authenticate, getConversationById);
+router.patch("/:id/status", authenticate, updateConversationStatus);
 
 // Public — called by the embedded widget
 router.post("/init", initConversation);

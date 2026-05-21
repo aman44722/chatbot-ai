@@ -18,3 +18,8 @@ export const fetchConversationById = async (id) => {
     const res = await axios.get(`${API}/${id}`, authHeader());
     return res.data.conversation;
 };
+
+export const updateConversationStatus = async (id, status) => {
+    const res = await axios.patch(`${API}/${id}/status`, { status }, authHeader());
+    return res.data;
+};

@@ -55,6 +55,26 @@ exports.initConversation = async (req, res) => {
 };
 
 
+// PATCH /api/conversation/:id/status  (authenticated)
+exports.updateConversationStatus = async (req, res) => {
+    try {
+        const chatbotId = req.user.id;
+        const { status } = req.body;
+        if (!["active", "closed"].includes(status)) {
+            return res.status(400).json({ message: "Invalid status" });
+        }
+        const convo = await Conversation.findOneAndUpdate(
+            { _id: req.params.id, chatbotId },
+            { status },
+            { new: true }
+        );
+        if (!convo) return res.status(404).json({ message: "Conversation not found" });
+        res.json({ ok: true, status: convo.status });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to update status" });
+    }
+};
+
 // POST /api/conversation/message
 exports.saveMessage = async (req, res) => {
     const { chatbotId, sessionId, sender, text, questionId } = req.body;
