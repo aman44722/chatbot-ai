@@ -66,7 +66,8 @@
         root.id = "a2bot-root-" + botId;
         Object.assign(root.style, { position: "fixed", zIndex: "999999", pointerEvents: "auto" });
         positionAnchor(root, pos, "30px");
-        root.appendChild(createButton(botId, headerColor, logoUrl, botName));
+        var btn = createButton(botId, headerColor, logoUrl, botName);
+        root.appendChild(btn);
         document.body.appendChild(root);
 
         // ── Panel — hidden, iframe preloads in background ──
