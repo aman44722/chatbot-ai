@@ -9,6 +9,7 @@ import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ReplayIcon from '@mui/icons-material/Replay';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CloseIcon from '@mui/icons-material/Close';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 const AUTH_API = process.env.REACT_APP_AUTH_API || 'http://localhost:5000/api/auth';
 const CONV_API = AUTH_API.replace('/api/auth', '/api/conversation');
@@ -421,6 +422,20 @@ const UserMessage = () => {
         {preChatDone && userName && (
           <Typography fontSize={12} sx={{ opacity: 0.8, mr: 0.5 }}>{userName}</Typography>
         )}
+        <Tooltip title="Minimize" placement="left">
+          <Box
+            onClick={() => window.parent.postMessage({ type: 'A2BOT_MINIMIZE' }, '*')}
+            sx={{
+              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 30, height: 30, borderRadius: '50%',
+              bgcolor: 'rgba(255,255,255,0.15)',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.28)' },
+              flexShrink: 0,
+            }}
+          >
+            <KeyboardArrowDownIcon sx={{ fontSize: 18, color: '#fff' }} />
+          </Box>
+        </Tooltip>
         <Tooltip title="Close Chat" placement="left">
           <Box
             onClick={() => setConfirmClose(true)}

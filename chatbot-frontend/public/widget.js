@@ -98,12 +98,17 @@
             positionPanel(panel, pos, s);
         });
 
-        // ── Toggle ──
-        var isOpen = false;
-        var btn = document.getElementById("a2bot-btn-" + botId);
+        // ── Toggle on button click ──
         btn.addEventListener("click", function () {
-            isOpen = !isOpen;
-            panel.classList[isOpen ? "add" : "remove"]("a2bot-open");
+            var open = panel.classList.contains("a2bot-open");
+            panel.classList[open ? "remove" : "add"]("a2bot-open");
+        });
+
+        // ── Listen for minimize message from iframe ──
+        window.addEventListener("message", function (e) {
+            if (e.data && e.data.type === "A2BOT_MINIMIZE") {
+                panel.classList.remove("a2bot-open");
+            }
         });
     }
 
