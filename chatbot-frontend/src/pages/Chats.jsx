@@ -229,6 +229,7 @@ export default function Chats() {
               const name = c.userName || `Session ${c.sessionId?.slice(-6)}`;
               const lastMsg = c.messages?.[c.messages.length - 1]?.text || "No messages";
               const isActive = c._id === activeId;
+              const isLoading = isActive && loadingConvo;
               const isClosed = c.status === "closed";
               return (
                 <ListItem
@@ -243,19 +244,28 @@ export default function Chats() {
                     opacity: isClosed ? 0.65 : 1,
                   }}
                 >
-                  <Badge
-                    variant="dot"
-                    color="success"
-                    invisible={isClosed}
-                    overlap="circular"
-                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                  >
-                    <Avatar
-                      sx={{ width: 42, height: 42, mr: 1.5, bgcolor: avatarColor(name), fontSize: 16, fontWeight: 700 }}
+                  <Box sx={{ position: "relative", mr: 1.5, flexShrink: 0 }}>
+                    <Badge
+                      variant="dot"
+                      color="success"
+                      invisible={isClosed || isLoading}
+                      overlap="circular"
+                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                     >
-                      {getInitial(name)}
-                    </Avatar>
-                  </Badge>
+                      <Avatar
+                        sx={{ width: 42, height: 42, bgcolor: avatarColor(name), fontSize: 16, fontWeight: 700, opacity: isLoading ? 0.5 : 1, transition: "opacity 0.2s" }}
+                      >
+                        {getInitial(name)}
+                      </Avatar>
+                    </Badge>
+                    {isLoading && (
+                      <CircularProgress
+                        size={46}
+                        thickness={2.5}
+                        sx={{ color: BLUE, position: "absolute", top: -2, left: -2, zIndex: 1 }}
+                      />
+                    )}
+                  </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <Typography fontSize={13.5} fontWeight={isActive ? 700 : 600} noWrap sx={{ maxWidth: 120 }}>
