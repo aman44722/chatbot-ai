@@ -8,6 +8,7 @@ const {
     saveMessage,
     updateConversationStatus,
     requestLiveAgent,
+    reopenConversation,
     getMessagesBySession,
 } = require("../controllers/conversationController");
 
@@ -20,6 +21,7 @@ router.patch("/:id/status", authenticate, updateConversationStatus);
 router.post("/init", initConversation);
 router.post("/message", saveMessage);
 router.post("/request-live", requestLiveAgent);
+router.post("/reopen", reopenConversation);
 router.get("/session/:chatbotId/:sessionId", getMessagesBySession);
 
 module.exports = router;

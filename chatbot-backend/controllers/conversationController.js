@@ -91,6 +91,22 @@ exports.requestLiveAgent = async (req, res) => {
     }
 };
 
+// POST /api/conversation/reopen  (public — called by widget)
+exports.reopenConversation = async (req, res) => {
+    const { chatbotId, sessionId } = req.body;
+    try {
+        const convo = await Conversation.findOneAndUpdate(
+            { chatbotId, sessionId },
+            { status: "active" },
+            { new: true }
+        );
+        if (!convo) return res.status(404).json({ ok: false, message: "Conversation not found" });
+        res.json({ ok: true });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to reopen conversation" });
+    }
+};
+
 // GET /api/conversation/session/:chatbotId/:sessionId  (public — widget polls this)
 exports.getMessagesBySession = async (req, res) => {
     try {

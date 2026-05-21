@@ -6,6 +6,8 @@ import SendIcon from '@mui/icons-material/Send';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ReplayIcon from '@mui/icons-material/Replay';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const AUTH_API = process.env.REACT_APP_AUTH_API || 'http://localhost:5000/api/auth';
 const CONV_API = AUTH_API.replace('/api/auth', '/api/conversation');
@@ -22,7 +24,8 @@ const UserMessage = () => {
   const [done, setDone] = useState(false);
   const [liveRequested, setLiveRequested] = useState(false);
   const [liveLoading, setLiveLoading] = useState(false);
-  const livePollingRef = useRef(null);
+  const [chatClosed, setChatClosed] = useState(false);
+  const [reopening, setReopening] = useState(false);
 
   // Pre-chat state
   const [preChatDone, setPreChatDone] = useState(false);
@@ -34,8 +37,10 @@ const UserMessage = () => {
   const chatBodyRef = useRef(null);
   const initializedRef = useRef(false);
   const nameInputRef = useRef(null);
+  const livePollingRef = useRef(null);
+  const statusPollingRef = useRef(null);
 
-  // Load bot settings on mount (don't init conversation yet)
+  // Load bot settings on mount
   useEffect(() => {
     if (initializedRef.current) return;
     initializedRef.current = true;
@@ -57,18 +62,48 @@ const UserMessage = () => {
     loadSettings();
   }, [chatId]);
 
+  // Auto-scroll to latest message
   useEffect(() => {
     if (chatBodyRef.current) {
       chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
     }
   }, [messages]);
 
-  // Focus name input when pre-chat screen shows
+  // Focus name input on pre-chat screen
   useEffect(() => {
     if (!loading && !preChatDone && nameInputRef.current) {
       setTimeout(() => nameInputRef.current?.focus(), 300);
     }
   }, [loading, preChatDone]);
+
+  // Poll status when chat is active (not live) — detect if admin closed the chat
+  useEffect(() => {
+    if (statusPollingRef.current) clearInterval(statusPollingRef.current);
+    if (!preChatDone || liveRequested || chatClosed) return;
+
+    statusPollingRef.current = setInterval(async () => {
+      try {
+        const res = await axios.get(`${CONV_API}/session/${chatId}/${SESSION_ID}`);
+        if (res.data.ok && res.data.status === 'closed') {
+          setChatClosed(true);
+          setMessages(prev => [...prev, {
+            sender: 'bot',
+            text: '🔒 This conversation has been closed by the support team.',
+          }]);
+        }
+      } catch { /* silent */ }
+    }, 8000);
+
+    return () => clearInterval(statusPollingRef.current);
+  }, [preChatDone, liveRequested, chatClosed, chatId]);
+
+  // Cleanup all polling on unmount
+  useEffect(() => {
+    return () => {
+      if (livePollingRef.current) clearInterval(livePollingRef.current);
+      if (statusPollingRef.current) clearInterval(statusPollingRef.current);
+    };
+  }, []);
 
   const pushMessage = useCallback((sender, msgText, questionId = null) => {
     setMessages(prev => [...prev, { sender, text: msgText, questionId }]);
@@ -127,14 +162,26 @@ const UserMessage = () => {
       setLiveRequested(true);
       setMessages(prev => [...prev, {
         sender: 'bot',
-        text: '✅ A live agent has been notified. We\'ll connect you shortly!',
+        text: "✅ A live agent has been notified. We'll connect you shortly!",
       }]);
 
-      // Start polling for admin messages — only append NEW admin messages, don't replace
+      // Poll for admin messages — also detects closure
       livePollingRef.current = setInterval(async () => {
         try {
           const res = await axios.get(`${CONV_API}/session/${chatId}/${SESSION_ID}`);
           if (res.data.ok) {
+            // Admin closed the chat
+            if (res.data.status === 'closed') {
+              setChatClosed(true);
+              setMessages(prev => [...prev, {
+                sender: 'bot',
+                text: '🔒 This conversation has been closed by the support team.',
+              }]);
+              clearInterval(livePollingRef.current);
+              return;
+            }
+
+            // Append only new admin messages
             const adminMsgs = res.data.messages.filter(m => m.sender === 'admin');
             setMessages(prev => {
               const existingAdminCount = prev.filter(m => m.sender === 'admin').length;
@@ -152,18 +199,34 @@ const UserMessage = () => {
     }
   };
 
-  // Cleanup polling on unmount
-  useEffect(() => {
-    return () => { if (livePollingRef.current) clearInterval(livePollingRef.current); };
-  }, []);
+  const handleReopen = async () => {
+    setReopening(true);
+    try {
+      await axios.post(`${CONV_API}/reopen`, {
+        chatbotId: chatId,
+        sessionId: SESSION_ID,
+      });
+      setChatClosed(false);
+      setLiveRequested(false);
+      if (livePollingRef.current) clearInterval(livePollingRef.current);
+      setMessages(prev => [...prev, {
+        sender: 'bot',
+        text: '✅ Chat has been reopened. Feel free to connect with a live agent again.',
+      }]);
+    } catch (err) {
+      console.error('Reopen error:', err);
+    } finally {
+      setReopening(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!text.trim()) return;
     const userText = text.trim();
     setText('');
 
-    // In live mode — user replying to admin
-    if (liveRequested) {
+    // Live mode — user replying to admin
+    if (liveRequested && !chatClosed) {
       setMessages(prev => [...prev, { sender: 'user', text: userText }]);
       axios.post(`${CONV_API}/message`, {
         chatbotId: chatId,
@@ -301,7 +364,7 @@ const UserMessage = () => {
                 key={i}
                 sx={{
                   display: 'flex',
-                  justifyContent: (msg.sender === 'user') ? 'flex-end' : 'flex-start',
+                  justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
                   mb: 1.5,
                 }}
               >
@@ -329,63 +392,96 @@ const UserMessage = () => {
             ))}
           </Box>
 
-          {/* Live Agent Card — shows after flow is done */}
-          {done && (
-            <Box sx={{ px: 2, pb: 1.5, bgcolor: '#fff' }}>
+          {/* ─── CHAT CLOSED STATE ─── */}
+          {chatClosed ? (
+            <Box sx={{ px: 2, pb: 2, pt: 1.5, bgcolor: '#fff' }}>
               <Divider sx={{ mb: 1.5 }} />
-              {liveRequested ? (
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: '#e8f5e9', borderRadius: 2 }}>
-                  <CheckCircleOutlineIcon sx={{ color: '#2e7d32', fontSize: 22 }} />
-                  <Box>
-                    <Typography fontSize={13} fontWeight={700} color="#2e7d32">Agent Notified!</Typography>
-                    <Typography fontSize={12} color="text.secondary">We'll connect you shortly.</Typography>
-                  </Box>
-                </Box>
-              ) : (
-                <Box sx={{ p: 1.5, bgcolor: '#f4f6fb', borderRadius: 2 }}>
-                  <Typography fontSize={12} color="text.secondary" mb={1}>
-                    Need more help? Connect with a live agent.
-                  </Typography>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    size="small"
-                    startIcon={liveLoading ? <CircularProgress size={14} color="inherit" /> : <SupportAgentIcon fontSize="small" />}
-                    onClick={handleRequestLive}
-                    disabled={liveLoading}
-                    sx={{
-                      borderRadius: 2, textTransform: 'none', fontWeight: 700, fontSize: 13,
-                      bgcolor: headerColor, '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' },
-                    }}
-                  >
-                    {liveLoading ? 'Requesting...' : 'Chat with Live Agent'}
-                  </Button>
+              <Box sx={{ p: 2, bgcolor: '#fafafa', borderRadius: 2.5, border: '1px solid #e0e0e0', textAlign: 'center' }}>
+                <LockOutlinedIcon sx={{ fontSize: 28, color: '#bbb', mb: 0.5 }} />
+                <Typography fontSize={13} fontWeight={700} color="text.secondary" mb={0.5}>
+                  Conversation Closed
+                </Typography>
+                <Typography fontSize={12} color="text.secondary" mb={1.5}>
+                  This chat has been closed by the support team.
+                </Typography>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  size="small"
+                  startIcon={reopening ? <CircularProgress size={14} color="inherit" /> : <ReplayIcon />}
+                  onClick={handleReopen}
+                  disabled={reopening}
+                  sx={{
+                    borderRadius: 2, textTransform: 'none', fontWeight: 700, fontSize: 13,
+                    borderColor: headerColor, color: headerColor,
+                    '&:hover': { bgcolor: `${headerColor}11`, borderColor: headerColor },
+                  }}
+                >
+                  {reopening ? 'Reopening...' : 'Reopen Chat'}
+                </Button>
+              </Box>
+            </Box>
+          ) : (
+            <>
+              {/* Live Agent Card — shows after flow is done */}
+              {done && (
+                <Box sx={{ px: 2, pb: 1.5, bgcolor: '#fff' }}>
+                  <Divider sx={{ mb: 1.5 }} />
+                  {liveRequested ? (
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, p: 1.5, bgcolor: '#e8f5e9', borderRadius: 2 }}>
+                      <CheckCircleOutlineIcon sx={{ color: '#2e7d32', fontSize: 22 }} />
+                      <Box>
+                        <Typography fontSize={13} fontWeight={700} color="#2e7d32">Agent Notified!</Typography>
+                        <Typography fontSize={12} color="text.secondary">We'll connect you shortly.</Typography>
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Box sx={{ p: 1.5, bgcolor: '#f4f6fb', borderRadius: 2 }}>
+                      <Typography fontSize={12} color="text.secondary" mb={1}>
+                        Need more help? Connect with a live agent.
+                      </Typography>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        size="small"
+                        startIcon={liveLoading ? <CircularProgress size={14} color="inherit" /> : <SupportAgentIcon fontSize="small" />}
+                        onClick={handleRequestLive}
+                        disabled={liveLoading}
+                        sx={{
+                          borderRadius: 2, textTransform: 'none', fontWeight: 700, fontSize: 13,
+                          bgcolor: headerColor, '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' },
+                        }}
+                      >
+                        {liveLoading ? 'Requesting...' : 'Chat with Live Agent'}
+                      </Button>
+                    </Box>
+                  )}
                 </Box>
               )}
-            </Box>
-          )}
 
-          {/* Input */}
-          <Box sx={{ p: 1.5, borderTop: liveRequested ? '2px solid #e65100' : '1px solid #eee', bgcolor: '#fff', display: 'flex', gap: 1 }}>
-            <TextField
-              fullWidth
-              size="small"
-              value={text}
-              placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : 'Type your answer...'}
-              onChange={e => setText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              disabled={done && !liveRequested}
-              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-            />
-            <Button
-              variant="contained"
-              onClick={handleSend}
-              disabled={(done && !liveRequested) || !text.trim()}
-              sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: liveRequested ? '#e65100' : headerColor, '&:hover': { bgcolor: liveRequested ? '#bf360c' : headerColor } }}
-            >
-              <SendIcon fontSize="small" />
-            </Button>
-          </Box>
+              {/* Input */}
+              <Box sx={{ p: 1.5, borderTop: liveRequested ? '2px solid #e65100' : '1px solid #eee', bgcolor: '#fff', display: 'flex', gap: 1 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  value={text}
+                  placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : 'Type your answer...'}
+                  onChange={e => setText(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                  disabled={done && !liveRequested}
+                  sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleSend}
+                  disabled={(done && !liveRequested) || !text.trim()}
+                  sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: liveRequested ? '#e65100' : headerColor, '&:hover': { bgcolor: liveRequested ? '#bf360c' : headerColor } }}
+                >
+                  <SendIcon fontSize="small" />
+                </Button>
+              </Box>
+            </>
+          )}
         </>
       )}
     </Box>
