@@ -638,6 +638,14 @@ const UserMessage = () => {
               {/* Option buttons */}
               {hasOptions && (
                 <Box sx={{ px: 2, pb: 1.5, pt: 1, background: chatBg, borderTop: '1px solid #eee' }}>
+                  <Typography
+                    sx={{
+                      textAlign: 'center', fontWeight: 600, fontSize: 13,
+                      color: '#666', mb: 1.5, letterSpacing: '0.3px',
+                    }}
+                  >
+                    Tell Me Your Problem?
+                  </Typography>
                   <Box sx={{
                     display: 'flex', flexWrap: 'wrap', gap: 1,
                     justifyContent: 'center',
