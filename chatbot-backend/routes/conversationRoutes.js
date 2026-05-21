@@ -12,16 +12,16 @@ const {
     getMessagesBySession,
 } = require("../controllers/conversationController");
 
-// Protected — owner sees only their conversations
-router.get("/list", authenticate, getConversations);
-router.get("/:id", authenticate, getConversationById);
-router.patch("/:id/status", authenticate, updateConversationStatus);
-
-// Public — called by the embedded widget
+// Public — called by the embedded widget (must be before /:id to avoid route shadowing)
 router.post("/init", initConversation);
 router.post("/message", saveMessage);
 router.post("/request-live", requestLiveAgent);
 router.post("/reopen", reopenConversation);
 router.get("/session/:chatbotId/:sessionId", getMessagesBySession);
+
+// Protected — owner sees only their conversations
+router.get("/list", authenticate, getConversations);
+router.patch("/:id/status", authenticate, updateConversationStatus);
+router.get("/:id", authenticate, getConversationById);
 
 module.exports = router;
