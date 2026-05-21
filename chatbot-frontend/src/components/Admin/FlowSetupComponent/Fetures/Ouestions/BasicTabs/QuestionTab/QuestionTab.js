@@ -1,10 +1,9 @@
 import { Box, Switch, TextField, Typography } from "@mui/material";
-import { useState, useEffect } from "react";
 
-const QuestionTab = ({ errorMessage, setErrorMessage, skipOption, setSkipOption }) => {
+const QuestionTab = ({ errorMessage, setErrorMessage, skipOption, setSkipOption, validations, setValidations }) => {
 
   const handleSwitchChange = (event) => {
-    setSkipOption(event.target.checked); // Ensures the state is updated properly with boolean value
+    setSkipOption(event.target.checked);
   };
 
   return (
@@ -13,14 +12,14 @@ const QuestionTab = ({ errorMessage, setErrorMessage, skipOption, setSkipOption 
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
         <Switch
           checked={skipOption}
-          onChange={handleSwitchChange} // Handle switch change
+          onChange={handleSwitchChange}
           sx={{
             "& .MuiSwitch-switchBase.Mui-checked": {
               color: "#fff",
               transform: "translateX(16px)",
             },
             "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
-              backgroundColor: "#2563eb", // Blue when checked
+              backgroundColor: "#2563eb",
               opacity: 1,
             },
             "& .MuiSwitch-track": {
@@ -32,6 +31,33 @@ const QuestionTab = ({ errorMessage, setErrorMessage, skipOption, setSkipOption 
           {skipOption ? "Give Skip Option" : "Do Not Give Skip Option"}
         </Typography>
       </Box>
+
+      {/* Validation Fields */}
+      <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
+        <TextField
+          fullWidth label="Min Length"
+          value={validations?.minLength ?? ""}
+          onChange={(e) => setValidations({ ...validations, minLength: Number(e.target.value) || undefined })}
+          size="small"
+          sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px", backgroundColor: "#fff" } }}
+        />
+        <TextField
+          fullWidth label="Max Length"
+          value={validations?.maxLength ?? ""}
+          onChange={(e) => setValidations({ ...validations, maxLength: Number(e.target.value) || undefined })}
+          size="small"
+          sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px", backgroundColor: "#fff" } }}
+        />
+      </Box>
+
+      <TextField
+        fullWidth label="Regex Pattern"
+        placeholder="e.g. ^[a-zA-Z]+$"
+        value={validations?.pattern ?? ""}
+        onChange={(e) => setValidations({ ...validations, pattern: e.target.value || undefined })}
+        size="small"
+        sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: "10px", backgroundColor: "#fff" } }}
+      />
 
       {/* Error message input */}
       <Typography sx={{ fontWeight: 500, mb: 1 }}>

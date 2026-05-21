@@ -154,6 +154,8 @@ const EditQuestionPopup = ({
           setSkipOption={setSkipOption}
           errorMessage={errorMessage}
           setErrorMessage={setErrorMessage}
+          validations={validations}
+          setValidations={setValidations}
         />
       ) : editingItem?.type === "single_choice" ? (
         <Box>
