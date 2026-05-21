@@ -1,14 +1,14 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { Box, TextField, Button, Typography, CircularProgress, Avatar, Divider, Tooltip } from '@mui/material';
+import { Box, TextField, Button, Typography, CircularProgress, Avatar, Divider, Tooltip, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import ReplayIcon from '@mui/icons-material/Replay';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import AddCommentOutlinedIcon from '@mui/icons-material/AddCommentOutlined';
+import CloseIcon from '@mui/icons-material/Close';
 
 const AUTH_API = process.env.REACT_APP_AUTH_API || 'http://localhost:5000/api/auth';
 const CONV_API = AUTH_API.replace('/api/auth', '/api/conversation');
@@ -51,6 +51,7 @@ const UserMessage = () => {
   const [liveLoading, setLiveLoading] = useState(false);
   const [chatClosed, setChatClosed] = useState(false);
   const [reopening, setReopening] = useState(false);
+  const [confirmClose, setConfirmClose] = useState(false);
 
   // Pre-chat state
   const [preChatDone, setPreChatDone] = useState(false);
@@ -81,18 +82,19 @@ const UserMessage = () => {
         const saved = loadState(chatId);
         const flowList = user.flowSetupSetting?.question?.list || [];
 
-        if (saved && saved.preChatDone && !saved.done && !saved.chatClosed) {
-          // IN-PROGRESS: restore directly from localStorage
+        if (saved && saved.preChatDone) {
+          // Restore ANY state where user already entered their name
           const validStep = Math.min(saved.step || 0, flowList.length);
           setMessages(saved.messages || []);
           setPreChatDone(true);
           setUserName(saved.userName || '');
           setStep(validStep);
-          setDone(validStep >= flowList.length);
+          setDone(saved.done || false);
           setLiveRequested(saved.liveRequested || false);
+          setChatClosed(saved.chatClosed || false);
 
-          // If in live agent mode, sync latest messages from API silently
-          if (saved.liveRequested) {
+          // Live agent mode: sync latest messages from API silently
+          if (saved.liveRequested && !saved.chatClosed) {
             axios.get(`${CONV_API}/session/${chatId}/${sessionIdRef.current}`)
               .then(r => {
                 if (r.data.ok) {
@@ -102,15 +104,6 @@ const UserMessage = () => {
               })
               .catch(() => {});
           }
-        } else if (saved && saved.preChatDone && saved.chatClosed) {
-          // ADMIN CLOSED: restore closed state from localStorage
-          setMessages(saved.messages || []);
-          setPreChatDone(true);
-          setUserName(saved.userName || '');
-          setChatClosed(true);
-        } else if (saved && saved.done) {
-          // COMPLETED: clear so fresh flow starts
-          clearSession(chatId);
         }
       } catch (err) {
         console.error('Widget load error:', err);
@@ -173,7 +166,7 @@ const UserMessage = () => {
     };
   }, []);
 
-  const handleNewChat = () => {
+  const handleConfirmClose = () => {
     if (livePollingRef.current) clearInterval(livePollingRef.current);
     if (statusPollingRef.current) clearInterval(statusPollingRef.current);
     clearSession(chatId);
@@ -189,6 +182,7 @@ const UserMessage = () => {
     setLiveRequested(false);
     setChatClosed(false);
     setReopening(false);
+    setConfirmClose(false);
   };
 
   const pushMessage = useCallback((sender, msgText, questionId = null) => {
@@ -427,9 +421,9 @@ const UserMessage = () => {
         {preChatDone && userName && (
           <Typography fontSize={12} sx={{ opacity: 0.8, mr: 0.5 }}>{userName}</Typography>
         )}
-        <Tooltip title="New Chat" placement="left">
+        <Tooltip title="Close Chat" placement="left">
           <Box
-            onClick={handleNewChat}
+            onClick={() => setConfirmClose(true)}
             sx={{
               cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
               width: 30, height: 30, borderRadius: '50%',
@@ -438,10 +432,28 @@ const UserMessage = () => {
               flexShrink: 0,
             }}
           >
-            <AddCommentOutlinedIcon sx={{ fontSize: 16, color: '#fff' }} />
+            <CloseIcon sx={{ fontSize: 16, color: '#fff' }} />
           </Box>
         </Tooltip>
       </Box>
+
+      {/* Confirm close dialog */}
+      <Dialog open={confirmClose} onClose={() => setConfirmClose(false)} PaperProps={{ sx: { borderRadius: 3, p: 1, minWidth: 280 } }}>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 16, pb: 1 }}>Close this chat?</DialogTitle>
+        <DialogContent>
+          <Typography variant="body2" color="text.secondary">
+            Your chat history will be cleared and you'll start a new conversation. This cannot be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ px: 2, pb: 2, gap: 1 }}>
+          <Button onClick={() => setConfirmClose(false)} variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none', flex: 1 }}>
+            Cancel
+          </Button>
+          <Button onClick={handleConfirmClose} variant="contained" color="error" size="small" sx={{ borderRadius: 2, textTransform: 'none', flex: 1 }}>
+            Close Chat
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* ─── PRE-CHAT SCREEN ─── */}
       {!preChatDone ? (
