@@ -32,9 +32,11 @@ function App() {
   return (
     <Routes>
 
+      {/* Home page — uses its own header/footer */}
+      <Route index element={<HomePage />} />
+
       {/* Public pages with header/footer */}
       <Route element={<PublicLayout />}>
-        <Route index element={<HomePage />} />
       </Route>
 
       {/* Standalone widget — no layout, used inside iframe embed */}

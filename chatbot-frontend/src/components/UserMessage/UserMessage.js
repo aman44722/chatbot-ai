@@ -70,6 +70,8 @@ const UserMessage = () => {
   const nameInputRef = useRef(null);
   const livePollingRef = useRef(null);
   const statusPollingRef = useRef(null);
+  const stepRef = useRef(step);
+  const shuffledRef = useRef(null);
 
   // Load bot settings on mount
   useEffect(() => {
@@ -478,8 +480,6 @@ const UserMessage = () => {
   };
 
   const currentQ = flow[step];
-  const stepRef = useRef(step);
-  const shuffledRef = useRef(null);
   if (stepRef.current !== step) {
     shuffledRef.current = null;
     stepRef.current = step;
