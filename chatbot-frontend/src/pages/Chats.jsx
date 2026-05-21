@@ -73,6 +73,7 @@ export default function Chats() {
   const [loadingConvo, setLoadingConvo] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingList, setLoadingList] = useState(true);
   const messagesEndRef = React.useRef(null);
 
   const loadConversations = useCallback(async (silent = false) => {
@@ -84,6 +85,7 @@ export default function Chats() {
       console.error(err);
     } finally {
       setRefreshing(false);
+      setLoadingList(false);
     }
   }, []);
 
@@ -213,12 +215,23 @@ export default function Chats() {
         </Box>
 
         <Typography variant="caption" color="text.secondary" sx={{ px: 2.5, mb: 1, fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>
-          {tab} · {filtered.length}
+          {loadingList ? <Skeleton variant="text" width={80} /> : `${tab} · ${filtered.length}`}
         </Typography>
 
         {/* User List */}
         <List disablePadding sx={{ overflowY: "auto", flex: 1, px: 1 }}>
-          {filtered.length === 0 ? (
+          {loadingList ? (
+            [...Array(6)].map((_, i) => (
+              <Box key={i} sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 1.5, py: 1.2, mb: 0.5 }}>
+                <Skeleton variant="circular" width={42} height={42} sx={{ flexShrink: 0 }} />
+                <Box sx={{ flex: 1 }}>
+                  <Skeleton variant="text" width="60%" height={16} sx={{ mb: 0.5 }} />
+                  <Skeleton variant="text" width="85%" height={13} />
+                </Box>
+                <Skeleton variant="text" width={28} height={12} />
+              </Box>
+            ))
+          ) : filtered.length === 0 ? (
             <Box sx={{ p: 3, textAlign: "center" }}>
               <Typography variant="body2" color="text.secondary">
                 {tab === "Active" ? "No active chats." : tab === "Closed" ? "No closed chats." : "No conversations yet."}
