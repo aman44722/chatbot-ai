@@ -36,15 +36,17 @@ const EditQuestionPopup = ({
   const [media, setMedia] = useState({ picImg });
   const [skipOption, setSkipOption] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [validations, setValidations] = useState({});
 
   useEffect(() => {
-    // Populate form data if editing an existing item
     if (editingItem) {
       setText(editingItem.text || "");
       setOptions(editingItem.options);
       setFlexDirection(editingItem.flexDirection || "column");
-      setSkipOption(editingItem.skipOption || false); // Ensure boolean value
+      setSkipOption(editingItem.skipOption || false);
       setMedia(editingItem.media || {});
+      setErrorMessage(editingItem.errorMessage || "");
+      setValidations(editingItem.validations || {});
     }
   }, [editingItem]);
 
@@ -78,6 +80,7 @@ const EditQuestionPopup = ({
       flexDirection,
       media: media || "",
       errorMessage,
+      validations,
     });
 
     console.log("options - ", options);
@@ -124,11 +127,17 @@ const EditQuestionPopup = ({
                   setFlexDirection={setFlexDirection}
                 />
                 <OptionList value={options} onChange={setOptions} />
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3, mt: 2 }}>
+                  <Switch checked={skipOption} onChange={handleSwitchChange} />
+                  <Typography sx={{ fontWeight: 500, color: "#6b7280" }}>
+                    {skipOption ? "Give Skip Option" : "Do Not Give Skip Option"}
+                  </Typography>
+                </Box>
               </Box>
             ) : editingItem?.type === "email_feild" ? (
               <EmailTab
-                skipOption={skipOption} // Pass the current skipOption state
-                setSkipOption={setSkipOption} // Pass the setter function to handle updates
+                skipOption={skipOption}
+                setSkipOption={setSkipOption}
                 errorMessage={errorMessage}
                 setErrorMessage={setErrorMessage}
               />
@@ -136,26 +145,37 @@ const EditQuestionPopup = ({
               <MultipleChoiceTab
                 skipOption={skipOption}
                 setSkipOption={setSkipOption}
+                errorMessage={errorMessage}
+                setErrorMessage={setErrorMessage}
+                validations={validations}
+                setValidations={setValidations}
               />
             ) : editingItem?.type === "mobile_number" ? (
               <MobileNumberTab
                 skipOption={skipOption}
                 setSkipOption={setSkipOption}
+                errorMessage={errorMessage}
+                setErrorMessage={setErrorMessage}
+                validations={validations}
+                setValidations={setValidations}
               />
             ) : editingItem?.type === "number" ? (
               <NumberTab
                 skipOption={skipOption}
                 setSkipOption={setSkipOption}
+                errorMessage={errorMessage}
+                setErrorMessage={setErrorMessage}
+                validations={validations}
+                setValidations={setValidations}
               />
             ) : (
               <Box
                 sx={{ display: "flex", alignItems: "center", mb: 2, gap: 2 }}
               >
-                <Typography>Do Not Give Skip Option</Typography>
-                <Switch
-                  checked={skipOption} // Toggle state based on current skipOption value
-                  onChange={handleSwitchChange} // Call the handleSwitchChange to update the skipOption
-                />
+                <Switch checked={skipOption} onChange={handleSwitchChange} />
+                <Typography sx={{ fontWeight: 500, color: "#6b7280" }}>
+                  {skipOption ? "Give Skip Option" : "Do Not Give Skip Option"}
+                </Typography>
               </Box>
             )}
           </Box>

@@ -1,22 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Box, Button, Typography } from "@mui/material";
 
 const options = ["column", "row"];
 
 const ShowOptionsButtons = ({ flexDirection, setFlexDirection }) => {
-  // Load the selected flexDirection from localStorage on initial render
-  useEffect(() => {
-    const savedDirection = localStorage.getItem("flexDirection");
-    if (savedDirection) {
-      setFlexDirection(savedDirection);  // Set the stored direction if available
-    }
-  }, [setFlexDirection]);
-
   const handleSelect = (label) => {
-    setFlexDirection(label);  // Update the flexDirection state
-
-    // Save the selected direction in localStorage
-    localStorage.setItem("flexDirection", label);  // Store the selected option
+    setFlexDirection(label);
   };
 
   return (
