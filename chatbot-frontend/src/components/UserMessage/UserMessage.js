@@ -273,9 +273,9 @@ const UserMessage = () => {
 
   return (
     <Box sx={{
-      maxWidth: 480, mx: 'auto', mt: 4,
-      borderRadius: 3, overflow: 'hidden',
-      boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+      width: '100%', height: '100vh',
+      display: 'flex', flexDirection: 'column',
+      overflow: 'hidden',
       fontFamily: botSettings.font || 'inherit',
     }}>
       {/* Header */}
@@ -307,7 +307,7 @@ const UserMessage = () => {
 
       {/* ─── PRE-CHAT SCREEN ─── */}
       {!preChatDone ? (
-        <Box sx={{ bgcolor: chatBg, p: 3, minHeight: 380, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <Box sx={{ bgcolor: chatBg, p: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Avatar sx={{ width: 64, height: 64, mx: 'auto', mb: 2, bgcolor: headerColor, fontSize: 28, fontWeight: 700 }}>
               {(botSettings.botName || 'C')[0].toUpperCase()}
@@ -357,7 +357,7 @@ const UserMessage = () => {
           {/* Messages */}
           <Box
             ref={chatBodyRef}
-            sx={{ height: 380, overflowY: 'auto', p: 2, bgcolor: chatBg }}
+            sx={{ flex: 1, overflowY: 'auto', p: 2, bgcolor: chatBg }}
           >
             {messages.map((msg, i) => (
               <Box

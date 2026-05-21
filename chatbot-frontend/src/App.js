@@ -32,11 +32,13 @@ function App() {
   return (
     <Routes>
 
-      {/* Public */}
+      {/* Public pages with header/footer */}
       <Route element={<PublicLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="usertest/:chatId" element={<UserMessage />} />
       </Route>
+
+      {/* Standalone widget — no layout, used inside iframe embed */}
+      <Route path="usertest/:chatId" element={<UserMessage />} />
 
       <Route path="login" element={<AuthForm />} />
 
