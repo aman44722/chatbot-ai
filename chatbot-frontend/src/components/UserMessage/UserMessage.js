@@ -130,12 +130,18 @@ const UserMessage = () => {
         text: '✅ A live agent has been notified. We\'ll connect you shortly!',
       }]);
 
-      // Start polling for admin messages
+      // Start polling for admin messages — only append NEW admin messages, don't replace
       livePollingRef.current = setInterval(async () => {
         try {
           const res = await axios.get(`${CONV_API}/session/${chatId}/${SESSION_ID}`);
           if (res.data.ok) {
-            setMessages(res.data.messages);
+            const adminMsgs = res.data.messages.filter(m => m.sender === 'admin');
+            setMessages(prev => {
+              const existingAdminCount = prev.filter(m => m.sender === 'admin').length;
+              const newAdminMsgs = adminMsgs.slice(existingAdminCount);
+              if (newAdminMsgs.length === 0) return prev;
+              return [...prev, ...newAdminMsgs];
+            });
           }
         } catch { /* silent */ }
       }, 4000);
@@ -152,11 +158,25 @@ const UserMessage = () => {
   }, []);
 
   const handleSend = async () => {
-    if (!text.trim() || done) return;
+    if (!text.trim()) return;
     const userText = text.trim();
-    const currentQ = flow[step];
     setText('');
 
+    // In live mode — user replying to admin
+    if (liveRequested) {
+      setMessages(prev => [...prev, { sender: 'user', text: userText }]);
+      axios.post(`${CONV_API}/message`, {
+        chatbotId: chatId,
+        sessionId: SESSION_ID,
+        sender: 'user',
+        text: userText,
+      }).catch(console.error);
+      return;
+    }
+
+    if (done) return;
+
+    const currentQ = flow[step];
     pushMessage('user', userText, currentQ?.id);
 
     const nextStep = step + 1;
