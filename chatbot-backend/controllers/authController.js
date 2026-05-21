@@ -342,7 +342,7 @@ exports.getInstallSnippet = async (req, res) => {
         const snippet = `<script>
 window.A2BOT_CONFIG = { id: "${chatbotId}", api: "${apiBase}", origin: "${frontendUrl}" };
 </script>
-<script src="https://cdn.a2bot.com/widget.js" async></script>`;
+<script src="${frontendUrl}/widget.js" async></script>`;
 
         res.json({ hasWhitelist: true, snippet, whitelist });
     } catch (e) {

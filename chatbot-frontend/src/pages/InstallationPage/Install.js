@@ -12,28 +12,12 @@ const API = process.env.REACT_APP_AUTH_API || "http://localhost:5000/api/auth";
 
 function buildSnippet(chatbotId) {
     const origin = window.location.origin;
+    const api = process.env.REACT_APP_AUTH_API || `${origin.replace(/:\d+$/, '')}:5000/api/auth`;
     return `<!-- A2Bot Live Chat Widget -->
 <script>
-(function(){
-  if(document.getElementById('a2bot-widget')) return;
-  var f = document.createElement('iframe');
-  f.id = 'a2bot-widget';
-  f.src = '${origin}/usertest/${chatbotId}';
-  f.style.cssText = [
-    'position:fixed',
-    'bottom:20px',
-    'right:20px',
-    'width:400px',
-    'height:600px',
-    'border:none',
-    'z-index:2147483647',
-    'border-radius:16px',
-    'box-shadow:0 8px 32px rgba(0,0,0,0.22)'
-  ].join(';');
-  f.allow = 'microphone';
-  document.body.appendChild(f);
-})();
-</script>`;
+window.A2BOT_CONFIG = { id: "${chatbotId}", origin: "${origin}", api: "${api}" };
+</script>
+<script src="${origin}/widget.js" async></script>`;
 }
 
 const Install = () => {
