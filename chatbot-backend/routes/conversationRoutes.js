@@ -8,6 +8,7 @@ const {
     saveMessage,
     updateConversationStatus,
     requestLiveAgent,
+    getMessagesBySession,
 } = require("../controllers/conversationController");
 
 // Protected — owner sees only their conversations
@@ -19,5 +20,6 @@ router.patch("/:id/status", authenticate, updateConversationStatus);
 router.post("/init", initConversation);
 router.post("/message", saveMessage);
 router.post("/request-live", requestLiveAgent);
+router.get("/session/:chatbotId/:sessionId", getMessagesBySession);
 
 module.exports = router;

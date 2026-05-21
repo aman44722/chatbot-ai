@@ -91,6 +91,19 @@ exports.requestLiveAgent = async (req, res) => {
     }
 };
 
+// GET /api/conversation/session/:chatbotId/:sessionId  (public — widget polls this)
+exports.getMessagesBySession = async (req, res) => {
+    try {
+        const { chatbotId, sessionId } = req.params;
+        const convo = await Conversation.findOne({ chatbotId, sessionId })
+            .select("messages status userName");
+        if (!convo) return res.status(404).json({ ok: false });
+        res.json({ ok: true, messages: convo.messages, status: convo.status });
+    } catch (err) {
+        res.status(500).json({ message: "Failed to fetch messages" });
+    }
+};
+
 // POST /api/conversation/message
 exports.saveMessage = async (req, res) => {
     const { chatbotId, sessionId, sender, text, questionId } = req.body;

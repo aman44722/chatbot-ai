@@ -22,6 +22,7 @@ const UserMessage = () => {
   const [done, setDone] = useState(false);
   const [liveRequested, setLiveRequested] = useState(false);
   const [liveLoading, setLiveLoading] = useState(false);
+  const livePollingRef = useRef(null);
 
   // Pre-chat state
   const [preChatDone, setPreChatDone] = useState(false);
@@ -128,12 +129,27 @@ const UserMessage = () => {
         sender: 'bot',
         text: '✅ A live agent has been notified. We\'ll connect you shortly!',
       }]);
+
+      // Start polling for admin messages
+      livePollingRef.current = setInterval(async () => {
+        try {
+          const res = await axios.get(`${CONV_API}/session/${chatId}/${SESSION_ID}`);
+          if (res.data.ok) {
+            setMessages(res.data.messages);
+          }
+        } catch { /* silent */ }
+      }, 4000);
     } catch (err) {
       console.error('Live request error:', err);
     } finally {
       setLiveLoading(false);
     }
   };
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => { if (livePollingRef.current) clearInterval(livePollingRef.current); };
+  }, []);
 
   const handleSend = async () => {
     if (!text.trim() || done) return;
@@ -265,24 +281,30 @@ const UserMessage = () => {
                 key={i}
                 sx={{
                   display: 'flex',
-                  justifyContent: msg.sender === 'user' ? 'flex-end' : 'flex-start',
+                  justifyContent: (msg.sender === 'user') ? 'flex-end' : 'flex-start',
                   mb: 1.5,
                 }}
               >
-                <Box sx={{
-                  maxWidth: '75%', px: 2, py: 1,
-                  borderRadius: msg.sender === 'user'
-                    ? '18px 18px 4px 18px'
-                    : '18px 18px 18px 4px',
-                  bgcolor: msg.sender === 'user' ? answerColor : questionColor,
-                  color: msg.sender === 'user'
-                    ? '#fff'
-                    : (isLightQuestion ? '#222' : '#fff'),
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                  border: isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none',
-                }}>
-                  <Typography variant="body2" sx={{ lineHeight: 1.5 }}>{msg.text}</Typography>
-                </Box>
+                {msg.sender === 'admin' && (
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', maxWidth: '75%' }}>
+                    <Typography variant="caption" sx={{ fontSize: 10, color: '#e65100', fontWeight: 700, mb: 0.3, px: 1 }}>Support Agent</Typography>
+                    <Box sx={{ px: 2, py: 1, borderRadius: '18px 18px 18px 4px', bgcolor: '#fff3e0', border: '1px solid #ffcc80', boxShadow: '0 1px 4px rgba(0,0,0,0.08)' }}>
+                      <Typography variant="body2" sx={{ lineHeight: 1.5, color: '#bf360c' }}>{msg.text}</Typography>
+                    </Box>
+                  </Box>
+                )}
+                {msg.sender !== 'admin' && (
+                  <Box sx={{
+                    maxWidth: '75%', px: 2, py: 1,
+                    borderRadius: msg.sender === 'user' ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                    bgcolor: msg.sender === 'user' ? answerColor : questionColor,
+                    color: msg.sender === 'user' ? '#fff' : (isLightQuestion ? '#222' : '#fff'),
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
+                    border: isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none',
+                  }}>
+                    <Typography variant="body2" sx={{ lineHeight: 1.5 }}>{msg.text}</Typography>
+                  </Box>
+                )}
               </Box>
             ))}
           </Box>
@@ -324,22 +346,22 @@ const UserMessage = () => {
           )}
 
           {/* Input */}
-          <Box sx={{ p: 1.5, borderTop: '1px solid #eee', bgcolor: '#fff', display: 'flex', gap: 1 }}>
+          <Box sx={{ p: 1.5, borderTop: liveRequested ? '2px solid #e65100' : '1px solid #eee', bgcolor: '#fff', display: 'flex', gap: 1 }}>
             <TextField
               fullWidth
               size="small"
               value={text}
-              placeholder={done ? 'Flow complete ✓' : 'Type your answer...'}
+              placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : 'Type your answer...'}
               onChange={e => setText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-              disabled={done}
+              disabled={done && !liveRequested}
               sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
             />
             <Button
               variant="contained"
               onClick={handleSend}
-              disabled={done || !text.trim()}
-              sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: headerColor, '&:hover': { bgcolor: headerColor } }}
+              disabled={(done && !liveRequested) || !text.trim()}
+              sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: liveRequested ? '#e65100' : headerColor, '&:hover': { bgcolor: liveRequested ? '#bf360c' : headerColor } }}
             >
               <SendIcon fontSize="small" />
             </Button>

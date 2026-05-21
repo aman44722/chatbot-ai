@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const MessageSchema = new mongoose.Schema(
     {
-        sender: { type: String, enum: ["bot", "user"], required: true },
+        sender: { type: String, enum: ["bot", "user", "admin"], required: true },
         text: { type: String, default: "" },
         questionId: { type: String, default: null },
     },

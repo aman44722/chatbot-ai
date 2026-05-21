@@ -11,7 +11,7 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ReplayIcon from "@mui/icons-material/Replay";
 import RefreshIcon from "@mui/icons-material/Refresh";
-import { fetchConversations, fetchConversationById, updateConversationStatus } from "../api/conversationApi";
+import { fetchConversations, fetchConversationById, updateConversationStatus, sendAdminMessage, fetchMessagesBySession } from "../api/conversationApi";
 
 const PANEL_BG = "#f4f6fb";
 const WHITE = "#ffffff";
@@ -75,7 +75,11 @@ export default function Chats() {
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [loadingList, setLoadingList] = useState(true);
+  const [adminText, setAdminText] = useState("");
+  const [sending, setSending] = useState(false);
   const messagesEndRef = React.useRef(null);
+  const livePollingRef = React.useRef(null);
+  const activeIdRef = React.useRef(null);
 
   const loadConversations = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
@@ -94,6 +98,31 @@ export default function Chats() {
     loadConversations();
   }, [loadConversations]);
 
+  // Auto-refresh messages when active convo is live
+  useEffect(() => {
+    activeIdRef.current = activeId;
+  }, [activeId]);
+
+  useEffect(() => {
+    if (livePollingRef.current) clearInterval(livePollingRef.current);
+    if (!convo || convo.status !== "live_requested") return;
+
+    livePollingRef.current = setInterval(async () => {
+      if (!activeIdRef.current) return;
+      try {
+        const active = conversations.find(c => c._id === activeIdRef.current);
+        if (!active) return;
+        const res = await fetchMessagesBySession(active.chatbotId || active._id, active.sessionId);
+        if (res.ok) {
+          setConvo(prev => prev ? { ...prev, messages: res.messages, status: res.status } : prev);
+        }
+      } catch { /* silent */ }
+    }, 4000);
+
+    return () => clearInterval(livePollingRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [convo?.status, convo?._id]);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
@@ -102,7 +131,9 @@ export default function Chats() {
 
   const handleSelect = async (id) => {
     setActiveId(id);
+    setAdminText("");
     setLoadingConvo(true);
+    if (livePollingRef.current) clearInterval(livePollingRef.current);
     try {
       const data = await fetchConversationById(id);
       setConvo(data);
@@ -110,6 +141,22 @@ export default function Chats() {
       console.error(err);
     } finally {
       setLoadingConvo(false);
+    }
+  };
+
+  const handleAdminSend = async () => {
+    if (!adminText.trim() || !convo || sending) return;
+    const text = adminText.trim();
+    setAdminText("");
+    setSending(true);
+    const optimistic = { sender: "admin", text, createdAt: new Date().toISOString() };
+    setConvo(prev => ({ ...prev, messages: [...prev.messages, optimistic] }));
+    try {
+      await sendAdminMessage(convo.chatbotId, convo.sessionId, text);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -377,22 +424,24 @@ export default function Chats() {
                 <Box sx={{ opacity: 1, animation: "fadeIn 0.25s ease", "@keyframes fadeIn": { from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "translateY(0)" } } }}>
                   {convo.messages.map((m, i) => {
                     const isUser = m.sender === "user";
+                    const isAdmin = m.sender === "admin";
+                    const alignRight = isUser || isAdmin;
                     return (
-                      <Box key={i} sx={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start", mb: 2 }}>
-                        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1, flexDirection: isUser ? "row-reverse" : "row" }}>
-                          <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: isUser ? avatarColor(activeConvo?.userName) : BLUE }}>
-                            {isUser ? getInitial(activeConvo?.userName) : "B"}
+                      <Box key={i} sx={{ display: "flex", flexDirection: "column", alignItems: alignRight ? "flex-end" : "flex-start", mb: 2 }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1, flexDirection: alignRight ? "row-reverse" : "row" }}>
+                          <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: isAdmin ? ORANGE : isUser ? avatarColor(activeConvo?.userName) : BLUE }}>
+                            {isAdmin ? "A" : isUser ? getInitial(activeConvo?.userName) : "B"}
                           </Avatar>
                           <Box>
-                            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: "block", textAlign: isUser ? "right" : "left" }}>
-                              {isUser ? (activeConvo?.userName || "User") : "Bot"}
+                            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: "block", textAlign: alignRight ? "right" : "left" }}>
+                              {isAdmin ? "You (Admin)" : isUser ? (activeConvo?.userName || "User") : "Bot"}
                               {m.createdAt && ` · ${new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
                             </Typography>
                             <Box sx={{
                               px: 2, py: 1.2,
-                              borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                              bgcolor: isUser ? BLUE : WHITE,
-                              color: isUser ? "#fff" : "#222",
+                              borderRadius: alignRight ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                              bgcolor: isAdmin ? ORANGE : isUser ? BLUE : WHITE,
+                              color: alignRight ? "#fff" : "#222",
                               boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
                               maxWidth: 380,
                             }}>
@@ -409,23 +458,42 @@ export default function Chats() {
             </Box>
 
             {/* Input */}
-            <Box sx={{ bgcolor: WHITE, px: 3, py: 2, borderTop: "1px solid #eee", display: "flex", alignItems: "center", gap: 1.5 }}>
-              <TextField
-                fullWidth
-                size="small"
-                placeholder={
-                  convo?.status === "closed"
-                    ? "Conversation is closed."
-                    : "This is a view-only chat — responses are automated by your flow."
-                }
-                disabled
-                InputProps={{ sx: { borderRadius: 3, bgcolor: PANEL_BG, fontSize: 13 } }}
-                sx={{ "& fieldset": { border: "none" } }}
-              />
-              <IconButton sx={{ bgcolor: convo?.status === "closed" ? "#eee" : BLUE, color: convo?.status === "closed" ? "#aaa" : "#fff", "&:hover": { bgcolor: convo?.status === "closed" ? "#eee" : "#4a4d8f" }, borderRadius: 2.5 }} disabled={convo?.status === "closed"}>
-                <SendIcon fontSize="small" />
-              </IconButton>
-            </Box>
+            {convo?.status === "live_requested" ? (
+              <Box sx={{ bgcolor: WHITE, px: 3, py: 2, borderTop: `2px solid ${ORANGE}`, display: "flex", alignItems: "center", gap: 1.5 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Reply to user..."
+                  value={adminText}
+                  onChange={e => setAdminText(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && !e.shiftKey && handleAdminSend()}
+                  disabled={sending}
+                  autoFocus
+                  InputProps={{ sx: { borderRadius: 3, fontSize: 13 } }}
+                />
+                <IconButton
+                  onClick={handleAdminSend}
+                  disabled={!adminText.trim() || sending}
+                  sx={{ bgcolor: ORANGE, color: "#fff", "&:hover": { bgcolor: "#bf360c" }, "&.Mui-disabled": { bgcolor: "#eee" }, borderRadius: 2.5 }}
+                >
+                  {sending ? <CircularProgress size={18} color="inherit" /> : <SendIcon fontSize="small" />}
+                </IconButton>
+              </Box>
+            ) : (
+              <Box sx={{ bgcolor: WHITE, px: 3, py: 2, borderTop: "1px solid #eee", display: "flex", alignItems: "center", gap: 1.5 }}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder={convo?.status === "closed" ? "Conversation is closed." : "View-only — responses are automated by your flow."}
+                  disabled
+                  InputProps={{ sx: { borderRadius: 3, bgcolor: PANEL_BG, fontSize: 13 } }}
+                  sx={{ "& fieldset": { border: "none" } }}
+                />
+                <IconButton disabled sx={{ bgcolor: "#eee", color: "#aaa", borderRadius: 2.5 }}>
+                  <SendIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            )}
           </>
         )}
       </Box>

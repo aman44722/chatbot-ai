@@ -28,3 +28,13 @@ export const requestLiveAgent = async (chatbotId, sessionId) => {
     const res = await axios.post(`${API}/request-live`, { chatbotId, sessionId });
     return res.data;
 };
+
+export const sendAdminMessage = async (chatbotId, sessionId, text) => {
+    const res = await axios.post(`${API}/message`, { chatbotId, sessionId, sender: "admin", text }, authHeader());
+    return res.data;
+};
+
+export const fetchMessagesBySession = async (chatbotId, sessionId) => {
+    const res = await axios.get(`${API}/session/${chatbotId}/${sessionId}`);
+    return res.data;
+};
