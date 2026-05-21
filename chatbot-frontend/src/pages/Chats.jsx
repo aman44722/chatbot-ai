@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import {
   Box, Typography, Avatar, TextField, InputAdornment,
   List, ListItem, Chip, Divider, IconButton, CircularProgress,
-  Badge, Button, Tooltip
+  Badge, Button, Tooltip, Skeleton
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import SendIcon from "@mui/icons-material/Send";
@@ -19,6 +19,28 @@ const BLUE = "#5b5ea6";
 const LIGHT_BLUE = "#eef0ff";
 const GREEN = "#2e7d32";
 const TABS = ["All", "Active", "Closed"];
+
+function MessageSkeleton() {
+  const rows = [
+    { align: "flex-start", w: 220 },
+    { align: "flex-end", w: 160 },
+    { align: "flex-start", w: 280 },
+    { align: "flex-end", w: 200 },
+    { align: "flex-start", w: 180 },
+    { align: "flex-end", w: 240 },
+  ];
+  return (
+    <Box>
+      {rows.map((r, i) => (
+        <Box key={i} sx={{ display: "flex", justifyContent: r.align, mb: 2, gap: 1, alignItems: "flex-end" }}>
+          {r.align === "flex-start" && <Skeleton variant="circular" width={30} height={30} />}
+          <Skeleton variant="rounded" width={r.w} height={38} sx={{ borderRadius: r.align === "flex-end" ? "18px 18px 4px 18px" : "18px 18px 18px 4px" }} />
+          {r.align === "flex-end" && <Skeleton variant="circular" width={30} height={30} />}
+        </Box>
+      ))}
+    </Box>
+  );
+}
 
 function timeAgo(dateStr) {
   const diff = Date.now() - new Date(dateStr).getTime();
@@ -259,18 +281,14 @@ export default function Chats() {
 
       {/* ─── CENTER PANEL ─── */}
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column", bgcolor: PANEL_BG }}>
-        {!convo && !loadingConvo ? (
+        {!activeId ? (
           <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 2 }}>
             <ChatBubbleOutlineIcon sx={{ fontSize: 56, color: "#ccc" }} />
             <Typography color="text.secondary" fontWeight={500}>Select a conversation to view messages</Typography>
           </Box>
-        ) : loadingConvo ? (
-          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
-            <CircularProgress size={32} />
-          </Box>
         ) : (
           <>
-            {/* Chat Header */}
+            {/* Chat Header — instant from list data */}
             <Box sx={{ bgcolor: WHITE, px: 3, py: 2, display: "flex", alignItems: "center", gap: 2, borderBottom: "1px solid #eee" }}>
               <Avatar sx={{ bgcolor: avatarColor(activeConvo?.userName || ""), fontWeight: 700 }}>
                 {getInitial(activeConvo?.userName)}
@@ -283,68 +301,78 @@ export default function Chats() {
                   Last active {timeAgo(activeConvo?.updatedAt)}
                 </Typography>
               </Box>
-              <Chip
-                label={convo?.status || "active"}
-                size="small"
-                color={convo?.status === "active" ? "success" : "default"}
-              />
-              <Tooltip title={convo?.status === "active" ? "Close conversation" : "Reopen conversation"}>
-                <Button
-                  size="small"
-                  variant="outlined"
-                  startIcon={convo?.status === "active" ? <CheckCircleIcon /> : <ReplayIcon />}
-                  onClick={handleStatusToggle}
-                  disabled={statusUpdating}
-                  sx={{
-                    textTransform: "none", fontSize: 12,
-                    borderColor: convo?.status === "active" ? "#c62828" : GREEN,
-                    color: convo?.status === "active" ? "#c62828" : GREEN,
-                    "&:hover": {
-                      bgcolor: convo?.status === "active" ? "#ffebee" : "#e8f5e9",
-                      borderColor: convo?.status === "active" ? "#c62828" : GREEN,
-                    }
-                  }}
-                >
-                  {statusUpdating ? "..." : convo?.status === "active" ? "Close" : "Reopen"}
-                </Button>
-              </Tooltip>
+              {loadingConvo ? (
+                <Skeleton variant="rounded" width={60} height={24} />
+              ) : (
+                <>
+                  <Chip
+                    label={convo?.status || "active"}
+                    size="small"
+                    color={convo?.status === "active" ? "success" : "default"}
+                  />
+                  <Tooltip title={convo?.status === "active" ? "Close conversation" : "Reopen conversation"}>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={convo?.status === "active" ? <CheckCircleIcon /> : <ReplayIcon />}
+                      onClick={handleStatusToggle}
+                      disabled={statusUpdating}
+                      sx={{
+                        textTransform: "none", fontSize: 12,
+                        borderColor: convo?.status === "active" ? "#c62828" : GREEN,
+                        color: convo?.status === "active" ? "#c62828" : GREEN,
+                        "&:hover": {
+                          bgcolor: convo?.status === "active" ? "#ffebee" : "#e8f5e9",
+                          borderColor: convo?.status === "active" ? "#c62828" : GREEN,
+                        }
+                      }}
+                    >
+                      {statusUpdating ? "..." : convo?.status === "active" ? "Close" : "Reopen"}
+                    </Button>
+                  </Tooltip>
+                </>
+              )}
             </Box>
 
             {/* Messages */}
             <Box sx={{ flex: 1, overflowY: "auto", px: 3, py: 2 }}>
-              {convo.messages.length === 0 ? (
+              {loadingConvo ? (
+                <MessageSkeleton />
+              ) : convo?.messages?.length === 0 ? (
                 <Typography textAlign="center" color="text.secondary" mt={4}>No messages in this conversation.</Typography>
               ) : (
-                convo.messages.map((m, i) => {
-                  const isUser = m.sender === "user";
-                  return (
-                    <Box key={i} sx={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start", mb: 2 }}>
-                      <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1, flexDirection: isUser ? "row-reverse" : "row" }}>
-                        <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: isUser ? avatarColor(activeConvo?.userName) : BLUE }}>
-                          {isUser ? getInitial(activeConvo?.userName) : "B"}
-                        </Avatar>
-                        <Box>
-                          <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: "block", textAlign: isUser ? "right" : "left" }}>
-                            {isUser ? (activeConvo?.userName || "User") : "Bot"}
-                            {m.createdAt && ` · ${new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
-                          </Typography>
-                          <Box sx={{
-                            px: 2, py: 1.2,
-                            borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
-                            bgcolor: isUser ? BLUE : WHITE,
-                            color: isUser ? "#fff" : "#222",
-                            boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
-                            maxWidth: 380,
-                          }}>
-                            <Typography fontSize={13.5} lineHeight={1.6}>{m.text}</Typography>
+                <Box sx={{ opacity: 1, animation: "fadeIn 0.25s ease", "@keyframes fadeIn": { from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "translateY(0)" } } }}>
+                  {convo.messages.map((m, i) => {
+                    const isUser = m.sender === "user";
+                    return (
+                      <Box key={i} sx={{ display: "flex", flexDirection: "column", alignItems: isUser ? "flex-end" : "flex-start", mb: 2 }}>
+                        <Box sx={{ display: "flex", alignItems: "flex-end", gap: 1, flexDirection: isUser ? "row-reverse" : "row" }}>
+                          <Avatar sx={{ width: 30, height: 30, fontSize: 13, bgcolor: isUser ? avatarColor(activeConvo?.userName) : BLUE }}>
+                            {isUser ? getInitial(activeConvo?.userName) : "B"}
+                          </Avatar>
+                          <Box>
+                            <Typography variant="caption" color="text.secondary" sx={{ mb: 0.5, display: "block", textAlign: isUser ? "right" : "left" }}>
+                              {isUser ? (activeConvo?.userName || "User") : "Bot"}
+                              {m.createdAt && ` · ${new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}`}
+                            </Typography>
+                            <Box sx={{
+                              px: 2, py: 1.2,
+                              borderRadius: isUser ? "18px 18px 4px 18px" : "18px 18px 18px 4px",
+                              bgcolor: isUser ? BLUE : WHITE,
+                              color: isUser ? "#fff" : "#222",
+                              boxShadow: "0 2px 8px rgba(0,0,0,0.07)",
+                              maxWidth: 380,
+                            }}>
+                              <Typography fontSize={13.5} lineHeight={1.6}>{m.text}</Typography>
+                            </Box>
                           </Box>
                         </Box>
                       </Box>
-                    </Box>
-                  );
-                })
+                    );
+                  })}
+                  <div ref={messagesEndRef} />
+                </Box>
               )}
-              <div ref={messagesEndRef} />
             </Box>
 
             {/* Input */}
@@ -371,7 +399,20 @@ export default function Chats() {
 
       {/* ─── RIGHT PANEL ─── */}
       <Box sx={{ width: 260, minWidth: 260, bgcolor: WHITE, borderLeft: "1px solid #eee", p: 2.5, overflowY: "auto" }}>
-        {convo ? (
+        {loadingConvo && activeId ? (
+          <Box sx={{ pt: 1 }}>
+            <Skeleton variant="circular" width={60} height={60} sx={{ mx: "auto", mb: 1.5 }} />
+            <Skeleton variant="text" width="60%" sx={{ mx: "auto", mb: 0.5 }} />
+            <Skeleton variant="text" width="40%" sx={{ mx: "auto", mb: 2 }} />
+            <Divider sx={{ mb: 2 }} />
+            {[...Array(5)].map((_, i) => (
+              <Box key={i} sx={{ display: "flex", justifyContent: "space-between", py: 1 }}>
+                <Skeleton variant="text" width="45%" />
+                <Skeleton variant="text" width="30%" />
+              </Box>
+            ))}
+          </Box>
+        ) : convo ? (
           <>
             {/* User Info */}
             <Box sx={{ textAlign: "center", mb: 3 }}>
