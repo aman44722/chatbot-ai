@@ -302,6 +302,59 @@ const UserMessage = () => {
     }
   };
 
+  const validateAnswer = (answer, question) => {
+    if (!question) return { valid: true };
+    const { type, validations } = question;
+    const msg = question.errorMessage || 'Please enter a valid answer';
+
+    if (type === 'email_feild') {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(answer)) {
+        return { valid: false, error: msg };
+      }
+    }
+
+    if (type === 'number') {
+      if (answer.trim() === '' || isNaN(Number(answer))) {
+        return { valid: false, error: msg };
+      }
+      const num = Number(answer);
+      if (validations?.minLength != null && num < validations.minLength) {
+        return { valid: false, error: msg };
+      }
+      if (validations?.maxLength != null && num > validations.maxLength) {
+        return { valid: false, error: msg };
+      }
+    }
+
+    if (type === 'mobile_number') {
+      if (answer.replace(/\D/g, '') !== answer.trim()) {
+        return { valid: false, error: msg };
+      }
+      if (validations?.minLength != null && answer.length < validations.minLength) {
+        return { valid: false, error: msg };
+      }
+      if (validations?.maxLength != null && answer.length > validations.maxLength) {
+        return { valid: false, error: msg };
+      }
+    }
+
+    if (validations?.minLength != null && answer.length < validations.minLength) {
+      return { valid: false, error: msg };
+    }
+    if (validations?.maxLength != null && answer.length > validations.maxLength) {
+      return { valid: false, error: msg };
+    }
+    if (validations?.pattern) {
+      try {
+        if (!new RegExp(validations.pattern).test(answer)) {
+          return { valid: false, error: msg };
+        }
+      } catch {}
+    }
+
+    return { valid: true };
+  };
+
   const advanceStep = (nextStep) => {
     setStep(nextStep);
     if (nextStep < flow.length) {
@@ -350,6 +403,15 @@ const UserMessage = () => {
     if (done) return;
 
     const currentQ = flow[step];
+    const result = validateAnswer(userText, currentQ);
+    if (!result.valid) {
+      setMessages(prev => [...prev, {
+        sender: 'bot',
+        text: `❌ ${result.error}`,
+        isError: true,
+      }]);
+      return;
+    }
     pushMessage('user', userText, currentQ?.id);
     advanceStep(step + 1);
   };
@@ -547,18 +609,19 @@ const UserMessage = () => {
                     </Box>
                   </Box>
                 )}
-                {msg.sender !== 'admin' && (
+                    {msg.sender !== 'admin' && (
                   <Box sx={{ display: 'flex', alignItems: 'flex-end', gap: 0.8, maxWidth: '75%' }}>
-                    {msg.sender === 'bot' && avatarUrl && (
+                    {msg.sender === 'bot' && !msg.isError && avatarUrl && (
                       <img src={avatarUrl} alt="bot" style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
                     )}
                     <Box sx={{
                       px: 2, py: 1,
                       borderRadius: getBubbleRadius(msg.sender),
-                      bgcolor: msg.sender === 'user' ? answerColor : questionColor,
-                      color: msg.sender === 'user' ? '#fff' : (isLightQuestion ? '#222' : '#fff'),
-                      boxShadow: '0 1px 4px rgba(0,0,0,0.08)',
-                      border: isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none',
+                      bgcolor: msg.isError ? '#fef2f2' : (msg.sender === 'user' ? answerColor : questionColor),
+                      color: msg.isError ? '#dc2626' : (msg.sender === 'user' ? '#fff' : (isLightQuestion ? '#222' : '#fff')),
+                      boxShadow: msg.isError ? '0 1px 4px rgba(220,38,38,0.12)' : '0 1px 4px rgba(0,0,0,0.08)',
+                      border: msg.isError ? '1px solid #fecaca' : (isLightQuestion && msg.sender === 'bot' ? '1px solid #e0e0e0' : 'none'),
+                      fontSize: msg.isError ? 13 : undefined,
                     }}>
                       <Typography variant="body2" sx={{ lineHeight: 1.5, fontSize }}>{msg.text}</Typography>
                     </Box>
