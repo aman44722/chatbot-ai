@@ -1,8 +1,8 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   Box, Typography, Avatar, TextField, InputAdornment,
   List, ListItem, Chip, Divider, IconButton, CircularProgress,
-  Badge, Button, Tooltip, Skeleton
+  Badge, Button, Tooltip, Skeleton, Collapse, Fab
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import SendIcon from "@mui/icons-material/Send";
@@ -11,6 +11,9 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import ReplayIcon from "@mui/icons-material/Replay";
 import RefreshIcon from "@mui/icons-material/Refresh";
+import DownloadIcon from "@mui/icons-material/Download";
+import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
+import FlashOnIcon from "@mui/icons-material/FlashOn";
 import { fetchConversations, fetchConversationById, updateConversationStatus, sendAdminMessage, fetchMessagesBySession } from "../api/conversationApi";
 
 const PANEL_BG = "#f4f6fb";
@@ -20,6 +23,56 @@ const LIGHT_BLUE = "#eef0ff";
 const GREEN = "#2e7d32";
 const TABS = ["All", "Live", "Active", "Closed"];
 const ORANGE = "#e65100";
+
+const CANNED_REPLIES = [
+  "I'll look into this right away!",
+  "Please hold on a moment.",
+  "Can you provide more details?",
+  "Thank you for your patience.",
+  "Is there anything else I can help you with?",
+];
+
+function playNotification() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.setValueAtTime(880, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.08);
+    gain.gain.setValueAtTime(0.18, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.35);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.35);
+  } catch (e) { /* silent */ }
+}
+
+function exportConversation(convo, userName) {
+  const name = userName || `Session_${convo.sessionId?.slice(-6)}`;
+  const lines = [
+    `Conversation Export`,
+    `User: ${name}`,
+    `Status: ${convo.status}`,
+    `Date: ${new Date(convo.createdAt || convo.updatedAt).toLocaleString()}`,
+    `Session: ${convo.sessionId}`,
+    "─────────────────────────────",
+    ...convo.messages.map(m => {
+      const time = m.createdAt
+        ? new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+        : "";
+      const sender = m.sender === "admin" ? "Admin" : m.sender === "user" ? name : "Bot";
+      return `[${time}] ${sender}: ${m.text}`;
+    }),
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `chat_${name}_${new Date().toISOString().slice(0, 10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function MessageSkeleton() {
   const rows = [
@@ -65,6 +118,13 @@ function avatarColor(str) {
   return avatarColors[Math.abs(h) % avatarColors.length];
 }
 
+function getLastMsgPreview(c) {
+  const msg = c.messages?.[c.messages.length - 1];
+  if (!msg) return "No messages";
+  const prefix = msg.sender === "admin" ? "You: " : msg.sender === "bot" ? "Bot: " : "";
+  return prefix + (msg.text?.slice(0, 38) || "");
+}
+
 export default function Chats() {
   const [conversations, setConversations] = useState([]);
   const [activeId, setActiveId] = useState(null);
@@ -77,9 +137,15 @@ export default function Chats() {
   const [loadingList, setLoadingList] = useState(true);
   const [adminText, setAdminText] = useState("");
   const [sending, setSending] = useState(false);
-  const messagesEndRef = React.useRef(null);
-  const livePollingRef = React.useRef(null);
-  const activeIdRef = React.useRef(null);
+  const [showCanned, setShowCanned] = useState(false);
+  const [showScrollBtn, setShowScrollBtn] = useState(false);
+
+  const messagesEndRef = useRef(null);
+  const livePollingRef = useRef(null);
+  const listRefreshRef = useRef(null);
+  const activeIdRef = useRef(null);
+  const prevMsgCountRef = useRef(0);
+  const scrollBoxRef = useRef(null);
 
   const loadConversations = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
@@ -98,22 +164,36 @@ export default function Chats() {
     loadConversations();
   }, [loadConversations]);
 
-  // Auto-refresh messages when active convo is live
+  // Auto-refresh list every 30s to catch new live requests
+  useEffect(() => {
+    listRefreshRef.current = setInterval(() => loadConversations(true), 30000);
+    return () => clearInterval(listRefreshRef.current);
+  }, [loadConversations]);
+
   useEffect(() => {
     activeIdRef.current = activeId;
   }, [activeId]);
 
+  // Poll messages for live conversations
   useEffect(() => {
     if (livePollingRef.current) clearInterval(livePollingRef.current);
     if (!convo || convo.status !== "live_requested") return;
+    prevMsgCountRef.current = convo.messages?.length || 0;
 
     livePollingRef.current = setInterval(async () => {
-      if (!activeIdRef.current) return;
+      if (!convo?.chatbotId || !convo?.sessionId) return;
       try {
-        const active = conversations.find(c => c._id === activeIdRef.current);
-        if (!active) return;
-        const res = await fetchMessagesBySession(active.chatbotId || active._id, active.sessionId);
+        const res = await fetchMessagesBySession(convo.chatbotId, convo.sessionId);
         if (res.ok) {
+          const newLen = res.messages.length;
+          // Play sound only for new user messages (not admin's own messages)
+          if (newLen > prevMsgCountRef.current) {
+            const newMsgs = res.messages.slice(prevMsgCountRef.current);
+            if (newMsgs.some(m => m.sender === "user")) {
+              playNotification();
+            }
+            prevMsgCountRef.current = newLen;
+          }
           setConvo(prev => prev ? { ...prev, messages: res.messages, status: res.status } : prev);
         }
       } catch { /* silent */ }
@@ -123,20 +203,29 @@ export default function Chats() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [convo?.status, convo?._id]);
 
+  // Scroll to bottom when new messages arrive
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
-  }, [convo]);
+  }, [convo?.messages?.length]);
+
+  const handleScroll = useCallback(() => {
+    const box = scrollBoxRef.current;
+    if (!box) return;
+    setShowScrollBtn(box.scrollHeight - box.scrollTop - box.clientHeight > 120);
+  }, []);
 
   const handleSelect = async (id) => {
     setActiveId(id);
     setAdminText("");
+    setShowCanned(false);
     setLoadingConvo(true);
     if (livePollingRef.current) clearInterval(livePollingRef.current);
     try {
       const data = await fetchConversationById(id);
       setConvo(data);
+      prevMsgCountRef.current = data.messages?.length || 0;
     } catch (err) {
       console.error(err);
     } finally {
@@ -148,9 +237,11 @@ export default function Chats() {
     if (!adminText.trim() || !convo || sending) return;
     const text = adminText.trim();
     setAdminText("");
+    setShowCanned(false);
     setSending(true);
     const optimistic = { sender: "admin", text, createdAt: new Date().toISOString() };
     setConvo(prev => ({ ...prev, messages: [...prev.messages, optimistic] }));
+    prevMsgCountRef.current += 1;
     try {
       await sendAdminMessage(convo.chatbotId, convo.sessionId, text);
     } catch (err) {
@@ -162,7 +253,7 @@ export default function Chats() {
 
   const handleStatusToggle = async () => {
     if (!activeId || !convo) return;
-    const newStatus = convo.status === "active" ? "closed" : "active";
+    const newStatus = convo.status !== "closed" ? "closed" : "active";
     setStatusUpdating(true);
     try {
       await updateConversationStatus(activeId, newStatus);
@@ -195,24 +286,20 @@ export default function Chats() {
   const activeConvo = conversations.find(c => c._id === activeId);
   const userMessages = convo?.messages?.filter(m => m.sender === "user").length || 0;
   const botMessages = convo?.messages?.filter(m => m.sender === "bot").length || 0;
+  const isLive = convo?.status === "live_requested";
 
   return (
     <Box sx={{ display: "flex", height: "calc(100vh - 100px)", gap: 0, borderRadius: 3, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}>
 
       {/* ─── LEFT PANEL ─── */}
       <Box sx={{ width: 300, minWidth: 300, bgcolor: WHITE, display: "flex", flexDirection: "column", borderRight: "1px solid #eee" }}>
-        {/* Header */}
         <Box sx={{ p: 2.5, pb: 1.5 }}>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               <ChatBubbleOutlineIcon sx={{ color: BLUE, fontSize: 20 }} />
               <Typography fontWeight={700} fontSize={16}>Chats</Typography>
               {activeCount > 0 && (
-                <Chip
-                  label={activeCount}
-                  size="small"
-                  sx={{ bgcolor: "#e8f5e9", color: GREEN, fontWeight: 700, height: 20, fontSize: 11 }}
-                />
+                <Chip label={activeCount} size="small" sx={{ bgcolor: "#e8f5e9", color: GREEN, fontWeight: 700, height: 20, fontSize: 11 }} />
               )}
             </Box>
             <Tooltip title="Refresh">
@@ -286,17 +373,17 @@ export default function Chats() {
           ) : filtered.length === 0 ? (
             <Box sx={{ p: 3, textAlign: "center" }}>
               <Typography variant="body2" color="text.secondary">
-                {tab === "Active" ? "No active chats." : tab === "Closed" ? "No closed chats." : "No conversations yet."}
+                {tab === "Active" ? "No active chats." : tab === "Closed" ? "No closed chats." : tab === "Live" ? "No live requests." : "No conversations yet."}
               </Typography>
             </Box>
           ) : (
             filtered.map((c) => {
               const name = c.userName || `Session ${c.sessionId?.slice(-6)}`;
-              const lastMsg = c.messages?.[c.messages.length - 1]?.text || "No messages";
-              const isActive = c._id === activeId;
-              const isLoading = isActive && loadingConvo;
+              const preview = getLastMsgPreview(c);
+              const isSelected = c._id === activeId;
+              const isItemLoading = isSelected && loadingConvo;
               const isClosed = c.status === "closed";
-              const isLive = c.status === "live_requested";
+              const isItemLive = c.status === "live_requested";
               return (
                 <ListItem
                   key={c._id}
@@ -304,9 +391,9 @@ export default function Chats() {
                   onClick={() => handleSelect(c._id)}
                   sx={{
                     borderRadius: 2.5, mb: 0.5, px: 1.5, py: 1.2,
-                    bgcolor: isLive ? "#fff3e0" : isActive ? LIGHT_BLUE : "transparent",
-                    borderLeft: isLive ? `3px solid ${ORANGE}` : "3px solid transparent",
-                    "&:hover": { bgcolor: isLive ? "#ffe0b2" : isActive ? LIGHT_BLUE : PANEL_BG },
+                    bgcolor: isItemLive ? "#fff3e0" : isSelected ? LIGHT_BLUE : "transparent",
+                    borderLeft: isItemLive ? `3px solid ${ORANGE}` : "3px solid transparent",
+                    "&:hover": { bgcolor: isItemLive ? "#ffe0b2" : isSelected ? LIGHT_BLUE : PANEL_BG },
                     transition: "background 0.15s",
                     opacity: isClosed ? 0.65 : 1,
                   }}
@@ -314,41 +401,31 @@ export default function Chats() {
                   <Box sx={{ position: "relative", mr: 1.5, flexShrink: 0 }}>
                     <Badge
                       variant="dot"
-                      color="success"
-                      invisible={isClosed || isLoading}
+                      color={isItemLive ? "warning" : "success"}
+                      invisible={isClosed || isItemLoading}
                       overlap="circular"
                       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                     >
-                      <Avatar
-                        sx={{ width: 42, height: 42, bgcolor: avatarColor(name), fontSize: 16, fontWeight: 700, opacity: isLoading ? 0.5 : 1, transition: "opacity 0.2s" }}
-                      >
+                      <Avatar sx={{ width: 42, height: 42, bgcolor: avatarColor(name), fontSize: 16, fontWeight: 700, opacity: isItemLoading ? 0.5 : 1, transition: "opacity 0.2s" }}>
                         {getInitial(name)}
                       </Avatar>
                     </Badge>
-                    {isLoading && (
-                      <CircularProgress
-                        size={46}
-                        thickness={2.5}
-                        sx={{ color: BLUE, position: "absolute", top: -2, left: -2, zIndex: 1 }}
-                      />
+                    {isItemLoading && (
+                      <CircularProgress size={46} thickness={2.5} sx={{ color: BLUE, position: "absolute", top: -2, left: -2, zIndex: 1 }} />
                     )}
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <Typography fontSize={13.5} fontWeight={isActive ? 700 : 600} noWrap sx={{ maxWidth: 120 }}>
+                      <Typography fontSize={13.5} fontWeight={isSelected ? 700 : 600} noWrap sx={{ maxWidth: 120 }}>
                         {name}
                       </Typography>
                       <Typography fontSize={11} color="text.secondary">{timeAgo(c.updatedAt)}</Typography>
                     </Box>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                      {isClosed && (
-                        <Chip label="closed" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: "#888", bgcolor: "#f0f0f0" }} />
-                      )}
-                      {isLive && (
-                        <Chip label="🔴 Live" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: ORANGE, bgcolor: "#fff3e0", fontWeight: 700 }} />
-                      )}
+                      {isClosed && <Chip label="closed" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: "#888", bgcolor: "#f0f0f0" }} />}
+                      {isItemLive && <Chip label="🔴 Live" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: ORANGE, bgcolor: "#fff3e0", fontWeight: 700 }} />}
                       <Typography fontSize={12} color="text.secondary" noWrap sx={{ maxWidth: 150 }}>
-                        {lastMsg}
+                        {preview}
                       </Typography>
                     </Box>
                   </Box>
@@ -368,8 +445,8 @@ export default function Chats() {
           </Box>
         ) : (
           <>
-            {/* Chat Header — instant from list data */}
-            <Box sx={{ bgcolor: WHITE, px: 3, py: 2, display: "flex", alignItems: "center", gap: 2, borderBottom: "1px solid #eee" }}>
+            {/* Chat Header */}
+            <Box sx={{ bgcolor: WHITE, px: 3, py: 2, display: "flex", alignItems: "center", gap: 2, borderBottom: `2px solid ${isLive ? ORANGE : "#eee"}` }}>
               <Avatar sx={{ bgcolor: avatarColor(activeConvo?.userName || ""), fontWeight: 700 }}>
                 {getInitial(activeConvo?.userName)}
               </Avatar>
@@ -377,8 +454,8 @@ export default function Chats() {
                 <Typography fontWeight={700} fontSize={15}>
                   {activeConvo?.userName || `Session ${activeConvo?.sessionId?.slice(-6)}`}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Last active {timeAgo(activeConvo?.updatedAt)}
+                <Typography variant="caption" color={isLive ? ORANGE : "text.secondary"} fontWeight={isLive ? 700 : 400}>
+                  {isLive ? "🔴 Live chat in progress" : `Last active ${timeAgo(activeConvo?.updatedAt)}`}
                 </Typography>
               </Box>
               {loadingConvo ? (
@@ -386,42 +463,50 @@ export default function Chats() {
               ) : (
                 <>
                   <Chip
-                    label={convo?.status || "active"}
+                    label={isLive ? "Live" : convo?.status || "active"}
                     size="small"
-                    color={convo?.status === "active" ? "success" : "default"}
+                    sx={{
+                      bgcolor: isLive ? "#fff3e0" : convo?.status === "active" ? "#e8f5e9" : "#f0f0f0",
+                      color: isLive ? ORANGE : convo?.status === "active" ? GREEN : "#888",
+                      fontWeight: 700,
+                    }}
                   />
-                  <Tooltip title={convo?.status === "active" ? "Close conversation" : "Reopen conversation"}>
+                  <Tooltip title={convo?.status !== "closed" ? "Close conversation" : "Reopen conversation"}>
                     <Button
                       size="small"
                       variant="outlined"
-                      startIcon={convo?.status === "active" ? <CheckCircleIcon /> : <ReplayIcon />}
+                      startIcon={convo?.status !== "closed" ? <CheckCircleIcon /> : <ReplayIcon />}
                       onClick={handleStatusToggle}
                       disabled={statusUpdating}
                       sx={{
                         textTransform: "none", fontSize: 12,
-                        borderColor: convo?.status === "active" ? "#c62828" : GREEN,
-                        color: convo?.status === "active" ? "#c62828" : GREEN,
+                        borderColor: convo?.status !== "closed" ? "#c62828" : GREEN,
+                        color: convo?.status !== "closed" ? "#c62828" : GREEN,
                         "&:hover": {
-                          bgcolor: convo?.status === "active" ? "#ffebee" : "#e8f5e9",
-                          borderColor: convo?.status === "active" ? "#c62828" : GREEN,
+                          bgcolor: convo?.status !== "closed" ? "#ffebee" : "#e8f5e9",
+                          borderColor: convo?.status !== "closed" ? "#c62828" : GREEN,
                         }
                       }}
                     >
-                      {statusUpdating ? "..." : convo?.status === "active" ? "Close" : "Reopen"}
+                      {statusUpdating ? "..." : convo?.status !== "closed" ? "Close" : "Reopen"}
                     </Button>
                   </Tooltip>
                 </>
               )}
             </Box>
 
-            {/* Messages */}
-            <Box sx={{ flex: 1, overflowY: "auto", px: 3, py: 2 }}>
+            {/* Messages Area */}
+            <Box
+              ref={scrollBoxRef}
+              onScroll={handleScroll}
+              sx={{ flex: 1, overflowY: "auto", px: 3, py: 2, position: "relative" }}
+            >
               {loadingConvo ? (
                 <MessageSkeleton />
               ) : convo?.messages?.length === 0 ? (
                 <Typography textAlign="center" color="text.secondary" mt={4}>No messages in this conversation.</Typography>
               ) : (
-                <Box sx={{ opacity: 1, animation: "fadeIn 0.25s ease", "@keyframes fadeIn": { from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "translateY(0)" } } }}>
+                <Box sx={{ animation: "fadeIn 0.25s ease", "@keyframes fadeIn": { from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "translateY(0)" } } }}>
                   {convo.messages.map((m, i) => {
                     const isUser = m.sender === "user";
                     const isAdmin = m.sender === "admin";
@@ -457,9 +542,48 @@ export default function Chats() {
               )}
             </Box>
 
+            {/* Scroll to bottom FAB */}
+            {showScrollBtn && (
+              <Box sx={{ position: "absolute", bottom: isLive ? 140 : 90, left: "calc(300px + (100% - 560px) / 2)", zIndex: 10 }}>
+                <Fab
+                  size="small"
+                  onClick={() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })}
+                  sx={{ bgcolor: BLUE, color: "#fff", boxShadow: "0 3px 10px rgba(0,0,0,0.2)", "&:hover": { bgcolor: "#4a4d8a" } }}
+                >
+                  <KeyboardArrowDownIcon />
+                </Fab>
+              </Box>
+            )}
+
+            {/* Canned Replies */}
+            {isLive && (
+              <Collapse in={showCanned}>
+                <Box sx={{ bgcolor: "#fff8f0", px: 2, py: 1.5, borderTop: "1px solid #ffe0b2", display: "flex", flexWrap: "wrap", gap: 0.8 }}>
+                  {CANNED_REPLIES.map((r, i) => (
+                    <Chip
+                      key={i}
+                      label={r}
+                      size="small"
+                      onClick={() => { setAdminText(r); setShowCanned(false); }}
+                      sx={{ fontSize: 11.5, cursor: "pointer", bgcolor: WHITE, border: `1px solid #ffcc80`, "&:hover": { bgcolor: "#fff3e0" }, transition: "all 0.1s" }}
+                    />
+                  ))}
+                </Box>
+              </Collapse>
+            )}
+
             {/* Input */}
-            {convo?.status === "live_requested" ? (
-              <Box sx={{ bgcolor: WHITE, px: 3, py: 2, borderTop: `2px solid ${ORANGE}`, display: "flex", alignItems: "center", gap: 1.5 }}>
+            {isLive ? (
+              <Box sx={{ bgcolor: WHITE, px: 2, py: 1.5, borderTop: `2px solid ${ORANGE}`, display: "flex", alignItems: "center", gap: 1 }}>
+                <Tooltip title={showCanned ? "Hide quick replies" : "Quick replies"}>
+                  <IconButton
+                    size="small"
+                    onClick={() => setShowCanned(p => !p)}
+                    sx={{ color: showCanned ? ORANGE : "#bbb", "&:hover": { color: ORANGE }, transition: "color 0.15s" }}
+                  >
+                    <FlashOnIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
                 <TextField
                   fullWidth
                   size="small"
@@ -528,9 +652,13 @@ export default function Chats() {
               </Typography>
               <Box sx={{ mt: 1 }}>
                 <Chip
-                  label={convo?.status}
+                  label={isLive ? "Live" : convo?.status}
                   size="small"
-                  color={convo?.status === "active" ? "success" : "default"}
+                  sx={{
+                    bgcolor: isLive ? "#fff3e0" : convo?.status === "active" ? "#e8f5e9" : "#f0f0f0",
+                    color: isLive ? ORANGE : convo?.status === "active" ? GREEN : "#888",
+                    fontWeight: 700,
+                  }}
                 />
               </Box>
             </Box>
@@ -538,22 +666,28 @@ export default function Chats() {
             <Divider sx={{ mb: 2 }} />
 
             {/* Action Buttons */}
-            <Box sx={{ mb: 2 }}>
+            <Box sx={{ mb: 2, display: "flex", flexDirection: "column", gap: 1 }}>
               <Button
                 fullWidth
-                variant={convo?.status === "active" ? "outlined" : "contained"}
-                color={convo?.status === "active" ? "error" : "success"}
+                variant={convo?.status !== "closed" ? "outlined" : "contained"}
+                color={convo?.status !== "closed" ? "error" : "success"}
                 size="small"
-                startIcon={convo?.status === "active" ? <CheckCircleIcon /> : <ReplayIcon />}
+                startIcon={convo?.status !== "closed" ? <CheckCircleIcon /> : <ReplayIcon />}
                 onClick={handleStatusToggle}
                 disabled={statusUpdating}
-                sx={{ textTransform: "none", borderRadius: 2, mb: 1 }}
+                sx={{ textTransform: "none", borderRadius: 2 }}
               >
-                {statusUpdating
-                  ? "Updating..."
-                  : convo?.status === "active"
-                  ? "Close Conversation"
-                  : "Reopen Conversation"}
+                {statusUpdating ? "Updating..." : convo?.status !== "closed" ? "Close Conversation" : "Reopen Conversation"}
+              </Button>
+              <Button
+                fullWidth
+                variant="outlined"
+                size="small"
+                startIcon={<DownloadIcon />}
+                onClick={() => exportConversation(convo, activeConvo?.userName)}
+                sx={{ textTransform: "none", borderRadius: 2, borderColor: BLUE, color: BLUE, "&:hover": { bgcolor: LIGHT_BLUE, borderColor: BLUE } }}
+              >
+                Export Chat
               </Button>
             </Box>
 
@@ -569,7 +703,7 @@ export default function Chats() {
               { label: "Bot Questions", value: botMessages },
               { label: "Started", value: new Date(convo.createdAt || convo.updatedAt).toLocaleDateString() },
               { label: "Last Active", value: timeAgo(convo.updatedAt) },
-              { label: "Status", value: convo.status },
+              { label: "Status", value: isLive ? "Live" : convo.status },
             ].map((item) => (
               <Box key={item.label} sx={{ display: "flex", justifyContent: "space-between", py: 1, borderBottom: "1px solid #f5f5f5" }}>
                 <Typography variant="body2" color="text.secondary">{item.label}</Typography>

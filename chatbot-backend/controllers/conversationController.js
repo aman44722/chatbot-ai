@@ -5,7 +5,7 @@ exports.getConversations = async (req, res) => {
     try {
         const chatbotId = req.user.id;
         const conversations = await Conversation.find({ chatbotId })
-            .select("sessionId userName status updatedAt messages")
+            .select("chatbotId sessionId userName status updatedAt messages")
             .sort({ updatedAt: -1 });
         res.json({ conversations });
     } catch (err) {
