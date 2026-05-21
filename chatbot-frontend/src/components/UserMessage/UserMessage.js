@@ -351,21 +351,7 @@ const UserMessage = () => {
 
     const currentQ = flow[step];
     pushMessage('user', userText, currentQ?.id);
-
-    const nextStep = step + 1;
-    setStep(nextStep);
-
-    if (nextStep < flow.length) {
-      setTimeout(() => {
-        const nextQ = flow[nextStep];
-        setMessages(prev => [...prev, { sender: 'bot', text: nextQ.text, questionId: nextQ.id }]);
-      }, 600);
-    } else {
-      setTimeout(() => {
-        setMessages(prev => [...prev, { sender: 'bot', text: "Thank you! We'll get back to you soon." }]);
-        setDone(true);
-      }, 600);
-    }
+    advanceStep(step + 1);
   };
 
   if (loading) return (
