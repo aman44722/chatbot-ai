@@ -77,35 +77,39 @@ const UserMessage = () => {
         setBotSettings(user.botSettings || {});
         setFlow(user.flowSetupSetting?.question?.list || []);
 
-        // Restore only IN-PROGRESS sessions (not completed ones)
+        // Restore from localStorage only — no API call needed
         const saved = loadState(chatId);
         const flowList = user.flowSetupSetting?.question?.list || [];
-        const isRestorable = saved && saved.preChatDone && !saved.done && !saved.chatClosed;
-        if (isRestorable) {
-          try {
-            const convRes = await axios.get(`${CONV_API}/session/${chatId}/${sessionIdRef.current}`);
-            if (convRes.data.ok && convRes.data.status !== 'closed') {
-              // Clamp step to current flow length in case flow was edited
-              const validStep = Math.min(saved.step || 0, flowList.length);
-              setMessages(convRes.data.messages || []);
-              setPreChatDone(true);
-              setUserName(saved.userName || '');
-              setStep(validStep);
-              setDone(validStep >= flowList.length);
-              setLiveRequested(saved.liveRequested || false);
-            } else if (convRes.data.status === 'closed') {
-              setMessages(convRes.data.messages || []);
-              setPreChatDone(true);
-              setUserName(saved.userName || '');
-              setChatClosed(true);
-            } else {
-              clearSession(chatId);
-            }
-          } catch {
-            clearSession(chatId);
+
+        if (saved && saved.preChatDone && !saved.done && !saved.chatClosed) {
+          // IN-PROGRESS: restore directly from localStorage
+          const validStep = Math.min(saved.step || 0, flowList.length);
+          setMessages(saved.messages || []);
+          setPreChatDone(true);
+          setUserName(saved.userName || '');
+          setStep(validStep);
+          setDone(validStep >= flowList.length);
+          setLiveRequested(saved.liveRequested || false);
+
+          // If in live agent mode, sync latest messages from API silently
+          if (saved.liveRequested) {
+            axios.get(`${CONV_API}/session/${chatId}/${sessionIdRef.current}`)
+              .then(r => {
+                if (r.data.ok) {
+                  setMessages(r.data.messages || []);
+                  if (r.data.status === 'closed') setChatClosed(true);
+                }
+              })
+              .catch(() => {});
           }
-        } else if (saved) {
-          // Completed or invalid session — clear it so fresh flow questions show
+        } else if (saved && saved.preChatDone && saved.chatClosed) {
+          // ADMIN CLOSED: restore closed state from localStorage
+          setMessages(saved.messages || []);
+          setPreChatDone(true);
+          setUserName(saved.userName || '');
+          setChatClosed(true);
+        } else if (saved && saved.done) {
+          // COMPLETED: clear so fresh flow starts
           clearSession(chatId);
         }
       } catch (err) {
@@ -154,12 +158,12 @@ const UserMessage = () => {
     return () => clearInterval(statusPollingRef.current);
   }, [preChatDone, liveRequested, chatClosed, chatId]);
 
-  // Persist session state to localStorage whenever key state changes
+  // Persist full session state (including messages) to localStorage
   useEffect(() => {
     if (preChatDone) {
-      saveState(chatId, { preChatDone, userName, step, done, liveRequested, chatClosed });
+      saveState(chatId, { preChatDone, userName, step, done, liveRequested, chatClosed, messages });
     }
-  }, [preChatDone, userName, step, done, liveRequested, chatClosed, chatId]);
+  }, [preChatDone, userName, step, done, liveRequested, chatClosed, messages, chatId]);
 
   // Cleanup all polling on unmount
   useEffect(() => {
