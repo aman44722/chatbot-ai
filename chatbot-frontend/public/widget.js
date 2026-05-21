@@ -116,10 +116,12 @@
         btn.addEventListener("click", function () {
             var existing = document.getElementById("a2bot-panel-" + botId);
             if (existing) {
-                existing.remove();
+                // Hide/show instead of remove — React component stays mounted, state preserved
+                existing.style.display = existing.style.display === "none" ? "" : "none";
                 return;
             }
 
+            // First open — create panel + iframe once
             var panel = el("div", { id: "a2bot-panel-" + botId }, {
                 width: "400px", height: "600px", borderRadius: "16px",
                 boxShadow: "0 8px 40px rgba(0,0,0,0.18)", overflow: "hidden",
