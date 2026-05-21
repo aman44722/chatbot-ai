@@ -73,17 +73,16 @@ const ChatPreview = ({
               onClick={() => setIsChatOpen(true)}
               style={{
                 position: "absolute",
-                bottom: botPosition === "center" ? "50%" : "30px",
-                top: botPosition === "center" ? "unset" : "auto",
-                right: botPosition === "left" ? "unset" : "30px",
+                bottom: "30px",
+                right: botPosition === "right" ? "30px" : "unset",
                 left:
                   botPosition === "left"
                     ? "5%"
                     : botPosition === "center"
-                      ? "unset"
-                      : "auto",
+                      ? "50%"
+                      : "unset",
                 transform:
-                  botPosition === "center" ? "translateY(50%)" : "none",
+                  botPosition === "center" ? "translateX(-50%)" : "none",
                 backgroundColor: "transparent",
                 cursor: "pointer",
                 zIndex: 1000,
@@ -131,7 +130,7 @@ const ChatPreview = ({
               style={{
                 position: "absolute",
                 bottom: "0px",
-                left: botPosition === "left" ? "30px" : "unset",
+                left: botPosition === "left" ? "30px" : botPosition === "center" ? "50%" : "unset",
                 right: botPosition === "right" ? "30px" : "unset",
                 transform:
                   botPosition === "center" ? "translateX(-50%)" : "none",
