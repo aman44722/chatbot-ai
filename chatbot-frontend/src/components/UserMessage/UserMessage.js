@@ -472,7 +472,7 @@ const UserMessage = () => {
 
       {/* ─── PRE-CHAT SCREEN ─── */}
       {!preChatDone ? (
-        <Box sx={{ bgcolor: chatBg, p: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <Box sx={{ background: chatBg, p: 3, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
           <Box sx={{ textAlign: 'center', mb: 3 }}>
             <Avatar sx={{ width: 64, height: 64, mx: 'auto', mb: 2, bgcolor: headerColor, fontSize: 28, fontWeight: 700 }}>
               {(botSettings.botName || 'C')[0].toUpperCase()}
@@ -522,11 +522,15 @@ const UserMessage = () => {
           {/* Messages */}
           <Box
             ref={chatBodyRef}
-            sx={{ flex: 1, overflowY: 'auto', p: 2, bgcolor: chatBg, position: 'relative' }}
+            sx={{
+              flex: 1, overflowY: 'auto', p: 2, position: 'relative',
+              background: chatBg,
+              ...(overlayOpacity > 0 && {
+                backgroundColor: `rgba(0,0,0,${overlayOpacity / 100})`,
+                backgroundBlendMode: "overlay",
+              }),
+            }}
           >
-            {overlayOpacity > 0 && (
-              <Box sx={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `rgba(0,0,0,${overlayOpacity / 100})`, zIndex: 0 }} />
-            )}
             {messages.map((msg, i) => (
               <Box
                 key={i}
@@ -636,7 +640,7 @@ const UserMessage = () => {
 
               {/* Option buttons */}
               {hasOptions && (
-                <Box sx={{ px: 2, pb: 1, pt: 0.5, bgcolor: chatBg, display: 'flex', flexWrap: 'wrap', gap: 1, borderTop: '1px solid #eee' }}>
+                <Box sx={{ px: 2, pb: 1, pt: 0.5, background: chatBg, display: 'flex', flexWrap: 'wrap', gap: 1, borderTop: '1px solid #eee' }}>
                   {currentQ.options.map((opt, i) => (
                     <Button
                       key={i}
