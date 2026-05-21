@@ -21,7 +21,7 @@ import MultipleChoiceTab from "./BasicTabs/MultipleChoiceTab/MultipleChoiceTab";
 import MobileNumberTab from "./BasicTabs/MobileNumberTab/MobileNumberTab";
 import OptionList from "./BasicTabs/SingleChoiceTab/Options/OptionInputRow";
 import ShowOptionsButtons from "./BasicTabs/SingleChoiceTab/Options/ShowOptionsButtons";
-import picImg from "./picture.svg";
+
 
 const EditQuestionPopup = ({
   openEdit,
@@ -33,7 +33,7 @@ const EditQuestionPopup = ({
   const [text, setText] = useState("");
   const [options, setOptions] = useState([]);
   const [flexDirection, setFlexDirection] = useState("column");
-  const [media, setMedia] = useState({ picImg });
+  const [media, setMedia] = useState("");
   const [skipOption, setSkipOption] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [validations, setValidations] = useState({});
@@ -44,7 +44,7 @@ const EditQuestionPopup = ({
       setOptions(editingItem.options);
       setFlexDirection(editingItem.flexDirection || "column");
       setSkipOption(editingItem.skipOption || false);
-      setMedia(editingItem.media || {});
+      setMedia(editingItem.media || "");
       setErrorMessage(editingItem.errorMessage || "");
       setValidations(editingItem.validations || {});
     }
