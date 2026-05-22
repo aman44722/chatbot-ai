@@ -33,8 +33,7 @@ const Sidebar = () => {
   const location = useLocation();
   const [openDropdown, setOpenDropdown] = useState(null);
   const [bots, setBots] = useState([]);
-  const selectedBotId = localStorage.getItem('selectedBotId');
-  const [selectedBot, setSelectedBot] = useState(selectedBotId || '');
+  const [selectedBot, setSelectedBot] = useState(localStorage.getItem('selectedBotId') || '');
 
   useEffect(() => {
     getBots()
@@ -43,20 +42,13 @@ const Sidebar = () => {
   }, []);
 
   useEffect(() => {
-    if (selectedBot) {
-      localStorage.setItem('selectedBotId', selectedBot);
-    }
+    localStorage.setItem('selectedBotId', selectedBot || '');
   }, [selectedBot]);
 
   const handleBotChange = (event) => {
     const botId = event.target.value;
     setSelectedBot(botId);
-    localStorage.setItem('selectedBotId', botId);
   };
-
-  useEffect(() => {
-    setSelectedBot(selectedBotId || '');
-  }, [selectedBotId]);
 
   const toggleDropdown = (text) => {
     setOpenDropdown(openDropdown === text ? null : text);
@@ -177,7 +169,7 @@ const Sidebar = () => {
     );
   };
 
-  const selectedBotName = bots.find(b => b._id === selectedBotId)?.name || '';
+  const selectedBotName = bots.find(b => b._id === selectedBot)?.name || '';
 
   return (
     <Drawer
@@ -203,7 +195,7 @@ const Sidebar = () => {
       {bots.length > 0 && (
         <Box sx={{ px: 1.5, py: 1 }}>
           <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', mb: 0.5, px: 0.5 }}>
-            {selectedBotId ? 'ACTIVE BOT' : 'SELECT BOT'}
+            {selectedBot ? 'ACTIVE BOT' : 'SELECT BOT'}
           </Typography>
           <FormControl fullWidth size="small">
             <Select
@@ -240,7 +232,7 @@ const Sidebar = () => {
         </Box>
       )}
 
-      {selectedBotId ? (
+      {selectedBot ? (
         <List sx={{ px: 1, pt: 1 }}>
           {mode2Items.map(renderItem)}
         </List>
