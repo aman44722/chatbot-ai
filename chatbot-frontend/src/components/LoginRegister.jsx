@@ -33,7 +33,7 @@ const contentFeatures = [
 
 const AuthForm = () => {
   const location = useLocation();
-  const [isLogin, setIsLogin] = useState(location.pathname !== "/signup");
+  const [isLogin, setIsLogin] = useState(location.pathname === "/login");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -45,7 +45,7 @@ const AuthForm = () => {
   const { login } = useAuth();
 
   useEffect(() => {
-    setIsLogin(location.pathname !== "/signup");
+    setIsLogin(location.pathname === "/login");
   }, [location.pathname]);
 
   const handleChange = (e) => {
@@ -87,7 +87,7 @@ const AuthForm = () => {
   };
 
   return (
-    <Box sx={{ height: "100vh", display: "flex", fontFamily: "'Poppins', sans-serif", bgcolor: "#F9FAFB" }}>
+    <Box sx={{ minHeight: "100vh", display: "flex", fontFamily: "'Poppins', sans-serif", bgcolor: "#F9FAFB" }}>
       {/* ===== LEFT: ANIMATED CONTENT ===== */}
       <Box sx={{
         flex: "0 0 55%",
@@ -231,7 +231,7 @@ const AuthForm = () => {
       <Box sx={{
         flex: { xs: 1, md: "0 0 45%" },
         display: "flex", alignItems: "center", justifyContent: "center",
-        p: { xs: 2, md: 4 },
+        p: { xs: 2, md: 3 },
         position: "relative",
         overflow: "hidden",
       }}>
@@ -243,10 +243,10 @@ const AuthForm = () => {
           initial={{ opacity: 0, x: 40 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, ease: "easeOut" }}
-          style={{ width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto" }}
+          style={{ width: "100%", maxWidth: 420 }}
         >
           <Paper elevation={0} sx={{
-            p: { xs: 3, md: 3.5 }, borderRadius: 4,
+            p: { xs: 2.5, md: 3 }, borderRadius: 4,
             bgcolor: "rgba(255,255,255,0.85)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
@@ -254,14 +254,14 @@ const AuthForm = () => {
             boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
           }}>
             {/* Logo */}
-            <Box sx={{ display: "flex", justifyContent: "center", mb: 2.5 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 1.5 }}>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
               >
                 <Box sx={{
-                  width: 44, height: 44, borderRadius: "12px",
+                  width: 40, height: 40, borderRadius: "12px",
                   background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   boxShadow: "0 8px 24px rgba(79,70,229,0.3)",
@@ -272,7 +272,7 @@ const AuthForm = () => {
             </Box>
 
             {/* Tabs */}
-            <Box sx={{ display: "flex", bgcolor: "#F3F4F6", borderRadius: 2, p: 0.3, mb: 2.5 }}>
+            <Box sx={{ display: "flex", bgcolor: "#F3F4F6", borderRadius: 2, p: 0.3, mb: 1.5 }}>
               {["Log In", "Sign Up"].map((tab, i) => {
                 const active = (i === 0) === isLogin;
                 return (
