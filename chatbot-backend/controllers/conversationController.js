@@ -1,11 +1,22 @@
 const Conversation = require("../models/Conversation");
+const Bot = require("../models/Bot");
 const { getIO } = require("../socket");
 
 // GET /api/conversation/list  (authenticated)
 exports.getConversations = async (req, res) => {
     try {
-        const filter = { chatbotId: req.user.id };
-        if (req.query.botId) filter.botId = req.query.botId;
+        let filter;
+        if (req.query.botId) {
+            const bot = await Bot.findById(req.query.botId).select('userId');
+            if (!bot || String(bot.userId) !== req.user.id) {
+                return res.status(403).json({ message: "Forbidden" });
+            }
+            filter = { botId: req.query.botId };
+        } else {
+            const userBots = await Bot.find({ userId: req.user.id }).select('_id').lean();
+            const botIds = userBots.map(b => String(b._id));
+            filter = { $or: [{ chatbotId: req.user.id }, { botId: { $in: botIds } }] };
+        }
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
         const skip = (page - 1) * limit;
