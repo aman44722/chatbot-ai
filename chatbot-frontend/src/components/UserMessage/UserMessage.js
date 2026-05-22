@@ -690,6 +690,144 @@ const UserMessage = () => {
               </Box>
             );
             })}
+
+              {hasOptions && (
+                <Box sx={{ mb: 1.5, display: 'flex', justifyContent: 'flex-start' }}>
+                  <Box sx={{ maxWidth: '85%' }}>
+                    {isDropdown ? (
+                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1, minWidth: 200 }}>
+                        <FormControl size="small" fullWidth>
+                          <InputLabel>Choose an option</InputLabel>
+                          <Select
+                            value={dropdownVal}
+                            label="Choose an option"
+                            onChange={(e) => setDropdownVal(e.target.value)}
+                            sx={{ borderRadius: 2, bgcolor: '#fff' }}
+                          >
+                            {displayOptions.map((opt, i) => (
+                              <MenuItem key={i} value={getOptionLabel(opt)}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                  {currentQ.imageChoices?.[i]?.image && (
+                                    <img src={currentQ.imageChoices[i].image} alt="" style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover' }} />
+                                  )}
+                                  {getOptionLabel(opt)}
+                                </Box>
+                              </MenuItem>
+                            ))}
+                            {hasOtherOption && <MenuItem value="__other__">Other</MenuItem>}
+                          </Select>
+                        </FormControl>
+                        <Box sx={{ display: 'flex', gap: 1 }}>
+                          <Button
+                            variant="contained" size="small"
+                            disabled={!dropdownVal || dropdownVal === '__other__'}
+                            onClick={() => handleOptionSelect(dropdownVal)}
+                            sx={{ flex: 1, borderRadius: 2, textTransform: 'none', bgcolor: headerColor, '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' } }}
+                          >
+                            Submit
+                          </Button>
+                          {currentQ?.skipOption && (
+                            <Button
+                              startIcon={<SkipNextIcon fontSize="small" />}
+                              onClick={handleSkip}
+                              variant="outlined" size="small"
+                              sx={{ borderRadius: 2, textTransform: 'none', color: '#888', borderColor: '#d0d0d0', fontWeight: 500, '&:hover': { borderColor: optionColor, color: optionColor } }}
+                            >
+                              Skip
+                            </Button>
+                          )}
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Box>
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                          {displayOptions.map((opt, i) => (
+                            <Button
+                              key={i}
+                              onClick={() => handleOptionSelect(getOptionLabel(opt))}
+                              sx={{
+                                borderRadius: `${Math.max(borderRadius, 8)}px`,
+                                background: `linear-gradient(135deg, ${optionColor}, ${optionColor}dd)`,
+                                color: '#fff', border: 'none', textAlign: 'center',
+                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
+                                textTransform: 'none', fontWeight: 600,
+                                px: 2.5, py: 1, minWidth: 80, flex: '0 1 auto',
+                                boxShadow: `0 3px 10px ${optionColor}30`,
+                                transition: 'all 0.2s ease',
+                                display: 'flex', alignItems: 'center', gap: 0.8,
+                                '&:hover': {
+                                  transform: 'translateY(-2px)',
+                                  boxShadow: `0 6px 20px ${optionColor}50`,
+                                  background: `linear-gradient(135deg, ${optionColor}, ${optionColor})`,
+                                  filter: 'brightness(1.05)',
+                                },
+                                '&:active': { transform: 'translateY(0)' },
+                              }}
+                            >
+                              {currentQ.imageChoices?.[i]?.image && (
+                                <img src={currentQ.imageChoices[i].image} alt="" style={{ width: 20, height: 20, borderRadius: 4, objectFit: 'cover' }} />
+                              )}
+                              {getOptionLabel(opt)}
+                            </Button>
+                          ))}
+                          {hasOtherOption && (
+                            <Button
+                              onClick={() => { setOtherText(''); setDropdownVal('__other__'); }}
+                              sx={{
+                                borderRadius: `${Math.max(borderRadius, 8)}px`,
+                                color: '#888', border: '2px dashed #d0d0d0', textTransform: 'none',
+                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
+                                fontWeight: 500, px: 2.5, py: 1, bgcolor: 'transparent',
+                                transition: 'all 0.2s ease',
+                                '&:hover': { borderColor: optionColor, color: optionColor, bgcolor: `${optionColor}08` },
+                              }}
+                            >
+                              Other
+                            </Button>
+                          )}
+                          {currentQ?.skipOption && (
+                            <Button
+                              startIcon={<SkipNextIcon fontSize="small" />}
+                              onClick={handleSkip}
+                              sx={{
+                                borderRadius: `${Math.max(borderRadius, 8)}px`,
+                                color: '#888', border: '2px dashed #d0d0d0', textTransform: 'none',
+                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
+                                fontWeight: 500, px: 2, py: 0.9, bgcolor: 'transparent',
+                                transition: 'all 0.2s ease',
+                                '&:hover': { borderColor: optionColor, color: optionColor, bgcolor: `${optionColor}08` },
+                              }}
+                            >
+                              Skip
+                            </Button>
+                          )}
+                        </Box>
+                        {hasOtherOption && dropdownVal === '__other__' && (
+                          <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
+                            <TextField
+                              fullWidth size="small" placeholder="Type your answer..."
+                              value={otherText}
+                              onChange={(e) => setOtherText(e.target.value)}
+                              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#fff' } }}
+                            />
+                            <Button
+                              variant="contained" size="small"
+                              disabled={!otherText.trim()}
+                              onClick={() => handleOptionSelect(otherText.trim())}
+                              sx={{ borderRadius: 2, textTransform: 'none', bgcolor: headerColor, whiteSpace: 'nowrap', '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' } }}
+                            >
+                              Submit
+                            </Button>
+                          </Box>
+                        )}
+                      </Box>
+                    )}
+                    <Typography sx={{ mt: 1, color: '#aaa', fontSize: 11 }}>
+                      {isDropdown ? 'Select and submit' : 'Tap an option to continue'}
+                    </Typography>
+                  </Box>
+                </Box>
+              )}
           </Box>
 
           {/* ─── CHAT CLOSED STATE ─── */}
@@ -759,182 +897,42 @@ const UserMessage = () => {
                 </Box>
               )}
 
-              {/* Input area — options or text field */}
-              <Box sx={{ p: 1.5, borderTop: liveRequested ? '2px solid #e65100' : '1px solid #eee', bgcolor: '#fff' }}>
-                {hasOptions ? (
-                  <Box>
-                    {isDropdown ? (
-                      <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                        <FormControl size="small" fullWidth>
-                          <InputLabel>Choose an option</InputLabel>
-                          <Select
-                            value={dropdownVal}
-                            label="Choose an option"
-                            onChange={(e) => setDropdownVal(e.target.value)}
-                            sx={{ borderRadius: 2, bgcolor: '#fff' }}
-                          >
-                            {displayOptions.map((opt, i) => (
-                              <MenuItem key={i} value={getOptionLabel(opt)}>
-                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                  {currentQ.imageChoices?.[i]?.image && (
-                                    <img src={currentQ.imageChoices[i].image} alt="" style={{ width: 24, height: 24, borderRadius: 4, objectFit: 'cover' }} />
-                                  )}
-                                  {getOptionLabel(opt)}
-                                </Box>
-                              </MenuItem>
-                            ))}
-                            {hasOtherOption && <MenuItem value="__other__">Other</MenuItem>}
-                          </Select>
-                        </FormControl>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Button
-                            variant="contained" size="small"
-                            disabled={!dropdownVal || dropdownVal === '__other__'}
-                            onClick={() => handleOptionSelect(dropdownVal)}
-                            sx={{ flex: 1, borderRadius: 2, textTransform: 'none', bgcolor: headerColor, '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' } }}
-                          >
-                            Submit
-                          </Button>
-                          {currentQ?.skipOption && (
-                            <Button
-                              startIcon={<SkipNextIcon fontSize="small" />}
-                              onClick={handleSkip}
-                              variant="outlined" size="small"
-                              sx={{ borderRadius: 2, textTransform: 'none', color: '#888', borderColor: '#d0d0d0', fontWeight: 500, '&:hover': { borderColor: optionColor, color: optionColor } }}
-                            >
-                              Skip
-                            </Button>
-                          )}
-                        </Box>
-                      </Box>
-                    ) : (
-                      <Box>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, justifyContent: 'center' }}>
-                          {displayOptions.map((opt, i) => (
-                            <Button
-                              key={i}
-                              onClick={() => handleOptionSelect(getOptionLabel(opt))}
-                              sx={{
-                                borderRadius: `${Math.max(borderRadius, 8)}px`,
-                                background: `linear-gradient(135deg, ${optionColor}, ${optionColor}dd)`,
-                                color: '#fff', border: 'none', textAlign: 'center',
-                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
-                                textTransform: 'none', fontWeight: 600,
-                                px: 2.5, py: 1, minWidth: 80, flex: '0 1 auto',
-                                boxShadow: `0 3px 10px ${optionColor}30`,
-                                transition: 'all 0.2s ease',
-                                display: 'flex', alignItems: 'center', gap: 0.8,
-                                '&:hover': {
-                                  transform: 'translateY(-2px)',
-                                  boxShadow: `0 6px 20px ${optionColor}50`,
-                                  background: `linear-gradient(135deg, ${optionColor}, ${optionColor})`,
-                                  filter: 'brightness(1.05)',
-                                },
-                                '&:active': { transform: 'translateY(0)' },
-                              }}
-                            >
-                              {currentQ.imageChoices?.[i]?.image && (
-                                <img src={currentQ.imageChoices[i].image} alt="" style={{ width: 20, height: 20, borderRadius: 4, objectFit: 'cover' }} />
-                              )}
-                              {getOptionLabel(opt)}
-                            </Button>
-                          ))}
-                          {hasOtherOption && (
-                            <Button
-                              onClick={() => { setOtherText(''); setDropdownVal('__other__'); }}
-                              sx={{
-                                borderRadius: `${Math.max(borderRadius, 8)}px`,
-                                color: '#888', border: '2px dashed #d0d0d0', textTransform: 'none',
-                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
-                                fontWeight: 500, px: 2.5, py: 1, bgcolor: 'transparent',
-                                transition: 'all 0.2s ease',
-                                '&:hover': { borderColor: optionColor, color: optionColor, bgcolor: `${optionColor}08` },
-                              }}
-                            >
-                              Other
-                            </Button>
-                          )}
-                          {currentQ?.skipOption && (
-                            <Button
-                              startIcon={<SkipNextIcon fontSize="small" />}
-                              onClick={handleSkip}
-                              sx={{
-                                borderRadius: `${Math.max(borderRadius, 8)}px`,
-                                color: '#888', border: '2px dashed #d0d0d0', textTransform: 'none',
-                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
-                                fontWeight: 500, px: 2, py: 0.9, bgcolor: 'transparent',
-                                transition: 'all 0.2s ease',
-                                '&:hover': { borderColor: optionColor, color: optionColor, bgcolor: `${optionColor}08` },
-                              }}
-                            >
-                              Skip
-                            </Button>
-                          )}
-                        </Box>
-
-                        {hasOtherOption && dropdownVal === '__other__' && (
-                          <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
-                            <TextField
-                              fullWidth size="small" placeholder="Type your answer..."
-                              value={otherText}
-                              onChange={(e) => setOtherText(e.target.value)}
-                              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#fff' } }}
-                            />
-                            <Button
-                              variant="contained" size="small"
-                              disabled={!otherText.trim()}
-                              onClick={() => handleOptionSelect(otherText.trim())}
-                              sx={{ borderRadius: 2, textTransform: 'none', bgcolor: headerColor, whiteSpace: 'nowrap', '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' } }}
-                            >
-                              Submit
-                            </Button>
-                          </Box>
-                        )}
-                      </Box>
-                    )}
-
-                    <Typography sx={{ textAlign: 'center', mt: 1, color: '#aaa', fontSize: 11 }}>
-                      {isDropdown ? 'Select and submit' : 'Tap an option to continue'}
+              {/* Input area — hidden when options are shown in chat */}
+              <Box sx={{ p: 1.5, borderTop: liveRequested ? '2px solid #e65100' : '1px solid #eee', bgcolor: '#fff', ...(hasOptions ? { display: 'none' } : {}) }}>
+                <Box sx={{ display: 'flex', gap: 1 }}>
+                  <TextField
+                    fullWidth size="small"
+                    value={text}
+                    placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : 'Type your answer...'}
+                    onChange={e => setText(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
+                    disabled={done && !liveRequested}
+                    sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
+                  />
+                  {!done && !liveRequested && currentQ?.skipOption && (
+                    <Button
+                      variant="outlined" size="small"
+                      startIcon={<SkipNextIcon fontSize="small" />}
+                      onClick={handleSkip}
+                      sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 500, fontSize: 13, color: '#666', borderColor: '#ccc', whiteSpace: 'nowrap', '&:hover': { borderColor: '#999', bgcolor: '#f5f5f5' } }}
+                    >
+                      Skip
+                    </Button>
+                  )}
+                  <Button
+                    variant="contained"
+                    onClick={handleSend}
+                    disabled={(done && !liveRequested) || !text.trim()}
+                    sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: liveRequested ? '#e65100' : headerColor, '&:hover': { bgcolor: liveRequested ? '#bf360c' : headerColor } }}
+                  >
+                    <SendIcon fontSize="small" />
+                  </Button>
+                </Box>
+                {!done && !liveRequested && currentQ && (
+                  <Box sx={{ mt: 0.8, display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                    <Typography sx={{ fontSize: 11, color: '#e67e22', fontWeight: 500 }}>
+                      ⚠️ {getValidationHint(currentQ) || 'Required field'}
                     </Typography>
-                  </Box>
-                ) : (
-                  <Box>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <TextField
-                        fullWidth size="small"
-                        value={text}
-                        placeholder={liveRequested ? 'Reply to agent...' : done ? 'Flow complete ✓' : 'Type your answer...'}
-                        onChange={e => setText(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                        disabled={done && !liveRequested}
-                        sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
-                      />
-                      {!done && !liveRequested && currentQ?.skipOption && (
-                        <Button
-                          variant="outlined" size="small"
-                          startIcon={<SkipNextIcon fontSize="small" />}
-                          onClick={handleSkip}
-                          sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 500, fontSize: 13, color: '#666', borderColor: '#ccc', whiteSpace: 'nowrap', '&:hover': { borderColor: '#999', bgcolor: '#f5f5f5' } }}
-                        >
-                          Skip
-                        </Button>
-                      )}
-                      <Button
-                        variant="contained"
-                        onClick={handleSend}
-                        disabled={(done && !liveRequested) || !text.trim()}
-                        sx={{ borderRadius: 3, minWidth: 44, px: 1.5, bgcolor: liveRequested ? '#e65100' : headerColor, '&:hover': { bgcolor: liveRequested ? '#bf360c' : headerColor } }}
-                      >
-                        <SendIcon fontSize="small" />
-                      </Button>
-                    </Box>
-                    {!done && !liveRequested && currentQ && (
-                      <Box sx={{ mt: 0.8, display: 'flex', alignItems: 'center', gap: 0.8 }}>
-                        <Typography sx={{ fontSize: 11, color: '#e67e22', fontWeight: 500 }}>
-                          ⚠️ {getValidationHint(currentQ) || 'Required field'}
-                        </Typography>
-                      </Box>
-                    )}
                   </Box>
                 )}
               </Box>
