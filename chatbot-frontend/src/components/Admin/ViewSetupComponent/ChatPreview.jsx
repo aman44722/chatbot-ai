@@ -47,7 +47,7 @@ const ChatPreview = ({
         backdropFilter: "blur(12px)",
         border: "1px solid rgba(229,231,235,0.5)",
         borderRadius: "16px",
-        overflowY: "scroll",
+        // overflowY: "scroll",
         position: "relative",
       }}
     >
@@ -131,7 +131,12 @@ const ChatPreview = ({
               style={{
                 position: "absolute",
                 bottom: "0px",
-                left: botPosition === "left" ? "30px" : botPosition === "center" ? "50%" : "unset",
+                left:
+                  botPosition === "left"
+                    ? "30px"
+                    : botPosition === "center"
+                      ? "50%"
+                      : "unset",
                 right: botPosition === "right" ? "30px" : "unset",
                 transform:
                   botPosition === "center" ? "translateX(-50%)" : "none",
