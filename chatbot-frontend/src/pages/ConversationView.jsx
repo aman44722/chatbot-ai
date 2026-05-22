@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchConversationById } from "../api/conversationApi";
 import { useParams, useNavigate } from "react-router-dom";
 import {
-  Box, Paper, Typography, Avatar, Chip, CircularProgress, IconButton
+  Box, Paper, Typography, Avatar, Chip, CircularProgress, IconButton, Button
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
@@ -11,13 +11,25 @@ export default function ConversationView() {
   const [convo, setConvo] = useState(null);
   const navigate = useNavigate();
 
+  const [notFound, setNotFound] = useState(false);
+
   useEffect(() => {
-    fetchConversationById(id).then(setConvo).catch(console.error);
+    setNotFound(false);
+    fetchConversationById(id)
+      .then(setConvo)
+      .catch(() => setNotFound(true));
   }, [id]);
 
-  if (!convo) return (
+  if (!convo && !notFound) return (
     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh" }}>
       <CircularProgress />
+    </Box>
+  );
+
+  if (notFound || !convo) return (
+    <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh", flexDirection: "column", gap: 2 }}>
+      <Typography variant="h6" color="text.secondary">Conversation not found</Typography>
+      <Button variant="outlined" onClick={() => navigate('/app/conversations')}>Back to Conversations</Button>
     </Box>
   );
 
