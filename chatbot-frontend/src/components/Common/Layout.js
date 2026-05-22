@@ -41,7 +41,7 @@ const Layout = () => {
       </aside>
 
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        <header style={{ height: '60px' }}>
+        <header style={{ height: '64px' }}>
           <Header />
         </header>
 

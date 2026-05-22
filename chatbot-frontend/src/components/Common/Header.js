@@ -77,7 +77,7 @@ const Header = () => {
 
   return (
     <AppBar
-      position="fixed"
+      position="static"
       sx={{
         height: '64px',
         background: 'linear-gradient(135deg, #ffffff 0%, #F6F9FF 50%, #FAFAFF 100%)',
