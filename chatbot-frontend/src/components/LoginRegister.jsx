@@ -82,7 +82,7 @@ const AuthForm = () => {
   };
 
   const fieldSx = {
-    mb: 3.5,
+    mb: 2.5,
     "& .MuiOutlinedInput-root": {
       borderRadius: 2,
       bgcolor: "#FAFAFA",
@@ -92,7 +92,6 @@ const AuthForm = () => {
     },
     "& .MuiInputLabel-root": { fontWeight: 500, color: "#6B7280", "&.Mui-focused": { color: "#4F46E5" } },
     "& .MuiOutlinedInput-notchedOutline": { borderColor: "#E5E7EB", transition: "border-color 0.2s" },
-    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#D1D5DB" },
     "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4F46E5" },
   };
 
@@ -288,7 +287,7 @@ const AuthForm = () => {
             </Box>
 
             {/* Tabs */}
-            <Box sx={{ display: "flex", bgcolor: "#F3F4F6", borderRadius: 2, p: 0.3, mb: 1 }}>
+            <Box sx={{ display: "flex", bgcolor: "#F3F4F6", borderRadius: 2, p: 0.3, mb: 2.5 }}>
               {["Log In", "Sign Up"].map((tab, i) => {
                 const active = (i === 0) === isLogin;
                 return (
@@ -363,7 +362,7 @@ const AuthForm = () => {
                 />
 
                 {isLogin && (
-                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2.5 }}>
                     <FormControlLabel
                       control={<Checkbox size="small" sx={{ "&.Mui-checked": { color: "#4F46E5" } }} />}
                       label={<Typography sx={{ fontSize: 12, color: "#6B7280", fontWeight: 500 }}>Remember me</Typography>}
@@ -380,7 +379,7 @@ const AuthForm = () => {
 
                 {!isLogin && (
                   <>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 3.5 }}>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 2.5 }}>
                       {["8+ Char", "1 Lower", "1 Upper", "1 Special", "1 Num"].map((item) => (
                         <Box key={item} sx={{ fontSize: "10px", bgcolor: "#F3F4F6", color: "#6B7280", px: 1, py: 0.3, borderRadius: "4px", fontWeight: 500 }}>
                           {item}
@@ -398,7 +397,7 @@ const AuthForm = () => {
                       sx={fieldSx}
                     />
 
-                    <Box sx={{ display: "flex", gap: 1, mb: 3.5 }}>
+                    <Box sx={{ display: "flex", gap: 1, mb: 2.5 }}>
                       <TextField
                         select size="small"
                         label="Code"
@@ -418,7 +417,7 @@ const AuthForm = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         required
-                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA", transition: "all 0.2s", "&:hover": { bgcolor: "#F3F4F6" }, "&.Mui-focused": { bgcolor: "#fff", boxShadow: "0 0 0 3px rgba(79,70,229,0.08)" } }, "& .MuiInputLabel-root": { fontWeight: 500, color: "#6B7280", "&.Mui-focused": { color: "#4F46E5" } }, "& .MuiOutlinedInput-notchedOutline": { borderColor: "#E5E7EB" }, "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#D1D5DB" }, "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4F46E5" } }}
+                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA", transition: "all 0.2s", "&:hover": { bgcolor: "#F3F4F6" }, "&.Mui-focused": { bgcolor: "#fff", boxShadow: "0 0 0 3px rgba(79,70,229,0.08)" } }, "& .MuiInputLabel-root": { fontWeight: 500, color: "#6B7280", "&.Mui-focused": { color: "#4F46E5" } }, "& .MuiOutlinedInput-notchedOutline": { borderColor: "#E5E7EB" }, "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4F46E5" } }}
                       />
                     </Box>
 
@@ -427,7 +426,7 @@ const AuthForm = () => {
                       label={<Typography variant="body2" sx={{ fontSize: 11, color: "#6B7280" }}>
                         I agree to <a href="/terms" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Terms</a> & <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Privacy</a>
                       </Typography>}
-                      sx={{ mb: 3.5 }}
+                      sx={{ mb: 2.5 }}
                     />
                   </>
                 )}
@@ -442,7 +441,7 @@ const AuthForm = () => {
                   fullWidth
                   endIcon={<ArrowForwardIcon />}
                   sx={{
-                    mt: 3.5, py: 1.2, borderRadius: 2, textTransform: "none", fontWeight: 700, fontSize: 14,
+                    mt: 2.5, py: 1.2, borderRadius: 2, textTransform: "none", fontWeight: 700, fontSize: 14,
                     background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
                     boxShadow: "0 4px 16px rgba(79,70,229,0.3)",
                     "&:hover": { boxShadow: "0 8px 24px rgba(79,70,229,0.4)" },
@@ -451,7 +450,7 @@ const AuthForm = () => {
                   {isLogin ? "Login to Dashboard" : "Create Free Account"}
                 </Button>
 
-                <Typography align="center" mt={3.5} sx={{ fontSize: 12, color: "#6B7280" }}>
+                <Typography align="center" mt={2.5} sx={{ fontSize: 12, color: "#6B7280" }}>
                   {isLogin ? (
                     <>Don't have an account?{" "}
                       <Button variant="text" onClick={toggleMode} sx={{ textTransform: "none", fontWeight: 700, fontSize: 12, color: "#4F46E5", p: 0, minWidth: "auto" }}>
