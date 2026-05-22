@@ -176,14 +176,44 @@ export default function Chats() {
     activeIdRef.current = activeId;
   }, [activeId]);
 
-  // Connect socket and listen for live updates
+  // Poll messages for live conversations (fallback when WebSocket unavailable)
+  useEffect(() => {
+    if (livePollingRef.current) clearInterval(livePollingRef.current);
+    if (!convo || convo.status !== "live_requested") return;
+    prevMsgCountRef.current = convo.messages?.length || 0;
+
+    livePollingRef.current = setInterval(async () => {
+      if (!convo?.chatbotId || !convo?.sessionId) return;
+      try {
+        const res = await fetchMessagesBySession(convo.chatbotId, convo.sessionId);
+        if (res.ok) {
+          const newLen = res.messages.length;
+          if (newLen > prevMsgCountRef.current) {
+            const newMsgs = res.messages.slice(prevMsgCountRef.current);
+            if (newMsgs.some(m => m.sender === "user")) {
+              playNotification();
+            }
+            prevMsgCountRef.current = newLen;
+          }
+          setConvo(prev => prev ? { ...prev, messages: res.messages, status: res.status } : prev);
+        }
+      } catch { /* silent */ }
+    }, 4000);
+
+    return () => clearInterval(livePollingRef.current);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [convo?.status, convo?._id]);
+
+  // Connect socket and listen for live updates (supplement to polling)
   useEffect(() => {
     const socket = connectSocket();
     socketRef.current = socket;
 
-    if (convo?.chatbotId && convo?.sessionId) {
+    if (socket?.connected && convo?.chatbotId && convo?.sessionId) {
       joinConversation(convo.chatbotId, convo.sessionId);
     }
+
+    if (!socket?.connected) return;
 
     const handleMessageUpdate = async ({ chatbotId, sessionId }) => {
       if (convo?.chatbotId === chatbotId && convo?.sessionId === sessionId) {
@@ -211,9 +241,7 @@ export default function Chats() {
       );
     };
 
-    const handleLiveRequest = ({ chatbotId, sessionId }) => {
-      loadConversations(true);
-    };
+    const handleLiveRequest = () => loadConversations(true);
 
     socket.on("message-update", handleMessageUpdate);
     socket.on("status-updated", handleStatusUpdate);

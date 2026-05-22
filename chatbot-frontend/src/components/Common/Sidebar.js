@@ -61,7 +61,7 @@ const Sidebar = () => {
     }
   }, []);
 
-  // Initial fetch + real-time updates via WebSocket
+  // Initial fetch + polling fallback + real-time updates via WebSocket
   useEffect(() => {
     const load = () => {
       fetchConversations()
@@ -82,18 +82,26 @@ const Sidebar = () => {
     };
     load();
 
-    const socket = connectSocket();
+    // Polling fallback every 30s
+    const interval = setInterval(load, 30000);
 
+    const socket = connectSocket();
     const handleLiveRequest = () => load();
     const handleStatusUpdate = () => load();
-    socket.on("live-request", handleLiveRequest);
-    socket.on("status-updated", handleStatusUpdate);
-    socket.on("reopen-conversation", handleLiveRequest);
+
+    if (socket?.connected) {
+      socket.on("live-request", handleLiveRequest);
+      socket.on("status-updated", handleStatusUpdate);
+      socket.on("reopen-conversation", handleLiveRequest);
+    }
 
     return () => {
-      socket.off("live-request", handleLiveRequest);
-      socket.off("status-updated", handleStatusUpdate);
-      socket.off("reopen-conversation", handleLiveRequest);
+      clearInterval(interval);
+      if (socket?.connected) {
+        socket.off("live-request", handleLiveRequest);
+        socket.off("status-updated", handleStatusUpdate);
+        socket.off("reopen-conversation", handleLiveRequest);
+      }
     };
   }, []);
 
