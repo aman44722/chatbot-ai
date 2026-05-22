@@ -4,12 +4,11 @@ import { RgbaColorPicker } from "react-colorful";
 
 const SectionCard = ({ title, desc, children, noHover }) => (
   <Box sx={{
-    bgcolor: "#f9fafb", borderRadius: 2.5, p: 2.5, mb: 2,
+    bgcolor: "#f9fafb", borderRadius: 2.5, p: 1.5, mb: 1.5,
     border: "1px solid #f3f4f6",
-    ...(noHover ? {} : { "&:hover": { borderColor: "#e5e7eb", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" } }),
   }}>
-    <Typography sx={{ fontWeight: 700, fontSize: 14, color: "#111827", mb: 0.2 }}>{title}</Typography>
-    {desc && <Typography sx={{ fontSize: 11, color: "#9ca3af", mb: 1.5 }}>{desc}</Typography>}
+    <Typography sx={{ fontWeight: 700, fontSize: 13, color: "#111827", mb: 0.1 }}>{title}</Typography>
+    {desc && <Typography sx={{ fontSize: 11, color: "#9ca3af", mb: 1 }}>{desc}</Typography>}
     {children}
   </Box>
 );
@@ -78,36 +77,36 @@ const ThemeSettings = ({ themeColors, setThemeColors, overlayOpacity, setOverlay
   return (
     <div>
       <SectionCard title="Theme Presets" desc="Choose a pre-built color theme.">
-        <Box sx={{ position: "relative", mt: 1 }}>
+        <Box sx={{ position: "relative", mt: 0.5 }}>
           <Box onClick={() => setShowDropdown(!showDropdown)}
             onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
             sx={{
-              display: "flex", gap: 1.5, p: 1.5, borderRadius: 2, cursor: "pointer",
+              display: "flex", gap: 1, p: 1, borderRadius: 1.5, cursor: "pointer",
               bgcolor: hovered ? "#f3f4f6" : "#fff", border: "1px solid #e5e7eb",
               alignItems: "center", transition: "all 0.2s",
             }}>
             {["header", "question", "answer", "option", "optionBorder"].map((key) => (
-              <Box key={key} sx={{ width: 20, height: 20, borderRadius: "6px", bgcolor: themeColors[key], border: "2px solid #e5e7eb" }} />
+              <Box key={key} sx={{ width: 18, height: 18, borderRadius: "5px", bgcolor: themeColors[key], border: "2px solid #e5e7eb" }} />
             ))}
-            <Box sx={{ ml: "auto", width: 0, height: 0, borderLeft: "6px solid transparent", borderRight: "6px solid transparent", borderTop: "6px solid #6b7280" }} />
+            <Box sx={{ ml: "auto", width: 0, height: 0, borderLeft: "5px solid transparent", borderRight: "5px solid transparent", borderTop: "5px solid #6b7280" }} />
           </Box>
 
           {showDropdown && (
             <Box sx={{
               position: "absolute", top: "100%", left: 0, right: 0, mt: 1, zIndex: 10,
-              bgcolor: "#fff", border: "1px solid #e5e7eb", borderRadius: 2,
-              boxShadow: "0 8px 24px rgba(0,0,0,0.08)", p: 2, maxHeight: 320, overflowY: "auto",
+              bgcolor: "#fff", border: "1px solid #e5e7eb", borderRadius: 1.5,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)", p: 1.5, maxHeight: 280, overflowY: "auto",
             }}>
               {themePresets.map((theme, idx) => (
-                <Box key={idx} sx={{ mb: 1.5 }}>
-                  <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#6b7280", mb: 0.5 }}>{theme.title}</Typography>
+                <Box key={idx} sx={{ mb: 1 }}>
+                  <Typography sx={{ fontSize: 11, fontWeight: 600, color: "#6b7280", mb: 0.3 }}>{theme.title}</Typography>
                   <Box onClick={() => setThemeColors({
                     header: theme.colors[0], question: theme.colors[1],
                     answer: theme.colors[2], option: theme.colors[3],
                     optionBorder: theme.colors[4], chatBackground: themeColors.chatBackground || "#ffffff",
-                  })} sx={{ display: "flex", gap: 1, p: 1, borderRadius: 1.5, border: "1px solid #f3f4f6", cursor: "pointer", "&:hover": { bgcolor: "#f9fafb" } }}>
+                  })} sx={{ display: "flex", gap: 0.8, p: 0.8, borderRadius: 1, border: "1px solid #f3f4f6", cursor: "pointer", "&:hover": { bgcolor: "#f9fafb" } }}>
                     {theme.colors.map((color, i) => (
-                      <Box key={i} sx={{ width: 22, height: 22, borderRadius: "6px", bgcolor: color, border: "1px solid #e5e7eb" }} />
+                      <Box key={i} sx={{ width: 20, height: 20, borderRadius: "5px", bgcolor: color, border: "1px solid #e5e7eb" }} />
                     ))}
                   </Box>
                 </Box>
@@ -117,28 +116,28 @@ const ThemeSettings = ({ themeColors, setThemeColors, overlayOpacity, setOverlay
         </Box>
       </SectionCard>
 
-      <SectionCard title="Custom Colors" desc="Fine-tune each element color individually.">
+      <SectionCard title="Custom Colors" desc="Fine-tune each element color.">
         {["header", "question", "answer", "option", "optionBorder"].map((key) => (
-          <Box key={key} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 0.8 }}>
-            <Typography sx={{ fontSize: 12, fontWeight: 500, color: "#374151" }}>{colorLabels[key]}</Typography>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Typography sx={{ fontSize: 11, color: "#9ca3af", fontFamily: "monospace" }}>{themeColors[key]}</Typography>
+          <Box key={key} sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", py: 0.6 }}>
+            <Typography sx={{ fontSize: 11, fontWeight: 500, color: "#374151" }}>{colorLabels[key]}</Typography>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Typography sx={{ fontSize: 10, color: "#9ca3af", fontFamily: "monospace" }}>{themeColors[key]}</Typography>
               <input type="color" value={themeColors[key]}
                 onChange={(e) => setThemeColors({ ...themeColors, [key]: e.target.value })}
-                style={{ width: 36, height: 30, borderRadius: "6px", border: "1px solid #e5e7eb", cursor: "pointer", padding: 0 }} />
+                style={{ width: 30, height: 26, borderRadius: "5px", border: "1px solid #e5e7eb", cursor: "pointer", padding: 0 }} />
             </Box>
           </Box>
         ))}
       </SectionCard>
 
-      <SectionCard title="Chat Background" desc="Set the background style for the chat area.">
-        <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+      <SectionCard title="Chat Background" desc="Background style for the chat area.">
+        <Box sx={{ display: "flex", gap: 0.5, mb: 1.5 }}>
           {["Gradient", "Color", "Image"].map((tab) => {
             const sel = selectedTab === tab;
             return (
               <Button key={tab} onClick={() => setSelectedTab(tab)} size="small"
                 sx={{
-                  flex: 1, borderRadius: 2, textTransform: "none", fontWeight: 600, fontSize: 11,
+                  flex: 1, borderRadius: 1.5, textTransform: "none", fontWeight: 600, fontSize: 11, minWidth: 0, px: 0.5,
                   bgcolor: sel ? "#6366f1" : "#f3f4f6", color: sel ? "#fff" : "#6b7280",
                   "&:hover": { bgcolor: sel ? "#4f46e5" : "#e5e7eb" },
                 }}>
@@ -149,14 +148,14 @@ const ThemeSettings = ({ themeColors, setThemeColors, overlayOpacity, setOverlay
         </Box>
 
         {selectedTab === "Gradient" && (
-          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 1, maxHeight: 260, overflowY: "auto", px: 0.5 }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 0.8, maxHeight: 200, overflowY: "auto" }}>
             {gradientPresets.map((gradient, idx) => {
               const sel = themeColors.chatBackground === gradient;
               return (
                 <Box key={idx} onClick={() => setThemeColors({ ...themeColors, chatBackground: gradient })}
                   sx={{ width: "100%", pb: "100%", borderRadius: "50%", background: gradient, cursor: "pointer", position: "relative",
-                    border: sel ? "3px solid #6366f1" : "1px solid #e5e7eb", transition: "all 0.2s",
-                    "&:hover": { transform: "scale(1.1)" },
+                    border: sel ? "2.5px solid #6366f1" : "1px solid #e5e7eb", transition: "all 0.2s",
+                    "&:hover": { transform: "scale(1.08)" },
                   }} />
               );
             })}
@@ -171,7 +170,7 @@ const ThemeSettings = ({ themeColors, setThemeColors, overlayOpacity, setOverlay
                 setThemeColors({ ...themeColors, chatBackground: `rgba(${newColor.r},${newColor.g},${newColor.b},${newColor.a})` });
               }}
               style={{ width: "100%" }} />
-            <Typography sx={{ textAlign: "center", fontWeight: 500, fontSize: 12, color: "#6b7280", mt: 1 }}>
+            <Typography sx={{ textAlign: "center", fontWeight: 500, fontSize: 11, color: "#6b7280", mt: 0.5 }}>
               rgba({chatColor.r}, {chatColor.g}, {chatColor.b}, {chatColor.a})
             </Typography>
           </Box>
@@ -179,13 +178,13 @@ const ThemeSettings = ({ themeColors, setThemeColors, overlayOpacity, setOverlay
 
         {selectedTab === "Image" && (
           <Box>
-            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 1, maxHeight: 200, overflowY: "auto", mb: 2 }}>
+            <Box sx={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 0.8, maxHeight: 160, overflowY: "auto", mb: 1.5 }}>
               {backgroundImages.map((img, idx) => {
                 const sel = themeColors.chatBackground === `url(${img})`;
                 return (
                   <Box key={idx} onClick={() => setThemeColors({ ...themeColors, chatBackground: `url(${img})` })}
                     sx={{
-                      height: 56, borderRadius: 1.5, overflow: "hidden", cursor: "pointer", position: "relative",
+                      height: 48, borderRadius: 1.5, overflow: "hidden", cursor: "pointer",
                       border: sel ? "2px solid #6366f1" : "1px solid #e5e7eb",
                     }}>
                     <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -195,7 +194,7 @@ const ThemeSettings = ({ themeColors, setThemeColors, overlayOpacity, setOverlay
               {uploadedImage && (
                 <Box onClick={() => setThemeColors({ ...themeColors, chatBackground: `url(${uploadedImage})` })}
                   sx={{
-                    height: 56, borderRadius: 1.5, overflow: "hidden", cursor: "pointer",
+                    height: 48, borderRadius: 1.5, overflow: "hidden", cursor: "pointer",
                     border: themeColors.chatBackground === `url(${uploadedImage})` ? "2px solid #6366f1" : "1px solid #e5e7eb",
                   }}>
                   <img src={uploadedImage} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -204,11 +203,11 @@ const ThemeSettings = ({ themeColors, setThemeColors, overlayOpacity, setOverlay
             </Box>
 
             <Button onClick={() => fileInputRef.current.click()} variant="outlined" size="small" fullWidth
-              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600, fontSize: 12, borderColor: "#e5e7eb", color: "#374151", "&:hover": { borderColor: "#6366f1" } }}>
+              sx={{ borderRadius: 1.5, textTransform: "none", fontWeight: 600, fontSize: 11, borderColor: "#e5e7eb", color: "#374151", "&:hover": { borderColor: "#6366f1" } }}>
               Upload Image
             </Button>
-            <Typography sx={{ fontSize: 10, color: "#9ca3af", textAlign: "center", mt: 0.5 }}>
-              File must be less than 5 MB &bull; 380×585 recommended
+            <Typography sx={{ fontSize: 10, color: "#9ca3af", textAlign: "center", mt: 0.3 }}>
+              Max 5 MB &bull; 380×585 recommended
             </Typography>
             <input ref={fileInputRef} type="file" accept="image/*" style={{ display: "none" }}
               onChange={(e) => {
@@ -223,12 +222,12 @@ const ThemeSettings = ({ themeColors, setThemeColors, overlayOpacity, setOverlay
                 } else alert("Image must be less than 5MB");
               }} />
 
-            <Box sx={{ mt: 2 }}>
-              <Typography sx={{ fontWeight: 500, fontSize: 12, color: "#374151", mb: 0.5 }}>
+            <Box sx={{ mt: 1.5 }}>
+              <Typography sx={{ fontWeight: 500, fontSize: 11, color: "#374151", mb: 0.3 }}>
                 Overlay Opacity ({overlayOpacity}%)
               </Typography>
-              <Slider value={overlayOpacity} onChange={(e, val) => setOverlayOpacity(val)} min={0} max={100}
-                sx={{ color: "#6366f1", "& .MuiSlider-thumb": { width: 16, height: 16 } }} />
+              <Slider value={overlayOpacity} onChange={(e, val) => setOverlayOpacity(val)} min={0} max={100} size="small"
+                sx={{ color: "#6366f1", "& .MuiSlider-thumb": { width: 14, height: 14 } }} />
             </Box>
           </Box>
         )}

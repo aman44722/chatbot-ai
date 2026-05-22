@@ -16,12 +16,11 @@ import avt10 from "../../../assets/images/avatar/avatar-v111.svg";
 
 const SectionCard = ({ title, desc, children }) => (
   <Box sx={{
-    bgcolor: "#f9fafb", borderRadius: 2.5, p: 2.5, mb: 2,
+    bgcolor: "#f9fafb", borderRadius: 2.5, p: 1.5, mb: 1.5,
     border: "1px solid #f3f4f6",
-    "&:hover": { borderColor: "#e5e7eb", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" },
   }}>
-    <Typography sx={{ fontWeight: 700, fontSize: 14, color: "#111827", mb: 0.2 }}>{title}</Typography>
-    {desc && <Typography sx={{ fontSize: 11, color: "#9ca3af", mb: 1.5 }}>{desc}</Typography>}
+    <Typography sx={{ fontWeight: 700, fontSize: 13, color: "#111827", mb: 0.1 }}>{title}</Typography>
+    {desc && <Typography sx={{ fontSize: 11, color: "#9ca3af", mb: 1 }}>{desc}</Typography>}
     {children}
   </Box>
 );
@@ -34,21 +33,16 @@ const LogoSettings = ({ companyLogo, setCompanyLogo, avatar, setAvatar }) => {
   const [showLeftArrow, setShowLeftArrow] = useState(false);
 
   useEffect(() => {
-    const scrollContainer = scrollRef.current;
-    if (!scrollContainer) return;
-    const handleScroll = () => setShowLeftArrow(scrollContainer.scrollLeft > 5);
-    scrollContainer.addEventListener("scroll", handleScroll);
+    const el = scrollRef.current;
+    if (!el) return;
+    const handleScroll = () => setShowLeftArrow(el.scrollLeft > 5);
+    el.addEventListener("scroll", handleScroll);
     handleScroll();
-    return () => scrollContainer.removeEventListener("scroll", handleScroll);
+    return () => el.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const scrollLeft = () => {
-    if (scrollRef.current) scrollRef.current.scrollBy({ left: -scrollRef.current.offsetWidth * 0.2, behavior: "smooth" });
-  };
-
-  const scrollRight = () => {
-    if (scrollRef.current) scrollRef.current.scrollBy({ left: scrollRef.current.offsetWidth * 0.2, behavior: "smooth" });
-  };
+  const scrollLeft = () => scrollRef.current?.scrollBy({ left: -120, behavior: "smooth" });
+  const scrollRight = () => scrollRef.current?.scrollBy({ left: 120, behavior: "smooth" });
 
   const handleAvatarUpload = (e) => {
     const file = e.target.files[0];
@@ -68,26 +62,26 @@ const LogoSettings = ({ companyLogo, setCompanyLogo, avatar, setAvatar }) => {
     <div>
       <SectionCard title="Company Logo" desc="Upload your brand logo that appears in the chat header.">
         {companyLogo ? (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mt: 0.5 }}>
             <Box sx={{ position: "relative" }}>
-              <Box sx={{ width: 80, height: 80, borderRadius: "50%", overflow: "hidden", border: "3px solid #e5e7eb", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+              <Box sx={{ width: 64, height: 64, borderRadius: "50%", overflow: "hidden", border: "3px solid #e5e7eb", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
                 <img src={companyLogo} alt="logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </Box>
-              <IconButton onClick={() => setCompanyLogo("")} size="small" sx={{ position: "absolute", top: -6, right: -6, bgcolor: "#fff", boxShadow: "0 2px 6px rgba(0,0,0,0.12)", "&:hover": { bgcolor: "#fee2e2" }, width: 22, height: 22 }}>
-                <CloseIcon sx={{ fontSize: 14, color: "#ef4444" }} />
+              <IconButton onClick={() => setCompanyLogo("")} size="small" sx={{ position: "absolute", top: -6, right: -6, bgcolor: "#fff", boxShadow: "0 2px 6px rgba(0,0,0,0.12)", "&:hover": { bgcolor: "#fee2e2" }, width: 20, height: 20 }}>
+                <CloseIcon sx={{ fontSize: 12, color: "#ef4444" }} />
               </IconButton>
             </Box>
-            <Typography sx={{ fontSize: 12, color: "#9ca3af" }}>Click ✕ to remove</Typography>
+            <Typography sx={{ fontSize: 11, color: "#9ca3af" }}>Click ✕ to remove</Typography>
           </Box>
         ) : (
           <Box component="label" htmlFor="upload-logo" sx={{
             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-            border: "2px dashed #d1d5db", borderRadius: 2.5, p: 3, cursor: "pointer", mt: 1,
+            border: "2px dashed #d1d5db", borderRadius: 2, p: 2, cursor: "pointer", mt: 0.5,
             transition: "all 0.2s", "&:hover": { borderColor: "#6366f1", bgcolor: "#6366f104" },
           }}>
-            <CloudUploadIcon sx={{ fontSize: 36, color: "#9ca3af", mb: 1 }} />
-            <Typography sx={{ fontWeight: 600, fontSize: 13, color: "#6b7280" }}>Upload Logo</Typography>
-            <Typography sx={{ fontSize: 11, color: "#9ca3af", mt: 0.3 }}>File size must be less than 5 MB</Typography>
+            <CloudUploadIcon sx={{ fontSize: 28, color: "#9ca3af", mb: 0.5 }} />
+            <Typography sx={{ fontWeight: 600, fontSize: 12, color: "#6b7280" }}>Upload Logo</Typography>
+            <Typography sx={{ fontSize: 10, color: "#9ca3af", mt: 0.2 }}>Max 5 MB</Typography>
             <input id="upload-logo" type="file" accept="image/*" style={{ display: "none" }}
               onChange={(e) => {
                 const file = e.target.files[0];
@@ -101,36 +95,37 @@ const LogoSettings = ({ companyLogo, setCompanyLogo, avatar, setAvatar }) => {
         )}
       </SectionCard>
 
-      <SectionCard title="Bot Avatar" desc="Choose an avatar for your bot from the options below.">
-        <Box sx={{ position: "relative", mt: 1 }}>
+      <SectionCard title="Bot Avatar" desc="Choose an avatar for your bot.">
+        <Box sx={{ position: "relative", mt: 0.5 }}>
           {showLeftArrow && (
             <Box onClick={scrollLeft} sx={{
               position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", zIndex: 1,
-              width: 22, height: 40, borderRadius: "0 8px 8px 0", bgcolor: "#6366f1", color: "#fff",
-              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14,
+              width: 18, height: 32, borderRadius: "0 6px 6px 0", bgcolor: "#6366f1", color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 11,
               "&:hover": { bgcolor: "#4f46e5" },
             }}>◀</Box>
           )}
 
           <Box ref={scrollRef} sx={{
-            display: "flex", overflowX: "auto", gap: 1.5, p: 1.5,
-            borderRadius: 2.5, border: "1px solid #e5e7eb", scrollBehavior: "smooth", bgcolor: "#fff",
+            display: "flex", overflowX: "auto", gap: 1, p: 1,
+            borderRadius: 2, border: "1px solid #e5e7eb", scrollBehavior: "smooth", bgcolor: "#fff",
           }}>
             <Box component="label" htmlFor="upload-avatar" sx={{
-              minWidth: 56, minHeight: 56, borderRadius: "50%", bgcolor: "#f3f4f6",
+              minWidth: 40, minHeight: 40, borderRadius: "50%", bgcolor: "#f3f4f6",
               display: "flex", justifyContent: "center", alignItems: "center",
-              cursor: "pointer", border: "2px dashed #d1d5db", "&:hover": { borderColor: "#6366f1" },
+              cursor: "pointer", border: "2px dashed #d1d5db", flexShrink: 0,
+              "&:hover": { borderColor: "#6366f1" },
             }}>
-              <AddIcon sx={{ width: 28, height: 28, color: "#9ca3af" }} />
+              <AddIcon sx={{ width: 20, height: 20, color: "#9ca3af" }} />
               <input id="upload-avatar" type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarUpload} />
             </Box>
 
             {avatarOptions.map((avt, index) => (
               <Box key={index} onClick={() => setAvatar(avt)} sx={{
-                minWidth: 56, minHeight: 56, borderRadius: "50%", overflow: "hidden",
-                border: avt === avatar ? "3px solid #10b981" : "2px solid transparent",
+                minWidth: 40, minHeight: 40, borderRadius: "50%", overflow: "hidden",
+                border: avt === avatar ? "2.5px solid #10b981" : "2px solid transparent",
                 cursor: "pointer", transition: "all 0.2s", flexShrink: 0,
-                "&:hover": { transform: "scale(1.05)" },
+                "&:hover": { transform: "scale(1.08)" },
               }}>
                 <img src={avt} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
               </Box>
@@ -139,8 +134,8 @@ const LogoSettings = ({ companyLogo, setCompanyLogo, avatar, setAvatar }) => {
 
           <Box onClick={scrollRight} sx={{
             position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", zIndex: 1,
-            width: 22, height: 40, borderRadius: "8px 0 0 8px", bgcolor: "#6366f1", color: "#fff",
-            display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14,
+            width: 18, height: 32, borderRadius: "6px 0 0 6px", bgcolor: "#6366f1", color: "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 11,
             "&:hover": { bgcolor: "#4f46e5" },
           }}>▶</Box>
         </Box>

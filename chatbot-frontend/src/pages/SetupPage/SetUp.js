@@ -72,43 +72,44 @@ const SetUp = () => {
 
   return (
     <Box sx={{
-      display: 'flex', height: 'calc(100vh - 60px)', gap: 2, p: 1.5,
+      display: 'flex', height: 'calc(100vh - 60px)', gap: 1.5, p: 1.5,
       background: "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)",
+      overflow: 'hidden',
     }}>
       {/* Left Panel */}
       <Box className="custom-scrollbar" sx={{
-        width: { xs: '100%', md: 320 }, flexShrink: 0,
+        width: { xs: '100%', md: 340 }, minWidth: 0, flexShrink: 0,
         borderRadius: 3,
         background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
         border: "1px solid rgba(229,231,235,0.5)",
-        overflowY: 'auto', display: 'flex', flexDirection: 'column',
+        overflowY: 'auto', overflowX: 'hidden',
+        display: 'flex', flexDirection: 'column',
       }}>
         {/* Tab Navigation */}
         <Box sx={{
           position: 'sticky', top: 0, zIndex: 9,
           background: "rgba(255,255,255,0.9)", backdropFilter: "blur(12px)",
-          borderBottom: "1px solid #f3f4f6", px: 2, py: 1.5,
+          borderBottom: "1px solid #f3f4f6", px: 1.5, py: 1.5,
         }}>
-          <Typography sx={{ fontWeight: 700, fontSize: 16, color: "#111827", mb: 1 }}>
+          <Typography sx={{ fontWeight: 700, fontSize: 15, color: "#111827", mb: 0.8 }}>
             Bot Settings
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
             {TABS.map(tab => {
               const sel = activeTab === tab.key;
               return (
                 <Button
                   key={tab.key}
                   onClick={() => setActiveTab(tab.key)}
-                  startIcon={tab.icon}
                   size="small"
                   sx={{
-                    flex: 1, borderRadius: 2, textTransform: 'none',
-                    fontWeight: sel ? 700 : 500, fontSize: 12,
+                    flex: 1, borderRadius: 1.5, textTransform: 'none',
+                    fontWeight: sel ? 700 : 500, fontSize: 11, minWidth: 0,
+                    px: 0.5, py: 0.6,
                     bgcolor: sel ? '#6366f1' : 'transparent',
                     color: sel ? '#fff' : '#6b7280',
                     border: sel ? 'none' : '1px solid #e5e7eb',
                     '&:hover': { bgcolor: sel ? '#4f46e5' : '#f3f4f6' },
-                    py: 0.8,
                   }}
                 >
                   {tab.label}
@@ -119,7 +120,7 @@ const SetUp = () => {
         </Box>
 
         {/* Tab Content */}
-        <Box sx={{ flex: 1, p: 2 }}>
+        <Box sx={{ flex: 1, p: 1.5, overflowX: 'hidden' }}>
           {activeTab === 'text' && (
             <TextSettings
               botName={botName}
@@ -175,26 +176,25 @@ const SetUp = () => {
         <Box sx={{
           position: 'sticky', bottom: 0, zIndex: 9,
           background: "rgba(255,255,255,0.9)", backdropFilter: "blur(12px)",
-          borderTop: "1px solid #f3f4f6", px: 2, py: 1.5,
+          borderTop: "1px solid #f3f4f6", px: 1.5, py: 1.5,
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
         }}>
-          <Typography sx={{ fontWeight: 600, fontSize: 13, color: "#374151" }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 12, color: "#374151" }}>
             Apply Changes?
           </Typography>
-          <Box sx={{ display: 'flex', gap: 1 }}>
+          <Box sx={{ display: 'flex', gap: 0.5 }}>
             <Button onClick={handleReset} variant="outlined" size="small" startIcon={<RestartAltIcon />}
-              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, fontSize: 12, borderColor: '#e5e7eb', color: '#6b7280', '&:hover': { borderColor: '#ef4444', color: '#ef4444' } }}>
+              sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 600, fontSize: 11, borderColor: '#e5e7eb', color: '#6b7280', px: 1, minWidth: 0, '&:hover': { borderColor: '#ef4444', color: '#ef4444' } }}>
               Reset
             </Button>
             <Button onClick={handleSave} variant="contained" size="small" startIcon={<SaveIcon />}
-              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, fontSize: 12, bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' } }}>
+              sx={{ borderRadius: 1.5, textTransform: 'none', fontWeight: 600, fontSize: 11, bgcolor: '#6366f1', px: 1, minWidth: 0, '&:hover': { bgcolor: '#4f46e5' } }}>
               Save
             </Button>
           </Box>
         </Box>
-        <ToastContainer />
       </Box>
-
+      <ToastContainer />
       {/* Right Preview Panel */}
       <ChatPreview
         isChatOpen={isChatOpen}
