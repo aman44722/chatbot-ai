@@ -177,6 +177,8 @@ const Sidebar = () => {
     );
   };
 
+  const selectedBotName = bots.find(b => b._id === selectedBotId)?.name || '';
+
   return (
     <Drawer
       variant="permanent"
@@ -201,13 +203,23 @@ const Sidebar = () => {
       {bots.length > 0 && (
         <Box sx={{ px: 1.5, py: 1 }}>
           <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', mb: 0.5, px: 0.5 }}>
-            ACTIVE BOT
+            {selectedBotId ? 'ACTIVE BOT' : 'SELECT BOT'}
           </Typography>
           <FormControl fullWidth size="small">
             <Select
               value={selectedBot}
               onChange={handleBotChange}
               displayEmpty
+              renderValue={(val) => {
+                if (!val) return <Typography sx={{ fontSize: 12, color: '#9ca3af' }}>Select a bot...</Typography>;
+                const bot = bots.find(b => b._id === val);
+                return (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <SmartToyIcon sx={{ fontSize: 15, color: PRIMARY_COLOR }} />
+                    <Typography sx={{ fontSize: 12, fontWeight: 600 }}>{bot?.name}</Typography>
+                  </Box>
+                );
+              }}
               sx={{
                 height: 32, fontSize: 12, borderRadius: 1.5,
                 '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
@@ -228,17 +240,14 @@ const Sidebar = () => {
         </Box>
       )}
 
-      <List sx={{ px: 1, pt: 1 }}>
-        {mode1Items.map(renderItem)}
-      </List>
-
-      {selectedBotId && (
-        <>
-          <Divider sx={{ mx: 2, my: 1 }} />
-          <List sx={{ px: 1 }}>
-            {mode2Items.map(renderItem)}
-          </List>
-        </>
+      {selectedBotId ? (
+        <List sx={{ px: 1, pt: 1 }}>
+          {mode2Items.map(renderItem)}
+        </List>
+      ) : (
+        <List sx={{ px: 1, pt: 1 }}>
+          {mode1Items.map(renderItem)}
+        </List>
       )}
     </Drawer>
   );
