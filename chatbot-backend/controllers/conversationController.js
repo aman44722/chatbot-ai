@@ -1,21 +1,22 @@
 const Conversation = require("../models/Conversation");
 const { getIO } = require("../socket");
 
-// GET /api/conversation/list  (authenticated — returns conversations for this user's chatbotId)
+// GET /api/conversation/list  (authenticated)
 exports.getConversations = async (req, res) => {
     try {
-        const chatbotId = req.user.id;
+        const filter = { chatbotId: req.user.id };
+        if (req.query.botId) filter.botId = req.query.botId;
         const page = Math.max(1, parseInt(req.query.page) || 1);
         const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
         const skip = (page - 1) * limit;
 
         const [conversations, total] = await Promise.all([
-            Conversation.find({ chatbotId })
-                .select("chatbotId sessionId userName status updatedAt messages")
+            Conversation.find(filter)
+                .select("chatbotId botId sessionId userName status updatedAt messages")
                 .sort({ updatedAt: -1 })
                 .skip(skip)
                 .limit(limit),
-            Conversation.countDocuments({ chatbotId }),
+            Conversation.countDocuments(filter),
         ]);
         res.json({ conversations, total, page, limit, pages: Math.ceil(total / limit) });
     } catch (err) {
@@ -26,8 +27,9 @@ exports.getConversations = async (req, res) => {
 // GET /api/conversation/:id  (authenticated)
 exports.getConversationById = async (req, res) => {
     try {
-        const chatbotId = req.user.id;
-        const conversation = await Conversation.findOne({ _id: req.params.id, chatbotId });
+        const filter = { _id: req.params.id, chatbotId: req.user.id };
+        if (req.query.botId) filter.botId = req.query.botId;
+        const conversation = await Conversation.findOne(filter);
         if (!conversation) return res.status(404).json({ message: "Conversation not found" });
         res.json({ conversation });
     } catch (err) {
@@ -37,7 +39,7 @@ exports.getConversationById = async (req, res) => {
 
 // POST /api/conversation/init
 exports.initConversation = async (req, res) => {
-    const { chatbotId, sessionId, flow, userName } = req.body;
+    const { chatbotId, botId, sessionId, flow, userName } = req.body;
     console.log("📥 INIT called — chatbotId:", chatbotId, "| userName:", userName);
 
     let convo = await Conversation.findOne({ chatbotId, sessionId });
@@ -45,6 +47,7 @@ exports.initConversation = async (req, res) => {
     if (!convo) {
         convo = await Conversation.create({
             chatbotId,
+            botId: botId || undefined,
             sessionId,
             mode: "flow",
             status: "active",
@@ -150,10 +153,14 @@ exports.getMessagesBySession = async (req, res) => {
 
 // POST /api/conversation/message
 exports.saveMessage = async (req, res) => {
-    const { chatbotId, sessionId, sender, text, questionId } = req.body;
+    const { chatbotId, botId, sessionId, sender, text, questionId } = req.body;
 
-    const convo = await Conversation.findOne({ chatbotId, sessionId });
+    let convo = await Conversation.findOne({ chatbotId, sessionId });
     if (!convo) return res.status(404).json({ ok: false });
+
+    if (botId && !convo.botId) {
+        convo.botId = botId;
+    }
 
     convo.messages.push({ sender, text, questionId });
 

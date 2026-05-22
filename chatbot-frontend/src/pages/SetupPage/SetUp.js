@@ -40,20 +40,10 @@ const SetUp = () => {
     const fetchSettings = async () => {
       try {
         const selectedBotId = localStorage.getItem('selectedBotId');
-        if (selectedBotId) {
-          const botData = await getBotById(selectedBotId);
-          if (botData?.botSettings) {
-            dispatch(updateSetting(botData.botSettings));
-          }
-        } else {
-          const user = JSON.parse(localStorage.getItem("user"));
-          const userId = localStorage.getItem("userId");
-          if (user && userId) {
-            const userData = await fetchUserById(userId);
-            if (userData?.botSettings) {
-              dispatch(updateSetting(userData.botSettings));
-            }
-          }
+        if (!selectedBotId) return;
+        const botData = await getBotById(selectedBotId);
+        if (botData?.botSettings) {
+          dispatch(updateSetting(botData.botSettings));
         }
       } catch (err) {
         console.error("Failed to fetch bot settings:", err);
@@ -67,13 +57,12 @@ const SetUp = () => {
   const handleSave = async () => {
     try {
       const selectedBotId = localStorage.getItem('selectedBotId');
-      if (selectedBotId) {
-        const response = await updateBot(selectedBotId, { botSettings });
-        if (response) toast.success('Bot settings updated!!');
-      } else {
-        const response = await EditChatBotSettings(botSettings);
-        if (response) toast.success('Bot settings updated!!');
+      if (!selectedBotId) {
+        toast.error('No bot selected. Select a bot from sidebar first.');
+        return;
       }
+      const response = await updateBot(selectedBotId, { botSettings });
+      if (response) toast.success('Bot settings updated!!');
     } catch (error) {
       console.error('Error updating settings:', error);
       alert('Failed to update settings.');

@@ -90,6 +90,7 @@ const AuthForm = () => {
       const response = isLogin ? await loginUser(payload) : await registerUser(payload);
 
       localStorage.setItem("userId", response.user._id);
+      if (response.botId) localStorage.setItem("selectedBotId", response.botId);
       login(response);
       navigate("/app/dashboard");
     } catch (err) {

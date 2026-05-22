@@ -23,12 +23,24 @@ exports.getBots = async (req, res) => {
     try {
         const userId = req.user.id;
         const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: "User not found" });
 
         let bots;
         if (user.role === 'admin') {
             bots = await Bot.find().populate('userId', 'fullName email').sort({ createdAt: -1 });
         } else {
             bots = await Bot.find({ userId }).sort({ createdAt: -1 });
+        }
+
+        if (bots.length === 0 && user.role !== 'admin') {
+            const bot = new Bot({
+                userId,
+                name: `${user.fullName || user.email}'s Bot`,
+                botSettings: user.botSettings || undefined,
+                flowSetupSetting: user.flowSetupSetting || undefined,
+            });
+            await bot.save();
+            bots = [bot];
         }
 
         res.json(bots);

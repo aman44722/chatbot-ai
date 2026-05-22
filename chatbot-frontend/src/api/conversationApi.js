@@ -9,8 +9,10 @@ const authHeader = () => ({
     headers: { Authorization: `Bearer ${getToken()}` },
 });
 
-export const fetchConversations = async (page = 1, limit = 50) => {
-    const res = await axios.get(`${API}/list?page=${page}&limit=${limit}`, authHeader());
+export const fetchConversations = async (page = 1, limit = 50, botId = '') => {
+    let url = `${API}/list?page=${page}&limit=${limit}`;
+    if (botId) url += `&botId=${botId}`;
+    const res = await axios.get(url, authHeader());
     return res.data.conversations;
 };
 

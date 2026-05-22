@@ -228,6 +228,7 @@ const UserMessage = () => {
     try {
       await axios.post(`${CONV_API}/init`, {
         chatbotId: chatId,
+        botId: chatId,
         sessionId: SESSION_ID,
         flow,
         userName: name,

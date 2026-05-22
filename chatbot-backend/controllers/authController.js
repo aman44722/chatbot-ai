@@ -50,8 +50,9 @@ exports.registerUser = async (req, res) => {
                 _id: newUser._id,
                 email: newUser.email,
                 fullName: newUser.fullName,
-                role: newUser.role
-            }
+                role: newUser.role,
+            },
+            botId: bot._id,
         });
     } catch (error) {
         console.error(error);
@@ -76,6 +77,8 @@ exports.loginUser = async (req, res) => {
             expiresIn: "7d",
         });
 
+        const bots = await Bot.find({ userId: user._id }).limit(1).lean();
+
         res.status(200).json({
             token,
             user: {
@@ -86,6 +89,7 @@ exports.loginUser = async (req, res) => {
                 phone: user.phone,
                 role: user.role,
             },
+            botId: bots[0]?._id || null,
         });
     } catch (error) {
         console.error(error);
@@ -326,7 +330,8 @@ exports.getInstallMeta = async (req, res) => {
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: "User not found" });
         const hasWhitelist = (user.install?.whitelist?.length || 0) > 0;
-        const chatbotId = user.install?.chatbotId || String(user._id);
+        const bots = await Bot.find({ userId: req.user.id }).limit(1).lean();
+        const chatbotId = bots[0]?._id || user.install?.chatbotId || String(user._id);
         res.json({ chatbotId, hasWhitelist });
     } catch (e) {
         res.status(500).json({ message: "Failed to fetch meta" });
@@ -344,7 +349,8 @@ exports.getInstallSnippet = async (req, res) => {
             return res.status(412).json({ hasWhitelist: false, message: "Whitelist empty" });
         }
 
-        const chatbotId = user.install?.chatbotId || String(user._id);
+        const bots = await Bot.find({ userId: req.user.id }).limit(1).lean();
+        const chatbotId = bots[0]?._id || user.install?.chatbotId || String(user._id);
 
         const apiBase = process.env.API_BASE_URL || "http://localhost:5000/api/auth";
         const frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";

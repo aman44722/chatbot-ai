@@ -12,6 +12,7 @@ const MessageSchema = new mongoose.Schema(
 const ConversationSchema = new mongoose.Schema(
     {
         chatbotId: { type: String, required: true, index: true },
+        botId: { type: mongoose.Schema.Types.ObjectId, ref: 'Bot', index: true },
         sessionId: { type: String, required: true },
         mode: { type: String, default: "flow" },
         status: { type: String, default: "active" },

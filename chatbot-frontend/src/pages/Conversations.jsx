@@ -14,7 +14,8 @@ export default function Conversations() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchConversations()
+    const botId = localStorage.getItem('selectedBotId') || '';
+    fetchConversations(1, 50, botId)
       .then(setList)
       .catch(console.error)
       .finally(() => setLoading(false));

@@ -96,15 +96,13 @@ const FlowCanvasComponent = () => {
     const cleanItems = droppedItems.map(({ icon, label, defaultLabel, ...rest }) => rest);
     const payload = { flowSetupSetting: { question: { list: cleanItems } } };
     try {
-      if (selectedBotId) {
-        const response = await updateBot(selectedBotId, payload);
-        if (response) toast.success("Saved successfully");
-        else toast.error("Error saving the questions");
-      } else {
-        const response = await updateUserDetails(userID, token, payload);
-        if (response) toast.success("Saved successfully");
-        else toast.error("Error saving the questions");
+      if (!selectedBotId) {
+        toast.error('No bot selected. Select a bot from sidebar first.');
+        return;
       }
+      const response = await updateBot(selectedBotId, payload);
+      if (response) toast.success("Saved successfully");
+      else toast.error("Error saving the questions");
     } catch (error) {
       console.error("Error saving the questions:", error);
     }
@@ -122,15 +120,9 @@ const FlowCanvasComponent = () => {
     const getQuestions = async () => {
       try {
         const selectedBotId = localStorage.getItem("selectedBotId");
-        if (selectedBotId) {
-          const botData = await getBotById(selectedBotId);
-          setDroppedItems(botData?.flowSetupSetting?.question?.list || []);
-        } else {
-          const userId = localStorage.getItem("userId");
-          if (!userId) throw new Error("User ID is missing in localStorage.");
-          const userData = await fetchUserById(userId);
-          setDroppedItems(userData?.flowSetupSetting?.question?.list || []);
-        }
+        if (!selectedBotId) return;
+        const botData = await getBotById(selectedBotId);
+        setDroppedItems(botData?.flowSetupSetting?.question?.list || []);
       } catch (error) {
         console.error("Error fetching questions:", error);
         enqueueSnackbar("Error fetching questions", { variant: "error" });
