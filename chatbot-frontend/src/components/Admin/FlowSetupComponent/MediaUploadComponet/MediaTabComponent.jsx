@@ -13,6 +13,7 @@ import { styled } from "@mui/material/styles";
 import SearchIcon from "@mui/icons-material/Search";
 import CloseIcon from "@mui/icons-material/Close";
 import axios from "axios";
+import { compressImage } from "../../../../utils/imageCompressor";
 import picImg from "./picture.svg"; // placeholder image
 import { toast } from "react-toastify";
 
@@ -80,20 +81,17 @@ const MediaTabComponent = ({ media, setMedia, questionChanged }) => {
     }
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 100 * 1024) {
-        toast.error("File must be under 100KB");
-        e.target.value = "";
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setMedia(reader.result);
+      try {
+        const compressed = await compressImage(file, 400, 0.6);
+        setMedia(compressed);
         setSelectedGifUrl("");
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        toast.error("Failed to compress image");
+      }
+      e.target.value = "";
     }
   };
 

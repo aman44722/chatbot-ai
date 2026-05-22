@@ -7,6 +7,7 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import ShowOptionsButtons from "./Options/ShowOptionsButtons";
 import OptionInputRow from "./Options/OptionInputRow";
 import { toast } from "react-toastify";
+import { compressImage } from "../../../../../../../utils/imageCompressor";
 
 const SingleChoiceTab = ({
   skipOption, setSkipOption,
@@ -23,20 +24,17 @@ const SingleChoiceTab = ({
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      if (file.size > 100 * 1024) {
-        toast.error("Image must be under 100KB");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onloadend = () => {
+      try {
+        const compressed = await compressImage(file, 200, 0.6);
         const updated = [...imageChoices];
-        updated[index] = { ...updated[index], image: reader.result };
+        updated[index] = { ...updated[index], image: compressed };
         setImageChoices(updated);
-      };
-      reader.readAsDataURL(file);
+      } catch (err) {
+        toast.error("Failed to compress image");
+      }
     };
     input.click();
   };
