@@ -15,6 +15,7 @@ import DownloadIcon from "@mui/icons-material/Download";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
 import { fetchConversations, fetchConversationById, updateConversationStatus, sendAdminMessage, fetchMessagesBySession } from "../api/conversationApi";
+import { connectSocket, joinConversation, leaveConversation } from "../api/socket";
 
 const PANEL_BG = "#f4f6fb";
 const WHITE = "#ffffff";
@@ -146,6 +147,7 @@ export default function Chats() {
   const activeIdRef = useRef(null);
   const prevMsgCountRef = useRef(0);
   const scrollBoxRef = useRef(null);
+  const socketRef = useRef(null);
 
   const loadConversations = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
@@ -174,34 +176,59 @@ export default function Chats() {
     activeIdRef.current = activeId;
   }, [activeId]);
 
-  // Poll messages for live conversations
+  // Connect socket and listen for live updates
   useEffect(() => {
-    if (livePollingRef.current) clearInterval(livePollingRef.current);
-    if (!convo || convo.status !== "live_requested") return;
-    prevMsgCountRef.current = convo.messages?.length || 0;
+    const socket = connectSocket();
+    socketRef.current = socket;
 
-    livePollingRef.current = setInterval(async () => {
-      if (!convo?.chatbotId || !convo?.sessionId) return;
-      try {
-        const res = await fetchMessagesBySession(convo.chatbotId, convo.sessionId);
-        if (res.ok) {
-          const newLen = res.messages.length;
-          // Play sound only for new user messages (not admin's own messages)
-          if (newLen > prevMsgCountRef.current) {
-            const newMsgs = res.messages.slice(prevMsgCountRef.current);
-            if (newMsgs.some(m => m.sender === "user")) {
+    if (convo?.chatbotId && convo?.sessionId) {
+      joinConversation(convo.chatbotId, convo.sessionId);
+    }
+
+    const handleMessageUpdate = async ({ chatbotId, sessionId }) => {
+      if (convo?.chatbotId === chatbotId && convo?.sessionId === sessionId) {
+        try {
+          const res = await fetchMessagesBySession(chatbotId, sessionId);
+          if (res.ok) {
+            const prevLen = prevMsgCountRef.current;
+            const newLen = res.messages.length;
+            if (newLen > prevLen && res.messages.slice(prevLen).some(m => m.sender === "user")) {
               playNotification();
             }
             prevMsgCountRef.current = newLen;
+            setConvo(prev => prev ? { ...prev, messages: res.messages, status: res.status } : prev);
           }
-          setConvo(prev => prev ? { ...prev, messages: res.messages, status: res.status } : prev);
-        }
-      } catch { /* silent */ }
-    }, 4000);
+        } catch { /* silent */ }
+      }
+    };
 
-    return () => clearInterval(livePollingRef.current);
+    const handleStatusUpdate = ({ chatbotId, sessionId, status }) => {
+      if (convo?.chatbotId === chatbotId && convo?.sessionId === sessionId) {
+        setConvo(prev => prev ? { ...prev, status } : prev);
+      }
+      setConversations(prev =>
+        prev.map(c => c.chatbotId === chatbotId && c.sessionId === sessionId ? { ...c, status } : c)
+      );
+    };
+
+    const handleLiveRequest = ({ chatbotId, sessionId }) => {
+      loadConversations(true);
+    };
+
+    socket.on("message-update", handleMessageUpdate);
+    socket.on("status-updated", handleStatusUpdate);
+    socket.on("live-request", handleLiveRequest);
+
+    return () => {
+      if (convo?.chatbotId && convo?.sessionId) {
+        leaveConversation(convo.chatbotId, convo.sessionId);
+      }
+      socket.off("message-update", handleMessageUpdate);
+      socket.off("status-updated", handleStatusUpdate);
+      socket.off("live-request", handleLiveRequest);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [convo?.status, convo?._id]);
+  }, [convo?.chatbotId, convo?.sessionId, convo?._id]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {

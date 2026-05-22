@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 import './style.css';
 import {
@@ -12,6 +12,7 @@ import {
   Box,
 } from '@mui/material';
 import { fetchConversations } from '../../api/conversationApi';
+import { connectSocket } from '../../api/socket';
 import ChatIcon from '@mui/icons-material/Chat';
 import PeopleIcon from '@mui/icons-material/People';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -60,6 +61,7 @@ const Sidebar = () => {
     }
   }, []);
 
+  // Initial fetch + real-time updates via WebSocket
   useEffect(() => {
     const load = () => {
       fetchConversations()
@@ -79,8 +81,20 @@ const Sidebar = () => {
         .catch(() => {});
     };
     load();
-    const interval = setInterval(load, 15000);
-    return () => clearInterval(interval);
+
+    const socket = connectSocket();
+
+    const handleLiveRequest = () => load();
+    const handleStatusUpdate = () => load();
+    socket.on("live-request", handleLiveRequest);
+    socket.on("status-updated", handleStatusUpdate);
+    socket.on("reopen-conversation", handleLiveRequest);
+
+    return () => {
+      socket.off("live-request", handleLiveRequest);
+      socket.off("status-updated", handleStatusUpdate);
+      socket.off("reopen-conversation", handleLiveRequest);
+    };
   }, []);
 
   const toggleDropdown = (text) => {

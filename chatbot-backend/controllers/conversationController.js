@@ -1,13 +1,23 @@
 const Conversation = require("../models/Conversation");
+const { getIO } = require("../socket");
 
 // GET /api/conversation/list  (authenticated — returns conversations for this user's chatbotId)
 exports.getConversations = async (req, res) => {
     try {
         const chatbotId = req.user.id;
-        const conversations = await Conversation.find({ chatbotId })
-            .select("chatbotId sessionId userName status updatedAt messages")
-            .sort({ updatedAt: -1 });
-        res.json({ conversations });
+        const page = Math.max(1, parseInt(req.query.page) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 50));
+        const skip = (page - 1) * limit;
+
+        const [conversations, total] = await Promise.all([
+            Conversation.find({ chatbotId })
+                .select("chatbotId sessionId userName status updatedAt messages")
+                .sort({ updatedAt: -1 })
+                .skip(skip)
+                .limit(limit),
+            Conversation.countDocuments({ chatbotId }),
+        ]);
+        res.json({ conversations, total, page, limit, pages: Math.ceil(total / limit) });
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch conversations" });
     }
@@ -69,6 +79,12 @@ exports.updateConversationStatus = async (req, res) => {
             { new: true }
         );
         if (!convo) return res.status(404).json({ message: "Conversation not found" });
+
+        const io = getIO();
+        if (io) {
+            io.to(`${convo.chatbotId}:${convo.sessionId}`).emit("status-updated", { chatbotId, sessionId: convo.sessionId, status });
+        }
+
         res.json({ ok: true, status: convo.status });
     } catch (err) {
         res.status(500).json({ message: "Failed to update status" });
@@ -85,6 +101,12 @@ exports.requestLiveAgent = async (req, res) => {
             { new: true }
         );
         if (!convo) return res.status(404).json({ ok: false, message: "Conversation not found" });
+
+        const io = getIO();
+        if (io) {
+            io.emit("live-request", { chatbotId, sessionId });
+        }
+
         res.json({ ok: true });
     } catch (err) {
         res.status(500).json({ message: "Failed to request live agent" });
@@ -101,6 +123,12 @@ exports.reopenConversation = async (req, res) => {
             { new: true }
         );
         if (!convo) return res.status(404).json({ ok: false, message: "Conversation not found" });
+
+        const io = getIO();
+        if (io) {
+            io.emit("reopen-conversation", { chatbotId, sessionId });
+        }
+
         res.json({ ok: true });
     } catch (err) {
         res.status(500).json({ message: "Failed to reopen conversation" });
@@ -142,6 +170,12 @@ exports.saveMessage = async (req, res) => {
     }
 
     await convo.save();
+
+    const io = getIO();
+    if (io) {
+        io.to(`${chatbotId}:${sessionId}`).emit("message-update", { chatbotId, sessionId });
+    }
+
     res.json({ ok: true });
 };
 

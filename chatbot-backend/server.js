@@ -2,42 +2,70 @@ const express = require("express");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const cors = require("cors");
+const compression = require("compression");
+const rateLimit = require("express-rate-limit");
+const http = require("http");
+const { Server } = require("socket.io");
+const { setIO } = require("./socket");
 const authRoutes = require('./routes/authRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
 
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server, {
+    cors: { origin: process.env.ALLOWED_ORIGIN || "*", methods: ["GET", "POST"] },
+});
+setIO(io);
+
 app.use(cors({
     origin: process.env.ALLOWED_ORIGIN || "*",
     credentials: true,
 }));
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(compression());
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
-// ensure DB is connected before every request (safe for serverless cold starts)
-app.use(async (req, res, next) => {
-    try {
-        await connectDB();
-        next();
-    } catch (err) {
-        res.status(500).json({ message: "Database connection failed" });
-    }
+// Rate limiting: 100 requests per minute per IP
+const limiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { message: "Too many requests, please try again later." },
 });
+app.use("/api/", limiter);
+
+// Connect DB once at startup
+connectDB();
 
 app.use('/api/auth', authRoutes);
 app.use('/api/conversation', conversationRoutes);
 
 // Root route
 app.get("/", (req, res) => {
-    res.send("🚀 Chatbot Backend is running");
+    res.send("Chatbot Backend is running");
+});
+
+// WebSocket connection handling
+io.on("connection", (socket) => {
+    socket.on("join-conversation", ({ chatbotId, sessionId }) => {
+        const room = `${chatbotId}:${sessionId}`;
+        socket.join(room);
+    });
+
+    socket.on("leave-conversation", ({ chatbotId, sessionId }) => {
+        const room = `${chatbotId}:${sessionId}`;
+        socket.leave(room);
+    });
 });
 
 // Start server
 const PORT = process.env.PORT || 5000;
 if (process.env.NODE_ENV !== "production") {
-    app.listen(PORT, () => console.log(`✅ Server running on port ${PORT}`));
+    server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 }
 
-module.exports = app;
+module.exports = { app, server, io };
 
