@@ -81,6 +81,21 @@ const AuthForm = () => {
     }
   };
 
+  const fieldSx = {
+    mb: 3.5,
+    "& .MuiOutlinedInput-root": {
+      borderRadius: 2,
+      bgcolor: "#FAFAFA",
+      transition: "all 0.2s",
+      "&:hover": { bgcolor: "#F3F4F6" },
+      "&.Mui-focused": { bgcolor: "#fff", boxShadow: "0 0 0 3px rgba(79,70,229,0.08)" },
+    },
+    "& .MuiInputLabel-root": { fontWeight: 500, color: "#6B7280", "&.Mui-focused": { color: "#4F46E5" } },
+    "& .MuiOutlinedInput-notchedOutline": { borderColor: "#E5E7EB", transition: "border-color 0.2s" },
+    "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#D1D5DB" },
+    "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4F46E5" },
+  };
+
   return (
     <Box sx={{ minHeight: "100vh", display: "flex", fontFamily: "'Poppins', sans-serif", bgcolor: "#F9FAFB" }}>
       {/* ===== LEFT: ANIMATED CONTENT ===== */}
@@ -312,7 +327,7 @@ const AuthForm = () => {
                     value={formData.fullName}
                     onChange={handleChange}
                     required
-                    sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                    sx={fieldSx}
                   />
                 )}
 
@@ -324,7 +339,7 @@ const AuthForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                  sx={fieldSx}
                 />
 
                 <TextField
@@ -335,7 +350,7 @@ const AuthForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                  sx={fieldSx}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -347,9 +362,25 @@ const AuthForm = () => {
                   }}
                 />
 
+                {isLogin && (
+                  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3.5 }}>
+                    <FormControlLabel
+                      control={<Checkbox size="small" sx={{ "&.Mui-checked": { color: "#4F46E5" } }} />}
+                      label={<Typography sx={{ fontSize: 12, color: "#6B7280", fontWeight: 500 }}>Remember me</Typography>}
+                    />
+                    <Typography
+                      component="a"
+                      href="#"
+                      sx={{ fontSize: 12, color: "#4F46E5", fontWeight: 600, textDecoration: "none", cursor: "pointer", "&:hover": { textDecoration: "underline" } }}
+                    >
+                      Forgot Password?
+                    </Typography>
+                  </Box>
+                )}
+
                 {!isLogin && (
                   <>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 2 }}>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 3.5 }}>
                       {["8+ Char", "1 Lower", "1 Upper", "1 Special", "1 Num"].map((item) => (
                         <Box key={item} sx={{ fontSize: "10px", bgcolor: "#F3F4F6", color: "#6B7280", px: 1, py: 0.3, borderRadius: "4px", fontWeight: 500 }}>
                           {item}
@@ -364,17 +395,17 @@ const AuthForm = () => {
                       value={formData.website}
                       onChange={handleChange}
                       required
-                      sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                      sx={fieldSx}
                     />
 
-                    <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                    <Box sx={{ display: "flex", gap: 1, mb: 3.5 }}>
                       <TextField
                         select size="small"
                         label="Code"
                         value={formData.countryCode}
                         name="countryCode"
                         onChange={handleChange}
-                        sx={{ width: "30%", "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                        sx={{ width: "30%", ...fieldSx, mb: 0 }}
                       >
                         {countryCodes.map((opt) => (
                           <MenuItem key={opt.code} value={opt.code}>{opt.label}</MenuItem>
@@ -387,7 +418,7 @@ const AuthForm = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         required
-                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA", transition: "all 0.2s", "&:hover": { bgcolor: "#F3F4F6" }, "&.Mui-focused": { bgcolor: "#fff", boxShadow: "0 0 0 3px rgba(79,70,229,0.08)" } }, "& .MuiInputLabel-root": { fontWeight: 500, color: "#6B7280", "&.Mui-focused": { color: "#4F46E5" } }, "& .MuiOutlinedInput-notchedOutline": { borderColor: "#E5E7EB" }, "&:hover .MuiOutlinedInput-notchedOutline": { borderColor: "#D1D5DB" }, "& .Mui-focused .MuiOutlinedInput-notchedOutline": { borderColor: "#4F46E5" } }}
                       />
                     </Box>
 
@@ -396,7 +427,7 @@ const AuthForm = () => {
                       label={<Typography variant="body2" sx={{ fontSize: 11, color: "#6B7280" }}>
                         I agree to <a href="/terms" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Terms</a> & <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Privacy</a>
                       </Typography>}
-                      sx={{ mb: 2 }}
+                      sx={{ mb: 3.5 }}
                     />
                   </>
                 )}
@@ -411,7 +442,7 @@ const AuthForm = () => {
                   fullWidth
                   endIcon={<ArrowForwardIcon />}
                   sx={{
-                    mt: 2, py: 1.1, borderRadius: 2, textTransform: "none", fontWeight: 700, fontSize: 14,
+                    mt: 3.5, py: 1.2, borderRadius: 2, textTransform: "none", fontWeight: 700, fontSize: 14,
                     background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
                     boxShadow: "0 4px 16px rgba(79,70,229,0.3)",
                     "&:hover": { boxShadow: "0 8px 24px rgba(79,70,229,0.4)" },
@@ -420,7 +451,7 @@ const AuthForm = () => {
                   {isLogin ? "Login to Dashboard" : "Create Free Account"}
                 </Button>
 
-                <Typography align="center" mt={2} sx={{ fontSize: 12, color: "#6B7280" }}>
+                <Typography align="center" mt={3.5} sx={{ fontSize: 12, color: "#6B7280" }}>
                   {isLogin ? (
                     <>Don't have an account?{" "}
                       <Button variant="text" onClick={toggleMode} sx={{ textTransform: "none", fontWeight: 700, fontSize: 12, color: "#4F46E5", p: 0, minWidth: "auto" }}>
