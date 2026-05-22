@@ -500,7 +500,8 @@ const UserMessage = () => {
   const hasOtherOption = currentQ?.otherOption;
   const isDropdown = currentQ?.style === 'dropdown';
 
-  const hasOptions = !done && !liveRequested && (currentQ?.options?.length > 0);
+  const questionSpoken = messages.some(m => m.sender === 'bot' && m.questionId === currentQ?.id);
+  const hasOptions = !done && !liveRequested && questionSpoken && (currentQ?.options?.length > 0);
 
   return (
     <Box sx={{
