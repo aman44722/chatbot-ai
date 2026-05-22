@@ -58,7 +58,7 @@ function exportConversation(convo, userName) {
     `Date: ${new Date(convo.createdAt || convo.updatedAt).toLocaleString()}`,
     `Session: ${convo.sessionId}`,
     "─────────────────────────────",
-    ...convo.messages.map(m => {
+    ...(convo?.messages || []).map(m => {
       const time = m.createdAt
         ? new Date(m.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
         : "";
@@ -295,7 +295,7 @@ export default function Chats() {
     setShowCanned(false);
     setSending(true);
     const optimistic = { sender: "admin", text, createdAt: new Date().toISOString() };
-    setConvo(prev => ({ ...prev, messages: [...prev.messages, optimistic] }));
+    setConvo(prev => prev ? { ...prev, messages: [...prev.messages, optimistic] } : prev);
     prevMsgCountRef.current += 1;
     try {
       await sendAdminMessage(convo.chatbotId, convo.sessionId, text);
@@ -558,7 +558,7 @@ export default function Chats() {
             >
               {loadingConvo ? (
                 <MessageSkeleton />
-              ) : convo?.messages?.length === 0 ? (
+              ) : !convo || !convo.messages || convo.messages.length === 0 ? (
                 <Typography textAlign="center" color="text.secondary" mt={4}>No messages in this conversation.</Typography>
               ) : (
                 <Box sx={{ animation: "fadeIn 0.25s ease", "@keyframes fadeIn": { from: { opacity: 0, transform: "translateY(6px)" }, to: { opacity: 1, transform: "translateY(0)" } } }}>
@@ -753,7 +753,7 @@ export default function Chats() {
               Conversation Info
             </Typography>
             {[
-              { label: "Total Messages", value: convo.messages.length },
+              { label: "Total Messages", value: convo?.messages?.length || 0 },
               { label: "User Answers", value: userMessages },
               { label: "Bot Questions", value: botMessages },
               { label: "Started", value: new Date(convo.createdAt || convo.updatedAt).toLocaleDateString() },
@@ -772,7 +772,7 @@ export default function Chats() {
             <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: "uppercase", letterSpacing: 0.5 }}>
               Recent Answers
             </Typography>
-            {convo.messages.filter(m => m.sender === "user").slice(-4).map((m, i) => (
+            {(convo?.messages || []).filter(m => m.sender === "user").slice(-4).map((m, i) => (
               <Box key={i} sx={{ mt: 1.5, p: 1.5, bgcolor: PANEL_BG, borderRadius: 2 }}>
                 <Typography fontSize={12} color="text.secondary" noWrap>{m.text}</Typography>
               </Box>
