@@ -79,7 +79,7 @@ const Install = () => {
     };
 
     return (
-        <Box sx={{ p: 3, bgcolor: "#F6F9FF", minHeight: "100%" }}>
+        <Box sx={{ p: 3, minHeight: "100%" }}>
             <Box sx={{ display: "flex", gap: 3, maxWidth: 1100, mx: "auto" }}>
 
                 {/* ── LEFT ── */}

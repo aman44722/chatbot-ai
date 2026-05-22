@@ -77,7 +77,7 @@ const BotDetail = () => {
   }
 
   return (
-    <Box sx={{ p: 3, background: '#F6F9FF', minHeight: 'calc(100vh - 60px)' }}>
+    <Box sx={{ p: 3, minHeight: 'calc(100vh - 60px)' }}>
       <Button
         startIcon={<ArrowBackIcon />}
         onClick={() => navigate('/app/dashboard')}

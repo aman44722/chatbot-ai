@@ -45,8 +45,10 @@ const Layout = () => {
           <Header />
         </header>
 
-        <main style={{ flex: 1, padding: '10px', overflowY: 'auto' }}>
-          <Outlet />
+        <main style={{ flex: 1, overflowY: 'auto', background: '#f8faff' }}>
+          <div className="water-bg" style={{ minHeight: '100%', padding: '10px' }}>
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

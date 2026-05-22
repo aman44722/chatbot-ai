@@ -62,3 +62,27 @@
     position: relative;
     z-index: 1;
 }
+
+.water-bg {
+    position: relative;
+    overflow: hidden;
+}
+
+.water-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(99,102,241,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(139,92,246,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(79,70,229,0.03) 0%, transparent 50%);
+    background-size: 200% 200%;
+    animation: waterFlow 12s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.water-bg > * {
+    position: relative;
+    z-index: 1;
+}
