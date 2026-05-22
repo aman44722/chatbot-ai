@@ -111,23 +111,26 @@ const LogoSettings = ({ companyLogo, setCompanyLogo, avatar, setAvatar }) => {
             borderRadius: 2, border: "1px solid #e5e7eb", scrollBehavior: "smooth", bgcolor: "#fff",
           }}>
             <Box component="label" htmlFor="upload-avatar" sx={{
-              minWidth: 40, minHeight: 40, borderRadius: "50%", bgcolor: "#f3f4f6",
+              width: 38, height: 38, borderRadius: "50%", bgcolor: "#f3f4f6",
               display: "flex", justifyContent: "center", alignItems: "center",
               cursor: "pointer", border: "2px dashed #d1d5db", flexShrink: 0,
               "&:hover": { borderColor: "#6366f1" },
             }}>
-              <AddIcon sx={{ width: 20, height: 20, color: "#9ca3af" }} />
+              <AddIcon sx={{ fontSize: 18, color: "#9ca3af" }} />
               <input id="upload-avatar" type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarUpload} />
             </Box>
 
             {avatarOptions.map((avt, index) => (
               <Box key={index} onClick={() => setAvatar(avt)} sx={{
-                minWidth: 40, minHeight: 40, borderRadius: "50%", overflow: "hidden",
+                width: 38, height: 38, borderRadius: "50%", overflow: "hidden", position: "relative",
                 border: avt === avatar ? "2.5px solid #10b981" : "2px solid transparent",
                 cursor: "pointer", transition: "all 0.2s", flexShrink: 0,
                 "&:hover": { transform: "scale(1.08)" },
               }}>
-                <img src={avt} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+                <img src={avt} alt="avatar" style={{
+                  position: "absolute", inset: 0, width: "100%", height: "100%",
+                  objectFit: "cover", borderRadius: "50%",
+                }} />
               </Box>
             ))}
           </Box>
