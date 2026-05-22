@@ -1,4 +1,5 @@
 const express = require("express");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const cors = require("cors");
@@ -32,16 +33,27 @@ app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
+app.set("trust proxy", 1);
 // Rate limiting
 app.use("/api/", rateLimit({
     windowMs: 60 * 1000,
     max: 100,
     skip: (req) => req.method === "OPTIONS",
     message: { message: "Too many requests" },
+    validate: { trustProxy: false, xForwardedForHeader: false, default: true },
 }));
 
-// Connect DB (don't crash serverless if unavailable)
-connectDB().catch(() => {});
+// Middleware to ensure DB is connected before handling requests
+app.use('/api', async (req, res, next) => {
+    if (mongoose.connection.readyState !== 1) {
+        try {
+            await connectDB();
+        } catch {
+            return res.status(503).json({ message: "Database connection unavailable" });
+        }
+    }
+    next();
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/conversation', conversationRoutes);
