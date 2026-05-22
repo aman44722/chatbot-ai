@@ -40,7 +40,6 @@ const Bots = () => {
   const [creating, setCreating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(null);
   const navigate = useNavigate();
-  const userRole = localStorage.getItem('userRole');
 
   const loadBots = async () => {
     try {
@@ -95,7 +94,7 @@ const Bots = () => {
 
   const handleNavigate = (botId, tab) => {
     localStorage.setItem('selectedBotId', botId);
-    navigate(`/app/${tab}`);
+    navigate(`/app/bot/${botId}`);
   };
 
   if (loading) {
@@ -115,16 +114,14 @@ const Bots = () => {
             Create and manage your chatbots
           </Typography>
         </Box>
-        {userRole === 'admin' && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setOpenCreate(true)}
-            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, bgcolor: '#6366f1' }}
-          >
-            Create Bot
-          </Button>
-        )}
+        <Button
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => setOpenCreate(true)}
+          sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, bgcolor: '#6366f1' }}
+        >
+          Create Bot
+        </Button>
       </Box>
 
       {bots.length === 0 ? (

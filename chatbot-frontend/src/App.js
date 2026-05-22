@@ -27,6 +27,11 @@ import Install from './pages/InstallationPage/Install';
 import ConversationView from './pages/ConversationView';
 import Conversations from './pages/Conversations';
 import Bots from './pages/Bots';
+import BotDetail from './pages/BotDetail';
+import AIAgents from './pages/AIAgents';
+import Templates from './pages/Templates';
+import Partners from './pages/Partners';
+import Referral from './pages/Referral';
 
 
 function App() {
@@ -61,6 +66,7 @@ function App() {
       <Route path="/logout" element={<Navigate to="/app/logout" replace />} />
       <Route path="/account" element={<Navigate to="/app/account" replace />} />
       <Route path="/dashboard" element={<Navigate to="/app/dashboard" replace />} />
+      <Route path="/bots" element={<Navigate to="/dashboard" replace />} />
       <Route path="/conversations/:id" element={<Navigate to="/app/conversations/:id" replace />} />
       <Route path="/conversations" element={<Navigate to="/app/conversations" replace />} />
 
@@ -82,6 +88,11 @@ function App() {
           <Route path="conversations" element={<Conversations />} />
           <Route path="conversations/:id" element={<ConversationView />} />
           <Route path="bots" element={<Bots />} />
+          <Route path="bot/:botId" element={<BotDetail />} />
+          <Route path="ai-agents" element={<AIAgents />} />
+          <Route path="templates" element={<Templates />} />
+          <Route path="partners" element={<Partners />} />
+          <Route path="referral" element={<Referral />} />
 
 
         </Route>
