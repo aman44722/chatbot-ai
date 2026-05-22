@@ -243,14 +243,17 @@ const Sidebar = () => {
         </Box>
       )}
 
-      {selectedBot ? (
-        <List sx={{ px: 1, pt: 1 }}>
-          {mode2Items.map(renderItem)}
-        </List>
-      ) : (
-        <List sx={{ px: 1, pt: 1 }}>
-          {mode1Items.map(renderItem)}
-        </List>
+      <List sx={{ px: 1, pt: 1 }}>
+        {mode1Items.map(renderItem)}
+      </List>
+
+      {selectedBot && (
+        <>
+          <Divider sx={{ mx: 2, my: 1 }} />
+          <List sx={{ px: 1 }}>
+            {mode2Items.map(renderItem)}
+          </List>
+        </>
       )}
     </Drawer>
   );
