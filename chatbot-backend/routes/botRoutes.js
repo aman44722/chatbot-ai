@@ -10,6 +10,8 @@ const {
     deleteBot,
     getBotSettings,
     getBotFlow,
+    getBotWhitelist,
+    saveBotWhitelist,
 } = require("../controllers/botController");
 
 // Public — used by embedded widget to fetch bot settings
@@ -22,5 +24,7 @@ router.get("/", authenticate, getBots);
 router.get("/:id", authenticate, getBot);
 router.put("/:id", authenticate, updateBot);
 router.delete("/:id", authenticate, adminOnly, deleteBot);
+router.get("/:id/whitelist", authenticate, getBotWhitelist);
+router.post("/:id/whitelist", authenticate, saveBotWhitelist);
 
 module.exports = router;

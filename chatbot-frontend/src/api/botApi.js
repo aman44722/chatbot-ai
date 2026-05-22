@@ -65,3 +65,27 @@ export const deleteBot = async (botId) => {
     throw error.response?.data?.message || "Failed to delete bot";
   }
 };
+
+export const getBotWhitelist = async (botId) => {
+  try {
+    const response = await axios.get(`${API_URL}/${botId}/whitelist`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to fetch whitelist";
+  }
+};
+
+export const saveBotWhitelist = async (botId, domains) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/${botId}/whitelist`,
+      { domains },
+      { headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to save whitelist";
+  }
+};

@@ -75,6 +75,7 @@ const botSchema = new mongoose.Schema({
     status: { type: String, enum: ['active', 'inactive'], default: 'active' },
     botSettings: { type: BotSettingsSchema, default: () => ({}) },
     flowSetupSetting: { type: FlowSetupSettingSchema, default: () => ({}) },
+    whitelist: { type: [String], default: [] },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Bot", botSchema);

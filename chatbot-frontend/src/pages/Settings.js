@@ -31,7 +31,7 @@ import AvTimerIcon from "@mui/icons-material/AvTimer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SaveIcon from "@mui/icons-material/Save";
 import UpgradeIcon from "@mui/icons-material/Upgrade";
-import { getWhitelist, saveWhitelistingUrls } from "../api/authApi";
+import { getBotWhitelist, saveBotWhitelist } from "../api/botApi";
 
 const NAV = [
   { id: "language", label: "Language", icon: <TranslateIcon />, color: "#6366f1" },
@@ -309,18 +309,21 @@ function WhitelistTab() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(false);
   const navigate = useNavigate();
+  const botId = localStorage.getItem('selectedBotId');
 
   useEffect(() => {
-    getWhitelist().then(res => {
+    if (!botId) return;
+    getBotWhitelist(botId).then(res => {
       if (res.whitelist?.length) setDomains(res.whitelist.join("\n"));
     });
-  }, []);
+  }, [botId]);
 
   const handleSave = async () => {
+    if (!botId) return alert("Select a bot first");
     setLoading(true);
     setSaved(false);
     try {
-      await saveWhitelistingUrls(domains);
+      await saveBotWhitelist(botId, domains);
       setSaved(true);
       navigate("/app/install?refresh=1");
     } catch (e) { alert(e); }

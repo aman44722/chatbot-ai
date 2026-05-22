@@ -7,6 +7,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CheckIcon from "@mui/icons-material/Check";
 import { useNavigate } from "react-router-dom";
+import { getBotWhitelist } from "../../api/botApi";
 
 const API = process.env.REACT_APP_AUTH_API || "http://localhost:5000/api/auth";
 
@@ -34,7 +35,12 @@ const Install = () => {
                 const selectedBotId = localStorage.getItem("selectedBotId");
                 if (selectedBotId) {
                     setChatbotId(selectedBotId);
-                    setHasWhitelist(true);
+                    try {
+                        const res = await getBotWhitelist(selectedBotId);
+                        setHasWhitelist(Boolean(res.whitelist?.length));
+                    } catch {
+                        setHasWhitelist(true);
+                    }
                 } else {
                     const user = JSON.parse(localStorage.getItem("user"));
                     if (!user?.token) return;

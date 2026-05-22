@@ -107,3 +107,36 @@ exports.getBotFlow = async (req, res) => {
         res.status(500).json({ message: "Error fetching bot flow" });
     }
 };
+
+exports.getBotWhitelist = async (req, res) => {
+    try {
+        const bot = await Bot.findById(req.params.id).select("whitelist userId");
+        if (!bot) return res.status(404).json({ message: "Bot not found" });
+        if (String(bot.userId) !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+        res.json({ ok: true, whitelist: bot.whitelist || [] });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching whitelist" });
+    }
+};
+
+exports.saveBotWhitelist = async (req, res) => {
+    try {
+        const { domains } = req.body;
+        const list = Array.isArray(domains) ? domains : [];
+        const clean = list
+            .flatMap(d => String(d).split("\n"))
+            .map(d => d.trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0])
+            .filter(Boolean);
+        const unique = [...new Set(clean)];
+
+        const bot = await Bot.findById(req.params.id);
+        if (!bot) return res.status(404).json({ message: "Bot not found" });
+        if (String(bot.userId) !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+
+        bot.whitelist = unique;
+        await bot.save();
+        res.json({ ok: true, whitelist: bot.whitelist, count: bot.whitelist.length });
+    } catch (error) {
+        res.status(500).json({ message: "Error saving whitelist" });
+    }
+};
