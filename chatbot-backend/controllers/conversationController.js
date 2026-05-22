@@ -11,7 +11,7 @@ exports.getConversations = async (req, res) => {
             if (!bot || String(bot.userId) !== req.user.id) {
                 return res.status(403).json({ message: "Forbidden" });
             }
-            filter = { botId: req.query.botId };
+            filter = { $or: [{ botId: req.query.botId }, { chatbotId: req.query.botId }] };
         } else {
             const userBots = await Bot.find({ userId: req.user.id }).select('_id').lean();
             const botIds = userBots.map(b => String(b._id));
