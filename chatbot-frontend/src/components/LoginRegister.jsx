@@ -5,7 +5,7 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { loginUser, registerUser } from "../api/authApi";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,8 +32,7 @@ const contentFeatures = [
 ];
 
 const AuthForm = () => {
-  const location = useLocation();
-  const [isLogin, setIsLogin] = useState(location.pathname === "/login");
+  const [isLogin, setIsLogin] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [formData, setFormData] = useState({
@@ -43,10 +42,6 @@ const AuthForm = () => {
 
   const navigate = useNavigate();
   const { login } = useAuth();
-
-  useEffect(() => {
-    setIsLogin(location.pathname === "/login");
-  }, [location.pathname]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -231,7 +226,7 @@ const AuthForm = () => {
       <Box sx={{
         flex: { xs: 1, md: "0 0 45%" },
         display: "flex", alignItems: "center", justifyContent: "center",
-        p: { xs: 2, md: 3 },
+        p: { xs: 1.5, md: 2 },
         position: "relative",
         overflow: "hidden",
       }}>
@@ -246,7 +241,7 @@ const AuthForm = () => {
           style={{ width: "100%", maxWidth: 420 }}
         >
           <Paper elevation={0} sx={{
-            p: { xs: 2.5, md: 3 }, borderRadius: 4,
+            p: 2, borderRadius: 4,
             bgcolor: "rgba(255,255,255,0.85)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
@@ -254,14 +249,14 @@ const AuthForm = () => {
             boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
           }}>
             {/* Logo */}
-            <Box sx={{ display: "flex", justifyContent: "center", mb: 1.5 }}>
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
               >
                 <Box sx={{
-                  width: 40, height: 40, borderRadius: "12px",
+                  width: 36, height: 36, borderRadius: "10px",
                   background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
                   display: "flex", alignItems: "center", justifyContent: "center",
                   boxShadow: "0 8px 24px rgba(79,70,229,0.3)",
@@ -272,7 +267,7 @@ const AuthForm = () => {
             </Box>
 
             {/* Tabs */}
-            <Box sx={{ display: "flex", bgcolor: "#F3F4F6", borderRadius: 2, p: 0.3, mb: 1.5 }}>
+            <Box sx={{ display: "flex", bgcolor: "#F3F4F6", borderRadius: 2, p: 0.3, mb: 1 }}>
               {["Log In", "Sign Up"].map((tab, i) => {
                 const active = (i === 0) === isLogin;
                 return (
@@ -305,36 +300,32 @@ const AuthForm = () => {
               >
                 {!isLogin && (
                   <TextField
-                    fullWidth margin="dense" size="small"
+                    fullWidth margin="none" size="small"
                     label="Full Name"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                    sx={{ mb: 0.8, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
                   />
                 )}
 
                 <TextField
-                  fullWidth margin="dense" size="small"
+                  fullWidth margin="none" size="small"
                   label="Company Email Address"
                   name="email"
                   type="email"
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                  sx={{ mb: 0.8, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
                 />
 
                 <TextField
-                  fullWidth margin="dense" size="small"
+                  fullWidth margin="none" size="small"
                   label="Password"
                   type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                  sx={{ mb: 0.8, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
