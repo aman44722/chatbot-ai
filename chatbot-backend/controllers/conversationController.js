@@ -38,9 +38,20 @@ exports.getConversations = async (req, res) => {
 // GET /api/conversation/:id  (authenticated)
 exports.getConversationById = async (req, res) => {
     try {
-        const filter = { _id: req.params.id, chatbotId: req.user.id };
-        if (req.query.botId) filter.botId = req.query.botId;
-        const conversation = await Conversation.findOne(filter);
+        const { id } = req.params;
+        // Look up by _id first, fall back to sessionId
+        let conversation;
+        if (id.length === 24 && /^[a-f0-9]{24}$/i.test(id)) {
+            conversation = await Conversation.findById(id);
+        } else {
+            // getConversations filter for auth uses chatbotId OR user's botIds
+            const userBots = await Bot.find({ userId: req.user.id }).select('_id').lean();
+            const botIds = userBots.map(b => String(b._id));
+            conversation = await Conversation.findOne({
+                sessionId: id,
+                $or: [{ chatbotId: req.user.id }, { botId: { $in: botIds } }],
+            });
+        }
         if (!conversation) return res.status(404).json({ message: "Conversation not found" });
         res.json({ conversation });
     } catch (err) {
