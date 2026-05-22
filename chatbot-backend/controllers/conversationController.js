@@ -93,17 +93,29 @@ exports.initConversation = async (req, res) => {
 // PATCH /api/conversation/:id/status  (authenticated)
 exports.updateConversationStatus = async (req, res) => {
     try {
-        const chatbotId = req.user.id;
         const { status } = req.body;
         if (!["active", "closed", "live_requested"].includes(status)) {
             return res.status(400).json({ message: "Invalid status" });
         }
-        const convo = await Conversation.findOneAndUpdate(
-            { _id: req.params.id, chatbotId },
-            { status },
-            { new: true }
-        );
+        const { id } = req.params;
+        const userBots = await Bot.find({ userId: req.user.id }).select('_id').lean();
+        const botIds = userBots.map(b => String(b._id));
+
+        let convo;
+        if (id.length === 24 && /^[a-f0-9]{24}$/i.test(id)) {
+            convo = await Conversation.findById(id);
+        } else {
+            convo = await Conversation.findOne({
+                sessionId: id,
+                $or: [{ chatbotId: req.user.id }, { botId: { $in: botIds } }],
+            });
+        }
         if (!convo) return res.status(404).json({ message: "Conversation not found" });
+        const isAuthorized = botIds.includes(String(convo.botId)) || String(convo.chatbotId) === req.user.id;
+        if (!isAuthorized) return res.status(403).json({ message: "Forbidden" });
+
+        convo.status = status;
+        await convo.save();
 
         const io = getIO();
         if (io) {
