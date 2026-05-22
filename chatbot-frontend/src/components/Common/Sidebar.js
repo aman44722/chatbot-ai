@@ -162,7 +162,11 @@ const Sidebar = () => {
 
   const location = useLocation();
 
-  const isActive = (path) => location.pathname === path;
+  const isActive = (path) => {
+    if (!path) return false;
+    const fullPath = `/app${path}`;
+    return location.pathname === fullPath || location.pathname === path;
+  };
   const isParentActive = (item) =>
     item.children
       ? item.children.some((c) => isActive(c.path)) || isActive(item.path)
