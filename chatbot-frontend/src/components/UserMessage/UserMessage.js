@@ -90,10 +90,8 @@ const UserMessage = () => {
           const flowRes = await axios.get(`${BOTS_API}/${chatId}/flow`);
           flowData = flowRes.data?.question?.list || [];
         } catch {
-          const res = await axios.get(`${AUTH_API}/user/${chatId}`);
-          const user = res.data;
-          botSettingsData = user.botSettings || {};
-          flowData = user.flowSetupSetting?.question?.list || [];
+          botSettingsData = {};
+          flowData = [];
         }
         setBotSettings(botSettingsData);
         setFlow(flowData);

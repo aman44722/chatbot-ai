@@ -9,12 +9,13 @@
         var appOrigin = cfg.origin || window.location.origin;
         if (appOrigin.slice(-1) === "/") appOrigin = appOrigin.slice(0, -1);
         var apiBase = cfg.api || appOrigin.replace(/:\d+$/, "") + ":5000/api/auth";
+        var botsApi = apiBase.replace("/api/auth", "/api/bots");
 
         // 1. Show button immediately with defaults — no API wait
         buildWidget({ headerColor: "#005f73", botName: "Chat" }, appOrigin, botId);
 
-        // 2. Fetch real settings and patch button + panel position
-        fetch(apiBase + "/user/" + botId + "/layout-settings")
+        // 2. Fetch real bot settings and patch button + panel position
+        fetch(botsApi + "/" + botId + "/settings")
             .then(function (r) { return r.ok ? r.json() : {}; })
             .catch(function () { return {}; })
             .then(function (layout) { patchWidget(layout, appOrigin, botId); });
