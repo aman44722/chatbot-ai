@@ -1,12 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import { Outlet, useLocation } from 'react-router-dom';
 
+const COLLAPSED_W = 72;
+const EXPANDED_W = 240;
+
 const Layout = () => {
   const location = useLocation();
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem('sidebarCollapsed') === 'true';
+  });
 
-  // agar user pages hai (usertest, userchat) to simple content
+  const toggleSidebar = () => {
+    setCollapsed(prev => {
+      const next = !prev;
+      localStorage.setItem('sidebarCollapsed', next);
+      return next;
+    });
+  };
+
   const isUserPage =
     location.pathname.startsWith('/usertest') ||
     location.pathname.startsWith('/userchat');
@@ -19,21 +32,19 @@ const Layout = () => {
     );
   }
 
+  const sidebarW = collapsed ? COLLAPSED_W : EXPANDED_W;
+
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#fff' }}>
-      {/* Sidebar full height */}
-      <aside style={{ width: 200, flexShrink: 0 }}>
-        <Sidebar />
+      <aside style={{ width: sidebarW, flexShrink: 0, transition: 'width 0.3s ease' }}>
+        <Sidebar collapsed={collapsed} onToggle={toggleSidebar} />
       </aside>
 
-      {/* Right section */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Header (top bar after sidebar) */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
         <header style={{ height: '60px' }}>
           <Header />
         </header>
 
-        {/* Content area */}
         <main style={{ flex: 1, padding: '10px', overflowY: 'auto' }}>
           <Outlet />
         </main>

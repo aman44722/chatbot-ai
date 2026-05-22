@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './style.css';
 import {
   Drawer, List, ListItemButton, ListItemIcon, ListItemText,
-  Collapse, Box, Select, MenuItem, FormControl, Typography, Divider,
+  Collapse, Box, Select, MenuItem, FormControl, Typography, Divider, IconButton,
 } from '@mui/material';
 import { getBots } from '../../api/botApi';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -23,12 +23,17 @@ import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
 import DnsIcon from '@mui/icons-material/Dns';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
+import MenuOpenIcon from '@mui/icons-material/MenuOpen';
+import MenuIcon from '@mui/icons-material/Menu';
 import logo from "../../assets/images/bot-logo-blue.png";
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const PRIMARY_COLOR = '#6366f1';
 
-const Sidebar = () => {
+const COLLAPSED_W = 72;
+const EXPANDED_W = 240;
+
+const Sidebar = ({ collapsed, onToggle }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [openDropdown, setOpenDropdown] = useState(null);
@@ -45,13 +50,11 @@ const Sidebar = () => {
     localStorage.setItem('selectedBotId', selectedBot || '');
   }, [selectedBot]);
 
-  // Sync selectedBot from localStorage whenever route changes
   useEffect(() => {
     const stored = localStorage.getItem('selectedBotId');
     if (stored !== selectedBot) {
       setSelectedBot(stored || '');
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.pathname]);
 
   const handleBotChange = (event) => {
@@ -102,6 +105,32 @@ const Sidebar = () => {
       ? item.children.some(c => isActive(c.path))
       : isActive(item.path);
     const isOpen = openDropdown === item.text;
+
+    if (collapsed) {
+      return (
+        <ListItemButton
+          key={item.text}
+          onClick={() => item.children ? toggleDropdown(item.text) : navigate(item.path)}
+          selected={sel && !item.children}
+          sx={{
+            borderRadius: 2, mb: 0.3, px: 1, py: 0.8, justifyContent: 'center',
+            '&.Mui-selected': { background: `${PRIMARY_COLOR}18` },
+            '&:hover': { bgcolor: 'rgba(99,102,241,0.1)' },
+          }}
+          title={item.text}
+        >
+          <ListItemIcon sx={{ minWidth: 0, color: sel ? PRIMARY_COLOR : '#6b7280', justifyContent: 'center' }}>
+            <Box sx={{
+              width: 32, height: 32, borderRadius: '9px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              bgcolor: sel ? `${PRIMARY_COLOR}18` : 'transparent',
+            }}>
+              {item.icon}
+            </Box>
+          </ListItemIcon>
+        </ListItemButton>
+      );
+    }
 
     return (
       <React.Fragment key={item.text}>
@@ -163,13 +192,15 @@ const Sidebar = () => {
                         {child.icon}
                       </Box>
                     </ListItemIcon>
-                    <ListItemText
-                      primary={child.text}
-                      primaryTypographyProps={{
-                        fontSize: 12, fontWeight: childSel ? 700 : 500,
-                        color: childSel ? PRIMARY_COLOR : '#4b5563',
-                      }}
-                    />
+                    {!collapsed && (
+                      <ListItemText
+                        primary={child.text}
+                        primaryTypographyProps={{
+                          fontSize: 12, fontWeight: childSel ? 700 : 500,
+                          color: childSel ? PRIMARY_COLOR : '#4b5563',
+                        }}
+                      />
+                    )}
                   </ListItemButton>
                 );
               })}
@@ -180,81 +211,116 @@ const Sidebar = () => {
     );
   };
 
-  const selectedBotName = bots.find(b => b._id === selectedBot)?.name || '';
+  const w = collapsed ? COLLAPSED_W : EXPANDED_W;
 
   return (
     <Drawer
       variant="permanent"
       anchor="left"
       sx={{
-        position: 'fixed', width: 200, zIndex: 10000, flexShrink: 0,
+        position: 'fixed', width: w, zIndex: 10000, flexShrink: 0,
+        transition: 'width 0.3s ease',
         '& .MuiDrawer-paper': {
-          width: 200, boxSizing: 'border-box',
-          background: 'linear-gradient(180deg, #f8faff 0%, #f0f4ff 40%, #faf5ff 100%)',
+          width: w, boxSizing: 'border-box',
+          transition: 'width 0.3s ease',
+          background: `linear-gradient(180deg, #f8faff 0%, #f0f4ff 60%, #faf5ff 100%)`,
           borderRight: '1px solid rgba(229,231,235,0.5)',
-          boxShadow: '2px 0 20px rgba(0,0,0,0.04)',
+          boxShadow: collapsed ? 'none' : '2px 0 24px rgba(0,0,0,0.06)',
+          overflowX: 'hidden',
         },
       }}
     >
-      <Box sx={{
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        py: 2.5, px: 2, borderBottom: '1px solid rgba(243,244,246,0.8)',
-      }}>
-        <img style={{ width: '100px', filter: 'drop-shadow(0 2px 4px rgba(79,70,229,0.15))' }} src={logo} alt="Smart Bot Logo" />
-      </Box>
-
-      {bots.length > 0 && (
-        <Box sx={{ px: 1.5, py: 1 }}>
-          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', mb: 0.5, px: 0.5 }}>
-            {selectedBot ? 'ACTIVE BOT' : 'SELECT BOT'}
-          </Typography>
-          <FormControl fullWidth size="small">
-            <Select
-              value={selectedBot}
-              onChange={handleBotChange}
-              displayEmpty
-              renderValue={(val) => {
-                if (!val) return <Typography sx={{ fontSize: 12, color: '#9ca3af' }}>Select a bot...</Typography>;
-                const bot = bots.find(b => b._id === val);
-                return (
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <SmartToyIcon sx={{ fontSize: 15, color: PRIMARY_COLOR }} />
-                    <Typography sx={{ fontSize: 12, fontWeight: 600 }}>{bot?.name}</Typography>
-                  </Box>
-                );
-              }}
+      <Box className="sidebar-water-bg" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box className="sidebar-content" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+          {/* Logo + Toggle */}
+          <Box sx={{
+            display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between',
+            py: 1.5, px: collapsed ? 0 : 1.5, minHeight: 56, gap: 1,
+            borderBottom: '1px solid rgba(243,244,246,0.8)',
+          }}>
+            {!collapsed && (
+              <img style={{ width: '90px', filter: 'drop-shadow(0 2px 4px rgba(79,70,229,0.15))' }} src={logo} alt="Smart Bot Logo" />
+            )}
+            {collapsed && (
+              <img style={{ width: '32px', filter: 'drop-shadow(0 2px 4px rgba(79,70,229,0.15))' }} src={logo} alt="Smart Bot Logo" />
+            )}
+            <IconButton
+              onClick={onToggle}
+              size="small"
               sx={{
-                height: 32, fontSize: 12, borderRadius: 1.5,
-                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
-                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY_COLOR },
-                bgcolor: selectedBot ? '#f0f4ff' : 'transparent',
+                color: '#6b7280', p: 0.8,
+                '&:hover': { bgcolor: 'rgba(99,102,241,0.1)', color: PRIMARY_COLOR },
               }}
             >
-              {bots.map((bot) => (
-                <MenuItem key={bot._id} value={bot._id} sx={{ fontSize: 13 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <SmartToyIcon sx={{ fontSize: 15, color: PRIMARY_COLOR }} />
-                    {bot.name}
-                  </Box>
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+              {collapsed ? <MenuIcon fontSize="small" /> : <MenuOpenIcon fontSize="small" />}
+            </IconButton>
+          </Box>
+
+          {/* Bot selector */}
+          {bots.length > 0 && !collapsed && (
+            <Box sx={{ px: 1.5, py: 1 }}>
+              <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', mb: 0.5, px: 0.5 }}>
+                {selectedBot ? 'ACTIVE BOT' : 'SELECT BOT'}
+              </Typography>
+              <FormControl fullWidth size="small">
+                <Select
+                  value={selectedBot}
+                  onChange={handleBotChange}
+                  displayEmpty
+                  renderValue={(val) => {
+                    if (!val) return <Typography sx={{ fontSize: 12, color: '#9ca3af' }}>Select a bot...</Typography>;
+                    const bot = bots.find(b => b._id === val);
+                    return (
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <SmartToyIcon sx={{ fontSize: 15, color: PRIMARY_COLOR }} />
+                        <Typography sx={{ fontSize: 12, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bot?.name}</Typography>
+                      </Box>
+                    );
+                  }}
+                  sx={{
+                    height: 32, fontSize: 12, borderRadius: 1.5,
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: PRIMARY_COLOR },
+                    bgcolor: selectedBot ? '#f0f4ff' : 'transparent',
+                  }}
+                >
+                  {bots.map((bot) => (
+                    <MenuItem key={bot._id} value={bot._id} sx={{ fontSize: 13 }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                        <SmartToyIcon sx={{ fontSize: 15, color: PRIMARY_COLOR }} />
+                        {bot.name}
+                      </Box>
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+          )}
+
+          {/* Collapsed bot selector — just icon */}
+          {bots.length > 0 && collapsed && (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 1 }}>
+              <SmartToyIcon sx={{ fontSize: 22, color: selectedBot ? PRIMARY_COLOR : '#d1d5db' }} />
+            </Box>
+          )}
+
+          {/* Nav items */}
+          <Box sx={{ flex: 1, overflowY: 'auto', px: collapsed ? 0.5 : 1, py: 0.5 }}>
+            <List sx={{ px: collapsed ? 0 : 0.5 }}>
+              {mode1Items.map(renderItem)}
+            </List>
+
+            {selectedBot && (
+              <>
+                <Divider sx={{ mx: collapsed ? 1 : 2, my: 1 }} />
+                <List sx={{ px: collapsed ? 0 : 0.5 }}>
+                  {mode2Items.map(renderItem)}
+                </List>
+              </>
+            )}
+          </Box>
         </Box>
-      )}
-
-      <List sx={{ px: 1, pt: 1 }}>
-        {mode1Items.map(renderItem)}
-      </List>
-
-      {selectedBot && (
-        <>
-          <Divider sx={{ mx: 2, my: 1 }} />
-          <List sx={{ px: 1 }}>
-            {mode2Items.map(renderItem)}
-          </List>
-        </>
-      )}
+      </Box>
     </Drawer>
   );
 };
