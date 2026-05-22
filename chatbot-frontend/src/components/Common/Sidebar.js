@@ -4,11 +4,12 @@ import './style.css';
 import {
   Drawer,
   List,
-  ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   Collapse,
   Badge,
+  Box,
 } from '@mui/material';
 import { fetchConversations } from '../../api/conversationApi';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -27,6 +28,24 @@ import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 import DownloadIcon from '@mui/icons-material/Download';
 import logo from "../../assets/images/bot-logo-blue.png";
 import { useLocation, useNavigate } from 'react-router-dom';
+
+const ITEM_COLORS = {
+  Dashboard: "#6366f1",
+  SetUp: "#f59e0b",
+  Chats: "#ec4899",
+  Users: "#10b981",
+  "Bot Answers": "#8b5cf6",
+  Leads: "#06b6d4",
+  Analytics: "#f97316",
+  Settings: "#6366f1",
+  Logout: "#ef4444",
+};
+
+const CHILD_COLORS = {
+  "View Setup": "#10b981",
+  "Flow Setup": "#8b5cf6",
+  Install: "#06b6d4",
+};
 
 const Sidebar = () => {
   const navigate = useNavigate();
@@ -50,7 +69,7 @@ const Sidebar = () => {
           setActiveChatsCount(active);
           setLiveCount(live);
           if (live > prevLiveCount.current && Notification.permission === "granted") {
-            new Notification("🔴 Live Agent Requested", {
+            new Notification("Live Agent Requested", {
               body: `${live - prevLiveCount.current} user(s) want to chat with a live agent!`,
               icon: "/favicon.ico",
             });
@@ -64,7 +83,6 @@ const Sidebar = () => {
     return () => clearInterval(interval);
   }, []);
 
-
   const toggleDropdown = (text) => {
     setOpenDropdown(openDropdown === text ? null : text);
   };
@@ -72,36 +90,26 @@ const Sidebar = () => {
   const menuItems = [
     {
       text: 'Dashboard',
-      icon: <DashboardIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: <DashboardIcon />,
       path: '/dashboard',
     },
     {
       text: 'SetUp',
-      icon: <BuildIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: <BuildIcon />,
       children: [
         {
           text: 'View Setup',
-          icon: <VisibilityIcon fontSize='10px' sx={{
-            background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-          }} />,
+          icon: <VisibilityIcon />,
           path: '/setup',
         },
         {
           text: 'Flow Setup',
-          icon: <SwapCallsIcon fontSize='10px' sx={{
-            background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-          }} />,
+          icon: <SwapCallsIcon />,
           path: '/flow-setup',
         },
         {
           text: 'Install',
-          icon: <DownloadIcon fontSize='10px' sx={{
-            background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-          }} />,
+          icon: <DownloadIcon />,
           path: '/install',
         },
       ],
@@ -115,59 +123,50 @@ const Sidebar = () => {
           max={99}
           sx={{ '& .MuiBadge-badge': { fontSize: 9, minWidth: 16, height: 16 } }}
         >
-          <ChatIcon fontSize='10px' sx={{
-            background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-          }} />
+          <ChatIcon />
         </Badge>
       ),
       path: '/chats',
     },
     {
       text: 'Users',
-      icon: <PeopleIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: <PeopleIcon />,
       path: '/users',
     },
     {
       text: 'Bot Answers',
-      icon: <SmartToyIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: <SmartToyIcon />,
       path: '/answers',
     },
     {
       text: 'Leads',
-      icon: <AssignmentIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: <AssignmentIcon />,
       path: '/leads',
     },
     {
       text: 'Analytics',
-      icon: <BarChartIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: <BarChartIcon />,
       path: '/analytics',
     },
     {
       text: 'Settings',
-      icon: <SettingsIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: <SettingsIcon />,
       path: '/settings',
     },
     {
       text: 'Logout',
-      icon: <LogoutIcon fontSize='10px' sx={{
-        background: '#4F46E5', borderRadius: '20px', width: '20px', height: '20px', padding: '3px'
-      }} />,
+      icon: <LogoutIcon />,
       path: '/logout',
     },
   ];
 
   const location = useLocation();
 
+  const isActive = (path) => location.pathname === path;
+  const isParentActive = (item) =>
+    item.children
+      ? item.children.some((c) => isActive(c.path)) || isActive(item.path)
+      : isActive(item.path);
 
   return (
     <Drawer
@@ -175,82 +174,123 @@ const Sidebar = () => {
       anchor="left"
       sx={{
         position: "fixed",
-        width: 180,
-        zIndex: '10000',
-        textAlign: 'center',
+        width: 200,
+        zIndex: 10000,
         flexShrink: 0,
         '& .MuiDrawer-paper': {
-          width: ["18%"],
+          width: 200,
           boxSizing: 'border-box',
-          backgroundColor: '#F6F9FF',
-          border: "none",
-          boxShadow: '2px 1px 0px #fff'
+          background: "linear-gradient(180deg, #f8faff 0%, #f0f4ff 40%, #faf5ff 100%)",
+          borderRight: "1px solid rgba(229,231,235,0.5)",
+          boxShadow: "2px 0 20px rgba(0,0,0,0.04)",
         },
       }}
     >
-      <div className="logo">
-        <img style={{ width: "100px", }} src={logo} alt="Smart Bot Logo" />
-      </div>
-      <List sx={{}}>
-        {menuItems.map((item) => (
-          <React.Fragment key={item.text}>
-            <ListItem
+      <Box sx={{
+        display: "flex", alignItems: "center", justifyContent: "center",
+        py: 2.5, px: 2, borderBottom: "1px solid rgba(243,244,246,0.8)",
+      }}>
+        <img style={{ width: "100px", filter: "drop-shadow(0 2px 4px rgba(79,70,229,0.15))" }} src={logo} alt="Smart Bot Logo" />
+      </Box>
 
-              button
-              onClick={() =>
-                item.children
-                  ? toggleDropdown(item.text)
-                  : navigate(item.path)
-              }
-              sx={{
-                cursor: 'pointer',
-                transition: 'ease-in-out',
-                borderLeft: location.pathname === item.path ? '3px solid #4F46E5' : 'transparent',
-                color: location.pathname === item.path ? '#4F46E5' : '#000',
-                '&:hover': {
-                  backgroundColor: '#fff',
-                },
-              }}
+      <List sx={{ px: 1, pt: 1 }}>
+        {menuItems.map((item) => {
+          const sel = isParentActive(item);
+          const color = ITEM_COLORS[item.text] || "#6366f1";
+          const isOpen = openDropdown === item.text;
 
-            >
-              <ListItemIcon sx={{
-                color: '#fff',
-              }}>{item.icon}</ListItemIcon>
-              <ListItemText sx={{
-                fontSize: '15px'
-              }} primary={item.text} />
-              {item.children &&
-                (openDropdown === item.text ? <ExpandLess /> : <ExpandMore />)}
-            </ListItem>
+          return (
+            <React.Fragment key={item.text}>
+              <ListItemButton
+                onClick={() =>
+                  item.children
+                    ? toggleDropdown(item.text)
+                    : navigate(item.path)
+                }
+                selected={sel && !item.children}
+                sx={{
+                  borderRadius: 2, mb: 0.3, px: 1.5, py: 0.8,
+                  transition: "all 0.2s",
+                  "&.Mui-selected": {
+                    bgcolor: `${color}12`,
+                    "&:hover": { bgcolor: `${color}18` },
+                  },
+                  "&:hover": { bgcolor: "rgba(99,102,241,0.06)" },
+                }}
+              >
+                <ListItemIcon sx={{ minWidth: 36, color: sel ? color : "#6b7280", justifyContent: "center" }}>
+                  <Box sx={{
+                    width: 30, height: 30, borderRadius: "9px",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    bgcolor: sel ? `${color}14` : "transparent",
+                    transition: "all 0.2s",
+                    fontSize: 18,
+                  }}>
+                    {item.icon}
+                  </Box>
+                </ListItemIcon>
+                <ListItemText
+                  primary={item.text}
+                  primaryTypographyProps={{
+                    fontSize: 13, fontWeight: sel ? 700 : 500,
+                    color: sel ? color : "#374151",
+                  }}
+                />
+                {item.children && (
+                  isOpen ? <ExpandLess sx={{ fontSize: 18, color: "#9ca3af" }} /> : <ExpandMore sx={{ fontSize: 18, color: "#9ca3af" }} />
+                )}
+              </ListItemButton>
 
-            {item.children && (
-              <Collapse in={openDropdown === item.text} timeout="auto" unmountOnExit>
-                <List component="div" disablePadding>
-                  {item.children.map((child) => (
-                    <ListItem
-                      button
-                      key={child.text}
-                      sx={{
-
-                        pl: 4, cursor: 'pointer',
-                        borderLeft: location.pathname === child.path ? '3px solid #4F46E5' : 'transparent',
-                        '&:hover': {
-                          backgroundColor: '#e0f7fa',
-                        }, color: location.pathname === child.path ? '#4F46E5' : '#000',
-                      }}
-                      onClick={() => navigate(child.path)}
-                    >
-                      <ListItemIcon sx={{
-                        color: '#fff'
-                      }}>{child.icon}</ListItemIcon>
-                      <ListItemText primary={child.text} />
-                    </ListItem>
-                  ))}
-                </List>
-              </Collapse>
-            )}
-          </React.Fragment>
-        ))}
+              {item.children && (
+                <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                  <List component="div" disablePadding sx={{ pl: 0.5 }}>
+                    {item.children.map((child) => {
+                      const childSel = isActive(child.path);
+                      const childColor = CHILD_COLORS[child.text] || "#6366f1";
+                      return (
+                        <ListItemButton
+                          key={child.text}
+                          onClick={() => navigate(child.path)}
+                          selected={childSel}
+                          sx={{
+                            borderRadius: 1.5, mb: 0.2, pl: 3.5, py: 0.5,
+                            transition: "all 0.2s",
+                            "&.Mui-selected": {
+                              bgcolor: `${childColor}10`,
+                              "&:hover": { bgcolor: `${childColor}16` },
+                            },
+                            "&:hover": { bgcolor: "rgba(99,102,241,0.05)" },
+                          }}
+                        >
+                          <ListItemIcon sx={{
+                            minWidth: 28, color: childSel ? childColor : "#9ca3af",
+                            justifyContent: "center", fontSize: 15,
+                          }}>
+                            <Box sx={{
+                              width: 24, height: 24, borderRadius: "7px",
+                              display: "flex", alignItems: "center", justifyContent: "center",
+                              bgcolor: childSel ? `${childColor}14` : "transparent",
+                              fontSize: 14,
+                            }}>
+                              {child.icon}
+                            </Box>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={child.text}
+                            primaryTypographyProps={{
+                              fontSize: 12, fontWeight: childSel ? 700 : 500,
+                              color: childSel ? childColor : "#4b5563",
+                            }}
+                          />
+                        </ListItemButton>
+                      );
+                    })}
+                  </List>
+                </Collapse>
+              )}
+            </React.Fragment>
+          );
+        })}
       </List>
     </Drawer>
   );

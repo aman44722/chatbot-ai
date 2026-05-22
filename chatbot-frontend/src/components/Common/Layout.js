@@ -22,7 +22,7 @@ const Layout = () => {
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: '#fff' }}>
       {/* Sidebar full height */}
-      <aside style={{ width: '18%', }}>
+      <aside style={{ width: 200, flexShrink: 0 }}>
         <Sidebar />
       </aside>
 
