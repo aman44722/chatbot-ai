@@ -34,12 +34,6 @@ exports.registerUser = async (req, res) => {
 
         await newUser.save();
 
-        const bot = new Bot({
-            userId: newUser._id,
-            name: `${fullName || email}'s Bot`,
-        });
-        await bot.save();
-
         const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
             expiresIn: "7d",
         });
@@ -52,7 +46,6 @@ exports.registerUser = async (req, res) => {
                 fullName: newUser.fullName,
                 role: newUser.role,
             },
-            botId: bot._id,
         });
     } catch (error) {
         console.error(error);
@@ -77,8 +70,6 @@ exports.loginUser = async (req, res) => {
             expiresIn: "7d",
         });
 
-        const bots = await Bot.find({ userId: user._id }).limit(1).lean();
-
         res.status(200).json({
             token,
             user: {
@@ -89,7 +80,6 @@ exports.loginUser = async (req, res) => {
                 phone: user.phone,
                 role: user.role,
             },
-            botId: bots[0]?._id || null,
         });
     } catch (error) {
         console.error(error);

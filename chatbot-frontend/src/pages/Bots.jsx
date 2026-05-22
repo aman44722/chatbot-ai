@@ -40,6 +40,7 @@ const Bots = () => {
   const [creating, setCreating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(null);
   const navigate = useNavigate();
+  const userRole = localStorage.getItem('userRole');
 
   const loadBots = async () => {
     try {
@@ -114,14 +115,16 @@ const Bots = () => {
             Create and manage your chatbots
           </Typography>
         </Box>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => setOpenCreate(true)}
-          sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, bgcolor: '#6366f1' }}
-        >
-          Create Bot
-        </Button>
+        {userRole === 'admin' && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenCreate(true)}
+            sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, bgcolor: '#6366f1' }}
+          >
+            Create Bot
+          </Button>
+        )}
       </Box>
 
       {bots.length === 0 ? (

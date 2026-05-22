@@ -32,17 +32,6 @@ exports.getBots = async (req, res) => {
             bots = await Bot.find({ userId }).sort({ createdAt: -1 });
         }
 
-        if (bots.length === 0 && user.role !== 'admin') {
-            const bot = new Bot({
-                userId,
-                name: `${user.fullName || user.email}'s Bot`,
-                botSettings: user.botSettings || undefined,
-                flowSetupSetting: user.flowSetupSetting || undefined,
-            });
-            await bot.save();
-            bots = [bot];
-        }
-
         res.json(bots);
     } catch (error) {
         console.error("Error fetching bots:", error);
