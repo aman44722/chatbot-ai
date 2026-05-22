@@ -230,8 +230,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
         },
       }}
     >
-      <Box className="sidebar-water-bg" sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-        <Box className="sidebar-content" sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+      <Box className="sidebar-water-bg" sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+        <Box className="sidebar-content" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
           {/* Logo + Toggle */}
           <Box sx={{
             display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between',
@@ -305,7 +305,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
           )}
 
           {/* Nav items */}
-          <Box sx={{ flex: 1, overflowY: 'auto', px: collapsed ? 0.5 : 1, py: 0.5 }}>
+          <Box sx={{ flex: 1, overflowY: 'auto', minHeight: 0, px: collapsed ? 0.5 : 1, py: 0.5 }}>
             <List sx={{ px: collapsed ? 0 : 0.5 }}>
               {mode1Items.map(renderItem)}
             </List>
