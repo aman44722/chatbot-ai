@@ -10,9 +10,14 @@ import {
   Collapse,
   Badge,
   Box,
+  Select,
+  MenuItem,
+  FormControl,
+  Typography,
 } from '@mui/material';
 import { fetchConversations } from '../../api/conversationApi';
 import { connectSocket } from '../../api/socket';
+import { getBots } from '../../api/botApi';
 import ChatIcon from '@mui/icons-material/Chat';
 import PeopleIcon from '@mui/icons-material/People';
 import DashboardIcon from '@mui/icons-material/Dashboard';
@@ -27,11 +32,13 @@ import BuildIcon from '@mui/icons-material/Build';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 import DownloadIcon from '@mui/icons-material/Download';
+import DnsIcon from '@mui/icons-material/Dns';
 import logo from "../../assets/images/bot-logo-blue.png";
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const ITEM_COLORS = {
   Dashboard: "#6366f1",
+  Bots: "#8b5cf6",
   SetUp: "#f59e0b",
   Chats: "#ec4899",
   Users: "#10b981",
@@ -53,7 +60,27 @@ const Sidebar = () => {
   const [openDropdown, setOpenDropdown] = useState(null);
   const [activeChatsCount, setActiveChatsCount] = useState(0);
   const [liveCount, setLiveCount] = useState(0);
+  const [bots, setBots] = useState([]);
+  const [selectedBot, setSelectedBot] = useState(localStorage.getItem('selectedBotId') || '');
   const prevLiveCount = React.useRef(0);
+
+  useEffect(() => {
+    getBots()
+      .then(setBots)
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (selectedBot) {
+      localStorage.setItem('selectedBotId', selectedBot);
+    }
+  }, [selectedBot]);
+
+  const handleBotChange = (event) => {
+    const botId = event.target.value;
+    setSelectedBot(botId);
+    localStorage.setItem('selectedBotId', botId);
+  };
 
   useEffect(() => {
     if (Notification.permission === "default") {
@@ -114,6 +141,11 @@ const Sidebar = () => {
       text: 'Dashboard',
       icon: <DashboardIcon />,
       path: '/dashboard',
+    },
+    {
+      text: 'Bots',
+      icon: <DnsIcon />,
+      path: '/bots',
     },
     {
       text: 'SetUp',
@@ -218,6 +250,36 @@ const Sidebar = () => {
       }}>
         <img style={{ width: "100px", filter: "drop-shadow(0 2px 4px rgba(79,70,229,0.15))" }} src={logo} alt="Smart Bot Logo" />
       </Box>
+
+      {bots.length > 0 && (
+        <Box sx={{ px: 1.5, py: 1 }}>
+          <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', mb: 0.5, px: 0.5 }}>
+            ACTIVE BOT
+          </Typography>
+          <FormControl fullWidth size="small">
+            <Select
+              value={selectedBot}
+              onChange={handleBotChange}
+              displayEmpty
+              sx={{
+                height: 32, fontSize: 12, borderRadius: 1.5,
+                '& .MuiOutlinedInput-notchedOutline': { borderColor: '#e5e7eb' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: '#6366f1' },
+                bgcolor: selectedBot ? '#f0f4ff' : 'transparent',
+              }}
+            >
+              {bots.map((bot) => (
+                <MenuItem key={bot._id} value={bot._id} sx={{ fontSize: 13 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <SmartToyIcon sx={{ fontSize: 15, color: '#6366f1' }} />
+                    {bot.name}
+                  </Box>
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Box>
+      )}
 
       <List sx={{ px: 1, pt: 1 }}>
         {menuItems.map((item) => {

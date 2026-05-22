@@ -18,6 +18,7 @@ import EditQuestionPopup from "./Fetures/Ouestions/EditQuestionPopup";
 import BotPreviewDialogPopup from "./Fetures/Ouestions/BotPreviewDialogPopup";
 import QuestionDraggableItem from "./Fetures/Ouestions/QuestionDraggableItem";
 import { fetchUserById, updateUserDetails } from "../../../api/authApi";
+import { getBotById, updateBot } from "../../../api/botApi";
 import { toast, ToastContainer } from "react-toastify";
 import SearchIcon from "@mui/icons-material/Search";
 import PreviewIcon from "@mui/icons-material/Preview";
@@ -86,17 +87,24 @@ const FlowCanvasComponent = () => {
   };
 
   const handleSave = async () => {
+    const selectedBotId = localStorage.getItem("selectedBotId");
     const userID = localStorage.getItem("userId");
     const token = JSON.parse(localStorage.getItem("user"))?.token;
     if (!userID || !token) {
       throw new Error("Missing userId or token");
     }
     const cleanItems = droppedItems.map(({ icon, label, defaultLabel, ...rest }) => rest);
-    const userPayload = { flowSetupSetting: { question: { list: cleanItems } } };
+    const payload = { flowSetupSetting: { question: { list: cleanItems } } };
     try {
-      const response = await updateUserDetails(userID, token, userPayload);
-      if (response) toast.success("Saved successfully");
-      else toast.error("Error saving the questions");
+      if (selectedBotId) {
+        const response = await updateBot(selectedBotId, payload);
+        if (response) toast.success("Saved successfully");
+        else toast.error("Error saving the questions");
+      } else {
+        const response = await updateUserDetails(userID, token, payload);
+        if (response) toast.success("Saved successfully");
+        else toast.error("Error saving the questions");
+      }
     } catch (error) {
       console.error("Error saving the questions:", error);
     }
@@ -113,10 +121,16 @@ const FlowCanvasComponent = () => {
   useEffect(() => {
     const getQuestions = async () => {
       try {
-        const userId = localStorage.getItem("userId");
-        if (!userId) throw new Error("User ID is missing in localStorage.");
-        const userData = await fetchUserById(userId);
-        setDroppedItems(userData?.flowSetupSetting?.question?.list || []);
+        const selectedBotId = localStorage.getItem("selectedBotId");
+        if (selectedBotId) {
+          const botData = await getBotById(selectedBotId);
+          setDroppedItems(botData?.flowSetupSetting?.question?.list || []);
+        } else {
+          const userId = localStorage.getItem("userId");
+          if (!userId) throw new Error("User ID is missing in localStorage.");
+          const userData = await fetchUserById(userId);
+          setDroppedItems(userData?.flowSetupSetting?.question?.list || []);
+        }
       } catch (error) {
         console.error("Error fetching questions:", error);
         enqueueSnackbar("Error fetching questions", { variant: "error" });

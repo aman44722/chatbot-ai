@@ -6,6 +6,7 @@ const compression = require("compression");
 const rateLimit = require("express-rate-limit");
 const authRoutes = require('./routes/authRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
+const botRoutes = require('./routes/botRoutes');
 
 dotenv.config();
 
@@ -44,6 +45,7 @@ connectDB().catch(() => {});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/conversation', conversationRoutes);
+app.use('/api/bots', botRoutes);
 
 app.get("/", (req, res) => {
     res.send("Chatbot Backend is running");

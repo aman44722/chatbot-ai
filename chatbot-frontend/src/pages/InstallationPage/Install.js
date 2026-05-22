@@ -31,15 +31,21 @@ const Install = () => {
         const fetchMeta = async () => {
             setLoading(true);
             try {
-                const user = JSON.parse(localStorage.getItem("user"));
-                if (!user?.token) return;
-                const res = await fetch(`${API}/install/meta`, {
-                    headers: { Authorization: `Bearer ${user.token}` },
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    setChatbotId(data.chatbotId || "");
-                    setHasWhitelist(Boolean(data.hasWhitelist));
+                const selectedBotId = localStorage.getItem("selectedBotId");
+                if (selectedBotId) {
+                    setChatbotId(selectedBotId);
+                    setHasWhitelist(true);
+                } else {
+                    const user = JSON.parse(localStorage.getItem("user"));
+                    if (!user?.token) return;
+                    const res = await fetch(`${API}/install/meta`, {
+                        headers: { Authorization: `Bearer ${user.token}` },
+                    });
+                    const data = await res.json();
+                    if (res.ok) {
+                        setChatbotId(data.chatbotId || "");
+                        setHasWhitelist(Boolean(data.hasWhitelist));
+                    }
                 }
             } catch (err) {
                 console.error("Install meta error:", err);

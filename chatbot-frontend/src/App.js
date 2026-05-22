@@ -26,6 +26,7 @@ import Install from './pages/InstallationPage/Install';
 // import WidgetLoader from './widget/WidgetLoader';
 import ConversationView from './pages/ConversationView';
 import Conversations from './pages/Conversations';
+import Bots from './pages/Bots';
 
 
 function App() {
@@ -80,6 +81,7 @@ function App() {
           <Route path="account" element={<Account />} />
           <Route path="conversations" element={<Conversations />} />
           <Route path="conversations/:id" element={<ConversationView />} />
+          <Route path="bots" element={<Bots />} />
 
 
         </Route>

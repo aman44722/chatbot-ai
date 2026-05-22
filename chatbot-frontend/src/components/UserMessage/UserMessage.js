@@ -13,6 +13,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 
 const AUTH_API = process.env.REACT_APP_AUTH_API || 'http://localhost:5000/api/auth';
+const BOTS_API = AUTH_API.replace('/api/auth', '/api/bots');
 const CONV_API = AUTH_API.replace('/api/auth', '/api/conversation');
 
 const getOrCreateSid = (chatId) => {
@@ -81,14 +82,25 @@ const UserMessage = () => {
 
     const loadSettings = async () => {
       try {
-        const res = await axios.get(`${AUTH_API}/user/${chatId}`);
-        const user = res.data;
-        setBotSettings(user.botSettings || {});
-        setFlow(user.flowSetupSetting?.question?.list || []);
+        let botSettingsData = {};
+        let flowData = [];
+        try {
+          const botRes = await axios.get(`${BOTS_API}/${chatId}/settings`);
+          botSettingsData = botRes.data || {};
+          const flowRes = await axios.get(`${BOTS_API}/${chatId}/flow`);
+          flowData = flowRes.data?.question?.list || [];
+        } catch {
+          const res = await axios.get(`${AUTH_API}/user/${chatId}`);
+          const user = res.data;
+          botSettingsData = user.botSettings || {};
+          flowData = user.flowSetupSetting?.question?.list || [];
+        }
+        setBotSettings(botSettingsData);
+        setFlow(flowData);
 
         // Restore from localStorage only — no API call needed
         const saved = loadState(chatId);
-        const flowList = user.flowSetupSetting?.question?.list || [];
+        const flowList = flowData;
 
         if (saved && saved.preChatDone) {
           // Restore ANY state where user already entered their name

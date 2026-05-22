@@ -38,6 +38,11 @@ const QuestionSchema = new mongoose.Schema({
 
 const userSchema = new mongoose.Schema(
     {
+        role: {
+            type: String,
+            enum: ['admin', 'user'],
+            default: 'user',
+        },
         email: {
             type: String,
             required: [true, "Email is required"],

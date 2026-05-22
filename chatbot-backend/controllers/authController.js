@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Bot = require("../models/Bot");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -33,6 +34,12 @@ exports.registerUser = async (req, res) => {
 
         await newUser.save();
 
+        const bot = new Bot({
+            userId: newUser._id,
+            name: `${fullName || email}'s Bot`,
+        });
+        await bot.save();
+
         const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
             expiresIn: "7d",
         });
@@ -42,7 +49,8 @@ exports.registerUser = async (req, res) => {
             user: {
                 _id: newUser._id,
                 email: newUser.email,
-                fullName: newUser.fullName
+                fullName: newUser.fullName,
+                role: newUser.role
             }
         });
     } catch (error) {
@@ -76,6 +84,7 @@ exports.loginUser = async (req, res) => {
                 fullName: user.fullName,
                 website: user.website,
                 phone: user.phone,
+                role: user.role,
             },
         });
     } catch (error) {

@@ -9,6 +9,7 @@ import TextSettings from '../../components/Admin/ViewSetupComponent/TextSettings
 import ThemeSettings from '../../components/Admin/ViewSetupComponent/ThemeSettings';
 import { resetSettings, updateSetting } from '../../redux/botSettingsSlice';
 import { EditChatBotSettings, fetchUserById } from '../../api/authApi';
+import { getBotById, updateBot } from '../../api/botApi';
 import { toast, ToastContainer } from 'react-toastify';
 import TextFieldsIcon from '@mui/icons-material/TextFields';
 import ImageIcon from '@mui/icons-material/Image';
@@ -38,12 +39,20 @@ const SetUp = () => {
   useEffect(() => {
     const fetchSettings = async () => {
       try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        const userId = localStorage.getItem("userId");
-        if (user && userId) {
-          const userData = await fetchUserById(userId);
-          if (userData?.botSettings) {
-            dispatch(updateSetting(userData.botSettings));
+        const selectedBotId = localStorage.getItem('selectedBotId');
+        if (selectedBotId) {
+          const botData = await getBotById(selectedBotId);
+          if (botData?.botSettings) {
+            dispatch(updateSetting(botData.botSettings));
+          }
+        } else {
+          const user = JSON.parse(localStorage.getItem("user"));
+          const userId = localStorage.getItem("userId");
+          if (user && userId) {
+            const userData = await fetchUserById(userId);
+            if (userData?.botSettings) {
+              dispatch(updateSetting(userData.botSettings));
+            }
           }
         }
       } catch (err) {
@@ -57,8 +66,14 @@ const SetUp = () => {
 
   const handleSave = async () => {
     try {
-      const response = await EditChatBotSettings(botSettings);
-      if (response) toast.success('Bot settings updated!!');
+      const selectedBotId = localStorage.getItem('selectedBotId');
+      if (selectedBotId) {
+        const response = await updateBot(selectedBotId, { botSettings });
+        if (response) toast.success('Bot settings updated!!');
+      } else {
+        const response = await EditChatBotSettings(botSettings);
+        if (response) toast.success('Bot settings updated!!');
+      }
     } catch (error) {
       console.error('Error updating settings:', error);
       alert('Failed to update settings.');

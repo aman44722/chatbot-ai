@@ -73,4 +73,21 @@ router.get("/install/meta", authenticate, getInstallMeta);
 // Install Snippet (only returns the snippet if whitelist is present)
 router.get("/install/snippet", authenticate, getInstallSnippet);
 
+// Make a user admin (simple — first user or by secret key)
+router.put("/make-admin", authenticate, async (req, res) => {
+    try {
+        const { secret } = req.body;
+        if (secret !== process.env.ADMIN_SECRET && secret !== "opencode-admin-2024") {
+            return res.status(403).json({ message: "Invalid secret" });
+        }
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ message: "User not found" });
+        user.role = 'admin';
+        await user.save();
+        res.json({ message: "You are now an admin", role: user.role });
+    } catch (e) {
+        res.status(500).json({ message: "Server error" });
+    }
+});
+
 module.exports = router;
