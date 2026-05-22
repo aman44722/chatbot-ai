@@ -898,16 +898,6 @@ const UserMessage = () => {
                         disabled={done && !liveRequested}
                         sx={{ '& .MuiOutlinedInput-root': { borderRadius: 3 } }}
                       />
-                      {!done && !liveRequested && currentQ?.skipOption && (
-                        <Button
-                          variant="outlined" size="small"
-                          startIcon={<SkipNextIcon fontSize="small" />}
-                          onClick={handleSkip}
-                          sx={{ borderRadius: 3, textTransform: 'none', fontWeight: 500, fontSize: 13, color: '#666', borderColor: '#ccc', whiteSpace: 'nowrap', '&:hover': { borderColor: '#999', bgcolor: '#f5f5f5' } }}
-                        >
-                          Skip
-                        </Button>
-                      )}
                       <Button
                         variant="contained"
                         onClick={handleSend}
@@ -917,8 +907,20 @@ const UserMessage = () => {
                         <SendIcon fontSize="small" />
                       </Button>
                     </Box>
+                    {!done && !liveRequested && currentQ?.skipOption && (
+                      <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
+                        <Button
+                          size="small"
+                          startIcon={<SkipNextIcon fontSize="small" />}
+                          onClick={handleSkip}
+                          sx={{ borderRadius: 2, textTransform: 'none', color: '#aaa', fontWeight: 400, fontSize: 13, px: 2, '&:hover': { color: '#666', bgcolor: 'transparent' } }}
+                        >
+                          Skip
+                        </Button>
+                      </Box>
+                    )}
                     {!done && !liveRequested && currentQ && (
-                      <Box sx={{ mt: 0.8, display: 'flex', alignItems: 'center', gap: 0.8 }}>
+                      <Box sx={{ mt: 0.5, display: 'flex', alignItems: 'center', gap: 0.8 }}>
                         <Typography sx={{ fontSize: 11, color: '#e67e22', fontWeight: 500 }}>
                           ⚠️ {getValidationHint(currentQ) || 'Required field'}
                         </Typography>
