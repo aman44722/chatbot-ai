@@ -14,17 +14,19 @@ code {
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f1f5f9;
+  border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #c4b5fd;
-  border-radius: 4px;
+  background: #a5b4fc;
+  border-radius: 3px;
+  min-height: 30px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -34,5 +36,5 @@ code {
 /* Firefox scrollbar */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #c4b5fd transparent;
+  scrollbar-color: #a5b4fc #f1f5f9;
 }
