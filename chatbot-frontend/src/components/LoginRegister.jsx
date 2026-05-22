@@ -248,8 +248,8 @@ const AuthForm = () => {
             border: "1px solid rgba(229,231,235,0.5)",
             boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
           }}>
-            {/* Logo */}
-            <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>
+            {/* Logo + Welcome */}
+            <Box sx={{ textAlign: "center", mb: 1.5 }}>
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -259,11 +259,17 @@ const AuthForm = () => {
                   width: 36, height: 36, borderRadius: "10px",
                   background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
                   display: "flex", alignItems: "center", justifyContent: "center",
-                  boxShadow: "0 8px 24px rgba(79,70,229,0.3)",
+                  boxShadow: "0 8px 24px rgba(79,70,229,0.3)", mx: "auto", mb: 1,
                 }}>
                   <SmartToyIcon sx={{ color: "#fff", fontSize: 24 }} />
                 </Box>
               </motion.div>
+              <Typography sx={{ fontWeight: 700, fontSize: 16, color: "#111827", lineHeight: 1.2 }}>
+                Welcome Back
+              </Typography>
+              <Typography sx={{ fontSize: 12, color: "#6B7280", mt: 0.3 }}>
+                Please login to continue accessing your dashboard.
+              </Typography>
             </Box>
 
             {/* Tabs */}
@@ -302,7 +308,11 @@ const AuthForm = () => {
                   <TextField
                     fullWidth margin="none" size="small"
                     label="Full Name"
-                    sx={{ mb: 0.8, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
                   />
                 )}
 
@@ -314,7 +324,7 @@ const AuthForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  sx={{ mb: 0.8, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                  sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
                 />
 
                 <TextField
@@ -325,7 +335,7 @@ const AuthForm = () => {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  sx={{ mb: 0.8, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                  sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
@@ -339,7 +349,7 @@ const AuthForm = () => {
 
                 {!isLogin && (
                   <>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 0.5, mt: 0.5 }}>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 2 }}>
                       {["8+ Char", "1 Lower", "1 Upper", "1 Special", "1 Num"].map((item) => (
                         <Box key={item} sx={{ fontSize: "10px", bgcolor: "#F3F4F6", color: "#6B7280", px: 1, py: 0.3, borderRadius: "4px", fontWeight: 500 }}>
                           {item}
@@ -348,16 +358,16 @@ const AuthForm = () => {
                     </Box>
 
                     <TextField
-                      fullWidth margin="dense" size="small"
+                      fullWidth margin="none" size="small"
                       label="Website URL"
                       name="website"
                       value={formData.website}
                       onChange={handleChange}
                       required
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                      sx={{ mb: 2, "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
                     />
 
-                    <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                    <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
                       <TextField
                         select size="small"
                         label="Code"
@@ -386,7 +396,7 @@ const AuthForm = () => {
                       label={<Typography variant="body2" sx={{ fontSize: 11, color: "#6B7280" }}>
                         I agree to <a href="/terms" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Terms</a> & <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Privacy</a>
                       </Typography>}
-                      sx={{ mt: 0.5 }}
+                      sx={{ mb: 2 }}
                     />
                   </>
                 )}
