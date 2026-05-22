@@ -1,17 +1,36 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Box, Typography, Button, Table, TableBody, TableCell,
-  TableContainer, TableHead, TableRow, Paper, IconButton,
-  Chip, CircularProgress, Dialog, DialogTitle, DialogContent,
-  DialogActions, TextField, Tooltip,
+  Box, Typography, Button, Paper, CircularProgress, Dialog, DialogTitle,
+  DialogContent, DialogActions, TextField, Switch, IconButton, Grid,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SettingsIcon from '@mui/icons-material/Settings';
+import SwapCallsIcon from '@mui/icons-material/SwapCalls';
+import DownloadIcon from '@mui/icons-material/Download';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
-import { getBots, createBot, deleteBot } from '../api/botApi';
+import ChatIcon from '@mui/icons-material/Chat';
+import BarChartIcon from '@mui/icons-material/BarChart';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import { getBots, createBot, deleteBot, updateBot } from '../api/botApi';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+
+const iconMap = {
+  setup: <SettingsIcon sx={{ fontSize: 18 }} />,
+  flow: <SwapCallsIcon sx={{ fontSize: 18 }} />,
+  install: <DownloadIcon sx={{ fontSize: 18 }} />,
+  chats: <ChatIcon sx={{ fontSize: 18 }} />,
+  analytics: <BarChartIcon sx={{ fontSize: 18 }} />,
+};
+
+const actions = [
+  { key: 'setup', label: 'Setup', tab: 'setup' },
+  { key: 'flow', label: 'Flow', tab: 'flow-setup' },
+  { key: 'install', label: 'Install', tab: 'install' },
+  { key: 'chats', label: 'Chats', tab: 'conversations' },
+  { key: 'analytics', label: 'Analytics', tab: 'analytics' },
+];
 
 const Bots = () => {
   const [bots, setBots] = useState([]);
@@ -19,6 +38,7 @@ const Bots = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [newBotName, setNewBotName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(null);
   const navigate = useNavigate();
 
   const loadBots = async () => {
@@ -61,9 +81,20 @@ const Bots = () => {
     }
   };
 
-  const handleEdit = (botId) => {
+  const handleToggleStatus = async (bot) => {
+    try {
+      const newStatus = bot.status === 'active' ? 'inactive' : 'active';
+      await updateBot(bot._id, { status: newStatus });
+      toast.success(`Bot ${newStatus === 'active' ? 'activated' : 'deactivated'}`);
+      loadBots();
+    } catch (err) {
+      toast.error(err);
+    }
+  };
+
+  const handleNavigate = (botId, tab) => {
     localStorage.setItem('selectedBotId', botId);
-    navigate('/app/setup');
+    navigate(`/app/${tab}`);
   };
 
   if (loading) {
@@ -102,56 +133,111 @@ const Bots = () => {
           </Typography>
         </Paper>
       ) : (
-        <TableContainer component={Paper} sx={{ borderRadius: 3, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-          <Table>
-            <TableHead>
-              <TableRow sx={{ background: '#f8faff' }}>
-                <TableCell sx={{ fontWeight: 600 }}>Bot Name</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Created</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Updated</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {bots.map((bot) => (
-                <TableRow key={bot._id} hover>
-                  <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <SmartToyIcon sx={{ color: '#6366f1', fontSize: 20 }} />
-                      <Typography sx={{ fontWeight: 500 }}>{bot.name}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell>
-                    <Chip
-                      label={bot.status}
+        <Grid container spacing={2.5}>
+          {bots.map((bot) => (
+            <Grid item xs={12} sm={6} md={4} key={bot._id}>
+              <Paper
+                sx={{
+                  borderRadius: 3,
+                  boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                  transition: 'box-shadow 0.25s, transform 0.2s',
+                  '&:hover': { boxShadow: '0 4px 16px rgba(99,102,241,0.12)', transform: 'translateY(-2px)' },
+                  opacity: bot.status === 'inactive' ? 0.6 : 1,
+                }}
+              >
+                <Box sx={{ p: 2, pb: 1, display: 'flex', alignItems: 'center', gap: 1.5, borderBottom: '1px solid #f1f1f1' }}>
+                  <Box
+                    sx={{
+                      width: 40, height: 40, borderRadius: '10px',
+                      background: bot.status === 'active'
+                        ? 'linear-gradient(135deg, #6366f1, #8b5cf6)'
+                        : '#e5e7eb',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    <SmartToyIcon sx={{ color: '#fff', fontSize: 22 }} />
+                  </Box>
+                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Typography sx={{ fontWeight: 600, fontSize: 14 }}>{bot.name}</Typography>
+                    <Typography sx={{ fontSize: 11, color: '#9ca3af' }}>
+                      Created {new Date(bot.createdAt).toLocaleDateString()}
+                    </Typography>
+                  </Box>
+                  <Box sx={{ position: 'relative' }}>
+                    <IconButton size="small" onClick={() => setMenuOpen(menuOpen === bot._id ? null : bot._id)}>
+                      <MoreVertIcon sx={{ fontSize: 18, color: '#6b7280' }} />
+                    </IconButton>
+                    {menuOpen === bot._id && (
+                      <Paper
+                        sx={{
+                          position: 'absolute', right: 0, top: 32, zIndex: 10,
+                          minWidth: 140, borderRadius: 2, boxShadow: '0 4px 16px rgba(0,0,0,0.12)',
+                        }}
+                        onClick={() => setMenuOpen(null)}
+                      >
+                        <Box
+                          sx={{ px: 2, py: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' }, borderRadius: '8px 8px 0 0' }}
+                          onClick={() => handleDelete(bot._id, bot.name)}
+                        >
+                          <Typography sx={{ fontSize: 13, color: '#ef4444' }}>Delete</Typography>
+                        </Box>
+                      </Paper>
+                    )}
+                  </Box>
+                </Box>
+
+                <Box sx={{ p: 2, pb: 1 }}>
+                  <Grid container spacing={1}>
+                    {actions.map((act) => (
+                      <Grid item xs={12 / 5} key={act.key}>
+                        <Button
+                          fullWidth
+                          onClick={() => handleNavigate(bot._id, act.tab)}
+                          sx={{
+                            flexDirection: 'column', gap: 0.3, textTransform: 'none',
+                            borderRadius: 2, py: 0.8, minWidth: 0,
+                            color: '#6b7280', fontSize: 10, fontWeight: 500,
+                            bgcolor: '#f8faff',
+                            '&:hover': { bgcolor: '#eef2ff', color: '#6366f1' },
+                          }}
+                        >
+                          {iconMap[act.key]}
+                          {act.label}
+                        </Button>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Box>
+
+                <Box sx={{ px: 2, pb: 1.5, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                    <Switch
                       size="small"
-                      color={bot.status === 'active' ? 'success' : 'default'}
-                      variant="outlined"
+                      checked={bot.status === 'active'}
+                      onChange={() => handleToggleStatus(bot)}
+                      sx={{
+                        '& .MuiSwitch-switchBase.Mui-checked': { color: '#6366f1' },
+                        '& .MuiSwitch-switchBase.Mui-checked+.MuiSwitch-track': { bgcolor: '#6366f1' },
+                      }}
                     />
-                  </TableCell>
-                  <TableCell>{new Date(bot.createdAt).toLocaleDateString()}</TableCell>
-                  <TableCell>{new Date(bot.updatedAt).toLocaleDateString()}</TableCell>
-                  <TableCell>
-                    <Tooltip title="Edit Bot">
-                      <IconButton onClick={() => handleEdit(bot._id)} size="small" sx={{ color: '#6366f1' }}>
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Delete Bot">
-                      <IconButton onClick={() => handleDelete(bot._id, bot.name)} size="small" sx={{ color: '#ef4444' }}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+                    <Typography sx={{ fontSize: 11, color: bot.status === 'active' ? '#6366f1' : '#9ca3af', fontWeight: 500 }}>
+                      {bot.status === 'active' ? 'Active' : 'Inactive'}
+                    </Typography>
+                  </Box>
+                  <IconButton
+                    size="small"
+                    onClick={() => handleDelete(bot._id, bot.name)}
+                    sx={{ color: '#d1d5db', '&:hover': { color: '#ef4444' } }}
+                  >
+                    <DeleteIcon sx={{ fontSize: 18 }} />
+                  </IconButton>
+                </Box>
+              </Paper>
+            </Grid>
+          ))}
+        </Grid>
       )}
 
-      {/* Create Bot Dialog */}
       <Dialog open={openCreate} onClose={() => setOpenCreate(false)} maxWidth="sm" fullWidth>
         <DialogTitle sx={{ fontWeight: 700 }}>Create New Bot</DialogTitle>
         <DialogContent>
