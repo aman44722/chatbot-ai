@@ -210,12 +210,26 @@ const Sidebar = () => {
                 selected={sel && !item.children}
                 sx={{
                   borderRadius: 2, mb: 0.3, px: 1.5, py: 0.8,
-                  transition: "all 0.2s",
+                  position: "relative", overflow: "hidden",
+                  transition: "all 0.3s",
+                  "&::before": sel && !item.children ? {
+                    content: '""',
+                    position: "absolute", left: 0, top: "50%",
+                    transform: "translateY(-50%)",
+                    width: 3, height: "60%",
+                    borderRadius: "0 3px 3px 0",
+                    bgcolor: color,
+                    animation: "slideIn 0.3s ease-out",
+                  } : {},
                   "&.Mui-selected": {
-                    bgcolor: `${color}12`,
-                    "&:hover": { bgcolor: `${color}18` },
+                    background: `linear-gradient(90deg, ${color}12 0%, ${color}06 100%)`,
+                    "&:hover": { background: `linear-gradient(90deg, ${color}18 0%, ${color}0a 100%)` },
                   },
                   "&:hover": { bgcolor: "rgba(99,102,241,0.06)" },
+                  "@keyframes slideIn": {
+                    from: { height: 0, opacity: 0 },
+                    to: { height: "60%", opacity: 1 },
+                  },
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 36, color: sel ? color : "#6b7280", justifyContent: "center" }}>
@@ -223,8 +237,10 @@ const Sidebar = () => {
                     width: 30, height: 30, borderRadius: "9px",
                     display: "flex", alignItems: "center", justifyContent: "center",
                     bgcolor: sel ? `${color}14` : "transparent",
-                    transition: "all 0.2s",
+                    transition: "all 0.3s",
+                    transform: sel ? "scale(1.05)" : "scale(1)",
                     fontSize: 18,
+                    boxShadow: sel ? `0 2px 8px ${color}30` : "none",
                   }}>
                     {item.icon}
                   </Box>
@@ -254,10 +270,20 @@ const Sidebar = () => {
                           selected={childSel}
                           sx={{
                             borderRadius: 1.5, mb: 0.2, pl: 3.5, py: 0.5,
-                            transition: "all 0.2s",
+                            position: "relative", overflow: "hidden",
+                            transition: "all 0.3s",
+                            "&::before": childSel ? {
+                              content: '""',
+                              position: "absolute", left: 0, top: "50%",
+                              transform: "translateY(-50%)",
+                              width: 2.5, height: "50%",
+                              borderRadius: "0 3px 3px 0",
+                              bgcolor: childColor,
+                              animation: "slideIn 0.3s ease-out",
+                            } : {},
                             "&.Mui-selected": {
-                              bgcolor: `${childColor}10`,
-                              "&:hover": { bgcolor: `${childColor}16` },
+                              background: `linear-gradient(90deg, ${childColor}0e 0%, ${childColor}04 100%)`,
+                              "&:hover": { background: `linear-gradient(90deg, ${childColor}14 0%, ${childColor}08 100%)` },
                             },
                             "&:hover": { bgcolor: "rgba(99,102,241,0.05)" },
                           }}
@@ -271,6 +297,9 @@ const Sidebar = () => {
                               display: "flex", alignItems: "center", justifyContent: "center",
                               bgcolor: childSel ? `${childColor}14` : "transparent",
                               fontSize: 14,
+                              transition: "all 0.3s",
+                              transform: childSel ? "scale(1.08)" : "scale(1)",
+                              boxShadow: childSel ? `0 2px 6px ${childColor}28` : "none",
                             }}>
                               {child.icon}
                             </Box>
