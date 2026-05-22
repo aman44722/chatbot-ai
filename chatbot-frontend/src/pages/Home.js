@@ -11,6 +11,15 @@ import SupportAgentIcon from "@mui/icons-material/SupportAgent";
 import FormatQuoteIcon from "@mui/icons-material/FormatQuote";
 import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
 import PlayArrowIcon from "@mui/icons-material/PlayArrow";
+import DashboardIcon from "@mui/icons-material/Dashboard";
+import AccountTreeIcon from "@mui/icons-material/AccountTree";
+import ChatIcon from "@mui/icons-material/Chat";
+import SettingsIcon from "@mui/icons-material/Settings";
+import StorageIcon from "@mui/icons-material/Storage";
+import IntegrationInstructionsIcon from "@mui/icons-material/IntegrationInstructions";
+
+import getStartedImg from "../assets/images/get-started.webp";
+import chatgptAiImg from "../assets/images/chatgpt+ai.webp";
 
 const fadeUp = {
   initial: { opacity: 0, y: 60 },
@@ -27,25 +36,25 @@ const stagger = {
 };
 
 const features = [
-  { icon: <SpeedIcon sx={{ fontSize: 32 }} />, title: "Lightning Fast", desc: "Deploy your chatbot in minutes with zero coding. Get started instantly." },
-  { icon: <SmartToyIcon sx={{ fontSize: 32 }} />, title: "AI-Powered", desc: "Smart responses powered by advanced AI that learns from every conversation." },
-  { icon: <BarChartIcon sx={{ fontSize: 32 }} />, title: "Deep Analytics", desc: "Track performance, user behavior, and conversation trends in real-time." },
-  { icon: <SecurityIcon sx={{ fontSize: 32 }} />, title: "Enterprise Security", desc: "Bank-grade encryption and compliance with global data protection standards." },
-  { icon: <SupportAgentIcon sx={{ fontSize: 32 }} />, title: "Live Agent Handoff", desc: "Seamlessly escalate to human agents when your bot needs backup." },
-  { icon: <AutoAwesomeIcon sx={{ fontSize: 32 }} />, title: "Smart Automation", desc: "Automate repetitive tasks and let your team focus on what matters." },
+  { icon: <SmartToyIcon sx={{ fontSize: 32 }} />, title: "Bot Management Hub", desc: "Create, configure, and manage multiple chatbots from a single dashboard. Toggle active status, delete bots, and organize your AI workforce." },
+  { icon: <AccountTreeIcon sx={{ fontSize: 32 }} />, title: "Visual Flow Builder", desc: "Design conversation flows with an intuitive builder. Map out intents, responses, and decision trees without writing a single line of code." },
+  { icon: <BarChartIcon sx={{ fontSize: 32 }} />, title: "Conversation Analytics", desc: "Track every interaction with rich analytics. Monitor total chats, user sentiment, response times, and conversation trends in real-time." },
+  { icon: <ChatIcon sx={{ fontSize: 32 }} />, title: "Live Chat Handoff", desc: "Seamlessly escalate from bot to human agent. Manage live conversations, set agent availability, and never miss a customer query." },
+  { icon: <SecurityIcon sx={{ fontSize: 32 }} />, title: "Domain Whitelist", desc: "Control exactly where your chatbots can be embedded. Per-bot domain whitelisting ensures your bot only appears on approved websites." },
+  { icon: <StorageIcon sx={{ fontSize: 32 }} />, title: "Conversation History", desc: "Browse, search, and review past conversations. Filter by status, dive into individual sessions, and export insights for training." },
 ];
 
 const stats = [
-  { value: "10K+", label: "Active Users" },
-  { value: "1M+", label: "Conversations" },
+  { value: "5K+", label: "Bots Created" },
+  { value: "500K+", label: "Conversations" },
   { value: "99.9%", label: "Uptime" },
-  { value: "4.9★", label: "Rating" },
+  { value: "4.8★", label: "Rating" },
 ];
 
 const testimonials = [
-  { name: "Sarah Chen", role: "CEO, TechStart", text: "This chatbot transformed our customer support. Response time dropped by 80%!" },
-  { name: "James Wilson", role: "Product Manager, CloudCo", text: "The flow builder is incredibly intuitive. We built our entire support flow in one day." },
-  { name: "Priya Patel", role: "Founder, ShopEasy", text: "Our customers love the instant responses. Sales have increased by 35% since implementing." },
+  { name: "Rahul Sharma", role: "CTO, FinEdge", text: "Managing 15+ bots across our customer support teams was never this easy. The bot management hub is a game-changer." },
+  { name: "Ananya Gupta", role: "Product Lead, ShopLane", text: "The flow builder helped us design complex support flows in hours, not weeks. Our customer satisfaction score went up by 40%." },
+  { name: "Vikram Patel", role: "Founder, HealthFirst", text: "Domain whitelisting gave us the security we needed. Our patients love the instant responses, and our team loves the analytics." },
 ];
 
 const CountUp = ({ end, duration = 2 }) => {
@@ -109,31 +118,30 @@ const Home = () => {
         <Container maxWidth="lg">
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", height: 70 }}>
             <motion.div initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, cursor: "pointer" }} onClick={() => navigate("/")}>
-                <Box sx={{ width: 36, height: 36, borderRadius: "10px", background: "linear-gradient(135deg, #4F46E5, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, cursor: "pointer" }} onClick={() => navigate("/")}>
+                <Box sx={{ width: 36, height: 36, borderRadius: "10px", background: "linear-gradient(135deg, #4F46E5, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(79,70,229,0.3)" }}>
                   <SmartToyIcon sx={{ color: "#fff", fontSize: 20 }} />
                 </Box>
-                <Typography sx={{ fontWeight: 700, fontSize: 20, color: "#1f2937", letterSpacing: "-0.5px" }}>
-                  SmartBot
+                <Typography sx={{ fontWeight: 800, fontSize: 20, color: "#1f2937", letterSpacing: "-0.5px" }}>
+                  BotForge
                 </Typography>
               </Box>
             </motion.div>
 
-            <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 4 }}>
-              {["Product", "Features", "Pricing", "About"].map((item, i) => (
-                <motion.a
-                  key={item}
-                  href="#"
-                  initial={{ opacity: 0, y: -10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * i, duration: 0.4 }}
-                  whileHover={{ scale: 1.05 }}
-                  sx={{ textDecoration: "none", color: "#4b5563", fontWeight: 500, fontSize: 14, cursor: "pointer", "&:hover": { color: "#4F46E5" } }}
-                >
-                  {item}
-                </motion.a>
-              ))}
-            </Box>
+              <Box sx={{ display: { xs: "none", md: "flex" }, alignItems: "center", gap: 4 }}>
+                {["Features", "Pricing", "Docs", "About"].map((item, i) => (
+                  <motion.a
+                    key={item}
+                    href="#"
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 * i, duration: 0.4 }}
+                    className="home-header-link"
+                  >
+                    {item}
+                  </motion.a>
+                ))}
+              </Box>
 
             <Box sx={{ display: "flex", gap: 1.5 }}>
               <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.6, delay: 0.2 }}>
@@ -234,59 +242,104 @@ const Home = () => {
                 transition={{ duration: 1, delay: 0.3, ease: "easeOut" }}
               >
                 <Box sx={{ position: "relative" }}>
+                  {/* Main Dashboard Preview */}
                   <Box sx={{ bgcolor: "#fff", borderRadius: 4, boxShadow: "0 25px 60px rgba(0,0,0,0.12)", overflow: "hidden", border: "1px solid rgba(229,231,235,0.5)" }}>
+                    {/* Window chrome */}
                     <Box sx={{ bgcolor: "#f9fafb", px: 3, py: 1.5, borderBottom: "1px solid #e5e7eb", display: "flex", alignItems: "center", gap: 1 }}>
                       <Box sx={{ display: "flex", gap: 0.5 }}>
                         <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: "#ef4444" }} />
                         <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: "#f59e0b" }} />
                         <Box sx={{ width: 12, height: 12, borderRadius: "50%", bgcolor: "#10b981" }} />
                       </Box>
-                      <Typography sx={{ fontSize: 12, color: "#9ca3af", ml: 1 }}>SmartBot Dashboard</Typography>
+                      <Typography sx={{ fontSize: 12, color: "#9ca3af", ml: 1 }}>BotForge Dashboard</Typography>
                     </Box>
-                    <Box sx={{ p: 3, display: "flex", flexDirection: "column", gap: 2 }}>
-                      <Box sx={{ display: "flex", gap: 2 }}>
-                        <Box sx={{ width: 40, height: 40, borderRadius: 2, bgcolor: "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <SmartToyIcon sx={{ color: "#4F46E5", fontSize: 22 }} />
-                        </Box>
-                        <Box sx={{ flex: 1 }}>
-                          <Box sx={{ height: 12, width: "60%", borderRadius: 1, bgcolor: "#e5e7eb", mb: 1 }} />
-                          <Box sx={{ height: 12, width: "40%", borderRadius: 1, bgcolor: "#e5e7eb" }} />
-                        </Box>
-                      </Box>
+
+                    {/* Dashboard content */}
+                    <Box sx={{ p: 2.5, display: "flex", flexDirection: "column", gap: 2 }}>
+                      {/* Bot cards row */}
                       <Box sx={{ display: "flex", gap: 1.5 }}>
-                        {["Welcome!", "How can I help?", "Get Started"].map((t, i) => (
+                        {[
+                          { name: "Support Bot", chats: "1.2K", color: "#4F46E5" },
+                          { name: "Sales Bot", chats: "856", color: "#7C3AED" },
+                          { name: "FAQ Bot", chats: "2.1K", color: "#EC4899" },
+                        ].map((bot, i) => (
                           <motion.div
-                            key={t}
-                            initial={{ opacity: 0, y: 10 }}
+                            key={bot.name}
+                            initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.8 + i * 0.15, duration: 0.4 }}
+                            transition={{ delay: 0.6 + i * 0.1, duration: 0.4 }}
+                            style={{ flex: 1 }}
                           >
-                            <Box sx={{ px: 2, py: 1, borderRadius: 2, bgcolor: i === 0 ? "#4F46E5" : "#f3f4f6", color: i === 0 ? "#fff" : "#374151", fontSize: 12, fontWeight: 500 }}>
-                              {t}
+                            <Box sx={{ bgcolor: "#F9FAFB", borderRadius: 2.5, p: 1.5, border: "1px solid #f3f4f6" }}>
+                              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+                                <Box sx={{ width: 28, height: 28, borderRadius: 1.5, bgcolor: `${bot.color}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                  <SmartToyIcon sx={{ color: bot.color, fontSize: 16 }} />
+                                </Box>
+                                <Typography sx={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>{bot.name}</Typography>
+                              </Box>
+                              <Box sx={{ display: "flex", alignItems: "baseline", gap: 0.5 }}>
+                                <Typography sx={{ fontSize: 20, fontWeight: 800, color: bot.color, lineHeight: 1 }}>{bot.chats}</Typography>
+                                <Typography sx={{ fontSize: 10, color: "#9CA3AF" }}>chats</Typography>
+                              </Box>
                             </Box>
                           </motion.div>
                         ))}
                       </Box>
+
+                      {/* Conversation preview */}
                       <motion.div
-                        initial={{ opacity: 0, x: 30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 1.3, duration: 0.5 }}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.0, duration: 0.5 }}
                       >
-                        <Box sx={{ alignSelf: "flex-end", px: 2, py: 1.5, borderRadius: "12px 12px 4px 12px", bgcolor: "#4F46E5", color: "#fff", fontSize: 13, maxWidth: "70%" }}>
-                          Hi! I'd like to learn more about your pricing.
+                        <Box sx={{ bgcolor: "#F9FAFB", borderRadius: 2.5, p: 2, border: "1px solid #f3f4f6" }}>
+                          <Typography sx={{ fontSize: 11, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.5px", mb: 1.5 }}>
+                            Recent Conversations
+                          </Typography>
+                          {[
+                            { msg: "Hi, I need help with my order", from: "user", time: "2m ago" },
+                            { msg: "I'd be happy to help! Could you share your order ID?", from: "bot", time: "1m ago" },
+                          ].map((item, i) => (
+                            <Box key={i} sx={{ display: "flex", gap: 1.5, mb: 1.5, flexDirection: item.from === "user" ? "row" : "row-reverse" }}>
+                              <Box sx={{
+                                px: 1.5, py: 1, borderRadius: item.from === "user" ? "12px 12px 12px 4px" : "12px 12px 4px 12px",
+                                bgcolor: item.from === "user" ? "#F3F4F6" : "#4F46E5",
+                                color: item.from === "user" ? "#374151" : "#fff",
+                                fontSize: 12, maxWidth: "75%"
+                              }}>
+                                {item.msg}
+                              </Box>
+                            </Box>
+                          ))}
+                          <Box sx={{ display: "flex", gap: 0.5, mt: 1 }}>
+                            <Box sx={{ flex: 1, px: 1.5, py: 0.8, borderRadius: 2, bgcolor: "#fff", border: "1px solid #e5e7eb", fontSize: 11, color: "#9CA3AF" }}>
+                              Type a message...
+                            </Box>
+                            <Box sx={{ px: 1.5, py: 0.8, borderRadius: 2, bgcolor: "#4F46E5", color: "#fff", fontSize: 11, fontWeight: 600, cursor: "pointer" }}>
+                              Send
+                            </Box>
+                          </Box>
                         </Box>
                       </motion.div>
+
+                      {/* Analytics mini bar */}
                       <motion.div
-                        initial={{ opacity: 0, x: -30 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: 1.6, duration: 0.5 }}
+                        initial={{ opacity: 0, scaleX: 0 }}
+                        animate={{ opacity: 1, scaleX: 1 }}
+                        transition={{ delay: 1.4, duration: 0.6 }}
+                        style={{ transformOrigin: "left" }}
                       >
-                        <Box sx={{ alignSelf: "flex-start", px: 2, py: 1.5, borderRadius: "12px 12px 12px 4px", bgcolor: "#f3f4f6", color: "#374151", fontSize: 13, maxWidth: "70%" }}>
-                          Sure! We have plans starting at $29/month. Want a personalized demo?
+                        <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                          <Box sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: "#EEF2FF", position: "relative", overflow: "hidden" }}>
+                            <Box sx={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "72%", borderRadius: 3, background: "linear-gradient(90deg, #4F46E5, #7C3AED)" }} />
+                          </Box>
+                          <Typography sx={{ fontSize: 10, color: "#6B7280", fontWeight: 600 }}>72% satisfaction</Typography>
                         </Box>
                       </motion.div>
                     </Box>
                   </Box>
+
+                  {/* Floating element */}
                   <Box sx={{ position: "absolute", bottom: -15, right: -15, width: 120, height: 120, borderRadius: "50%", background: "linear-gradient(135deg, rgba(79,70,229,0.1), rgba(124,58,237,0.1))", zIndex: -1 }} />
                 </Box>
               </motion.div>
@@ -324,10 +377,10 @@ const Home = () => {
         <Container maxWidth="lg">
           <motion.div {...fadeUp}>
             <Typography sx={{ textAlign: "center", fontSize: { xs: 28, md: 38 }, fontWeight: 800, color: "#111827", mb: 1 }}>
-              Everything You Need
+              Everything You Need to Manage Your Bots
             </Typography>
             <Typography sx={{ textAlign: "center", color: "#6B7280", fontSize: 16, mb: 6, maxWidth: 600, mx: "auto" }}>
-              Powerful features to automate, analyze, and optimize your customer conversations.
+              From bot creation to conversation analytics — a complete platform to build, deploy, and optimize your AI chatbots.
             </Typography>
           </motion.div>
 
@@ -354,6 +407,118 @@ const Home = () => {
                 </motion.div>
               </Grid>
             ))}
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* ===== HOW IT WORKS ===== */}
+      <Box sx={{ py: { xs: 8, md: 12 }, bgcolor: "#fff" }}>
+        <Container maxWidth="lg">
+          <motion.div {...fadeUp}>
+            <Typography sx={{ textAlign: "center", fontSize: { xs: 28, md: 38 }, fontWeight: 800, color: "#111827", mb: 1 }}>
+              How It Works
+            </Typography>
+            <Typography sx={{ textAlign: "center", color: "#6B7280", fontSize: 16, mb: 6, maxWidth: 550, mx: "auto" }}>
+              Four simple steps to get your chatbot up and running.
+            </Typography>
+          </motion.div>
+
+          <Grid container spacing={4} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <motion.div
+                initial={{ opacity: 0, x: -40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                <Box sx={{ position: "relative" }}>
+                  <Box
+                    component="img"
+                    src={getStartedImg}
+                    alt="Bot creation flow"
+                    sx={{ width: "100%", borderRadius: 3, boxShadow: "0 20px 50px rgba(0,0,0,0.1)", border: "1px solid #f3f4f6" }}
+                  />
+                  <Box sx={{ position: "absolute", bottom: -10, left: -10, width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(135deg, rgba(79,70,229,0.1), rgba(124,58,237,0.1))", zIndex: -1 }} />
+                </Box>
+              </motion.div>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ pl: { md: 4 } }}>
+                {[
+                  { step: "01", title: "Create Your Bot", desc: "Set up a new chatbot in seconds. Give it a name, configure its personality, and define its purpose — all from a simple form." },
+                  { step: "02", title: "Design Conversations", desc: "Use the flow builder to map out conversations. Define intents, responses, and decision trees visually with drag-and-drop simplicity." },
+                  { step: "03", title: "Deploy Anywhere", desc: "Embed your bot on any website with a single script tag. Use per-bot domain whitelisting to control exactly where it appears." },
+                  { step: "04", title: "Monitor & Optimize", desc: "Track conversations, analyze performance metrics, and continuously improve your bot based on real user interactions." },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.step}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1, duration: 0.4 }}
+                  >
+                    <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+                      <Box sx={{ minWidth: 40, height: 40, borderRadius: "10px", background: "linear-gradient(135deg, #4F46E5, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14 }}>
+                        {item.step}
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 700, fontSize: 16, color: "#111827", mb: 0.5 }}>{item.title}</Typography>
+                        <Typography sx={{ color: "#6B7280", fontSize: 14, lineHeight: 1.7 }}>{item.desc}</Typography>
+                      </Box>
+                    </Box>
+                  </motion.div>
+                ))}
+              </Box>
+            </Grid>
+          </Grid>
+
+          {/* Second row: Flow Builder + Analytics preview */}
+          <Grid container spacing={4} alignItems="center" sx={{ mt: 4 }}>
+            <Grid item xs={12} md={6}>
+              <Box sx={{ pr: { md: 4 } }}>
+                {[
+                  { step: "05", title: "Live Chat Handoff", desc: "When your bot can't handle a query, seamlessly hand off to a human agent. Agents can see the full conversation history." },
+                  { step: "06", title: "Deep Analytics", desc: "Get insights into bot performance, user satisfaction, popular topics, and conversation trends. Make data-driven improvements." },
+                  { step: "07", title: "Scale Effortlessly", desc: "Add more bots, handle more conversations, and grow your automation without worrying about infrastructure." },
+                ].map((item, i) => (
+                  <motion.div
+                    key={item.step}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.1, duration: 0.4 }}
+                  >
+                    <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
+                      <Box sx={{ minWidth: 40, height: 40, borderRadius: "10px", background: "linear-gradient(135deg, #EC4899, #F59E0B)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 800, fontSize: 14 }}>
+                        {item.step}
+                      </Box>
+                      <Box>
+                        <Typography sx={{ fontWeight: 700, fontSize: 16, color: "#111827", mb: 0.5 }}>{item.title}</Typography>
+                        <Typography sx={{ color: "#6B7280", fontSize: 14, lineHeight: 1.7 }}>{item.desc}</Typography>
+                      </Box>
+                    </Box>
+                  </motion.div>
+                ))}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={6}>
+              <motion.div
+                initial={{ opacity: 0, x: 40 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6 }}
+              >
+                <Box sx={{ position: "relative" }}>
+                  <Box
+                    component="img"
+                    src={chatgptAiImg}
+                    alt="Analytics dashboard"
+                    sx={{ width: "100%", borderRadius: 3, boxShadow: "0 20px 50px rgba(0,0,0,0.1)", border: "1px solid #f3f4f6" }}
+                  />
+                  <Box sx={{ position: "absolute", top: -10, right: -10, width: 80, height: 80, borderRadius: "50%", background: "linear-gradient(135deg, rgba(236,72,153,0.1), rgba(245,158,11,0.1))", zIndex: -1 }} />
+                </Box>
+              </motion.div>
+            </Grid>
           </Grid>
         </Container>
       </Box>
@@ -411,11 +576,16 @@ const Home = () => {
             transition={{ duration: 0.6 }}
           >
             <Box sx={{ textAlign: "center", bgcolor: "#fff", borderRadius: 4, p: { xs: 4, md: 6 }, boxShadow: "0 10px 40px rgba(0,0,0,0.06)", border: "1px solid #f3f4f6" }}>
+              <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>
+                <Box sx={{ width: 56, height: 56, borderRadius: "16px", background: "linear-gradient(135deg, #4F46E5, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 25px rgba(79,70,229,0.3)" }}>
+                  <SmartToyIcon sx={{ color: "#fff", fontSize: 28 }} />
+                </Box>
+              </Box>
               <Typography sx={{ fontSize: { xs: 28, md: 36 }, fontWeight: 800, color: "#111827", mb: 2 }}>
-                Ready to Transform Your Support?
+                Ready to Build Your First Bot?
               </Typography>
               <Typography sx={{ color: "#6B7280", fontSize: 16, mb: 4, maxWidth: 480, mx: "auto" }}>
-                Join thousands of businesses using SmartBot to automate conversations and delight customers.
+                Join thousands of businesses using BotForge to automate conversations and delight customers — no coding required.
               </Typography>
               <Box sx={{ display: "flex", justifyContent: "center", gap: 2, flexWrap: "wrap" }}>
                 <TextField
@@ -444,13 +614,13 @@ const Home = () => {
             <Grid item xs={12} md={4}>
               <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2 }}>
-                  <Box sx={{ width: 34, height: 34, borderRadius: "8px", background: "linear-gradient(135deg, #4F46E5, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <Box sx={{ width: 34, height: 34, borderRadius: "8px", background: "linear-gradient(135deg, #4F46E5, #7C3AED)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(79,70,229,0.3)" }}>
                     <SmartToyIcon sx={{ color: "#fff", fontSize: 18 }} />
                   </Box>
-                  <Typography sx={{ fontWeight: 700, fontSize: 18, color: "#fff" }}>SmartBot</Typography>
+                  <Typography sx={{ fontWeight: 700, fontSize: 18, color: "#fff" }}>BotForge</Typography>
                 </Box>
                 <Typography sx={{ color: "#9CA3AF", fontSize: 13, lineHeight: 1.8, mb: 3, maxWidth: 300 }}>
-                  AI-powered chatbot platform that helps businesses automate conversations, qualify leads, and deliver instant customer support.
+                  AI-powered chatbot management platform that helps businesses build, deploy, and optimize intelligent conversational agents — all from one dashboard.
                 </Typography>
                 <Box sx={{ display: "flex", gap: 1.5 }}>
                   {[
@@ -493,9 +663,9 @@ const Home = () => {
           </Grid>
 
           <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }} transition={{ delay: 0.3 }}>
-            <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.08)", mt: 6, pt: 4, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+              <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.08)", mt: 6, pt: 4, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
               <Typography sx={{ color: "#6B7280", fontSize: 13 }}>
-                © 2025 SmartBot, Inc. All rights reserved.
+                © 2025 BotForge, Inc. All rights reserved.
               </Typography>
               <Typography sx={{ color: "#6B7280", fontSize: 13 }}>
                 Made with ❤️ for better conversations
