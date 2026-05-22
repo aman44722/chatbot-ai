@@ -17,7 +17,6 @@ import {
 } from '@mui/material';
 import {
   KeyboardArrowDown,
-  SmartToy,
   AccountCircleOutlined,
   CreditCardOutlined,
   HelpOutlineOutlined,
@@ -28,8 +27,6 @@ import {
 } from '@mui/icons-material';
 import { Link, useNavigate } from 'react-router-dom';
 import { fetchUserById } from '../../api/authApi';
-import SmartToyIcon from '@mui/icons-material/SmartToy';
-
 const Header = () => {
   const [user, setUser] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -92,40 +89,8 @@ const Header = () => {
       }}
     >
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', height: '64px', px: { xs: 2, md: 3 } }}>
-        {/* Left: Logo + Brand */}
+        {/* Left: Search bar */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-          <Box
-            onClick={() => navigate('/app/dashboard')}
-            sx={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 1.5,
-              cursor: 'pointer',
-              '&:hover': { opacity: 0.85 },
-              transition: 'opacity 0.2s',
-            }}
-          >
-            <Box
-              sx={{
-                width: 34,
-                height: 34,
-                borderRadius: '10px',
-                background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: '0 4px 12px rgba(79,70,229,0.3)',
-                animation: 'pulseGlow 3s ease-in-out infinite',
-              }}
-            >
-              <SmartToyIcon sx={{ color: '#fff', fontSize: 18 }} />
-            </Box>
-            <Typography sx={{ fontWeight: 800, fontSize: 17, color: '#1f2937', letterSpacing: '-0.3px' }}>
-              BotForge
-            </Typography>
-          </Box>
-
-          {/* Search bar */}
           <Box
             sx={{
               display: { xs: 'none', md: 'flex' },
@@ -134,7 +99,6 @@ const Header = () => {
               borderRadius: 2,
               px: 1.5,
               py: 0.5,
-              ml: 3,
               border: '1px solid rgba(229,231,235,0.5)',
               transition: 'all 0.3s',
               '&:focus-within': {

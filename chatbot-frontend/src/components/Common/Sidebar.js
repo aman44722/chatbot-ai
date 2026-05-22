@@ -264,12 +264,27 @@ const Sidebar = ({ collapsed, onToggle }) => {
     >
       <Box className="sidebar-water-bg" sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Box className="sidebar-content" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          {/* Toggle button */}
+          {/* BotForge Logo + Toggle */}
           <Box sx={{
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            py: 1.5, minHeight: 56,
+            display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between',
+            py: 1.5, px: collapsed ? 0 : 1.5, minHeight: 56, gap: 1,
             borderBottom: '1px solid rgba(243,244,246,0.8)',
           }}>
+            {!collapsed && (
+              <Box onClick={() => navigate('/app/dashboard')} sx={{ display: 'flex', alignItems: 'center', gap: 1.2, cursor: 'pointer' }}>
+                <Box sx={{
+                  width: 30, height: 30, borderRadius: '8px',
+                  background: 'linear-gradient(135deg, #4F46E5, #7C3AED)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 4px 10px rgba(79,70,229,0.3)',
+                }}>
+                  <SmartToyIcon sx={{ color: '#fff', fontSize: 16 }} />
+                </Box>
+                <Typography sx={{ fontWeight: 800, fontSize: 16, color: '#1f2937', letterSpacing: '-0.3px' }}>
+                  BotForge
+                </Typography>
+              </Box>
+            )}
             <IconButton
               onClick={onToggle}
               size="small"
