@@ -152,7 +152,8 @@ export default function Chats() {
   const loadConversations = useCallback(async (silent = false) => {
     if (!silent) setRefreshing(true);
     try {
-      const data = await fetchConversations();
+      const botId = localStorage.getItem('selectedBotId') || '';
+      const data = await fetchConversations(1, 50, botId);
       setConversations(data);
     } catch (err) {
       console.error(err);
@@ -164,6 +165,21 @@ export default function Chats() {
 
   useEffect(() => {
     loadConversations();
+  }, [loadConversations]);
+
+  // Re-fetch when selectedBotId changes or tab gets focus
+  useEffect(() => {
+    let lastBotId = localStorage.getItem('selectedBotId');
+    const checkBotId = () => {
+      const current = localStorage.getItem('selectedBotId');
+      if (current !== lastBotId) { lastBotId = current; loadConversations(true); }
+    };
+    window.addEventListener('focus', checkBotId);
+    window.addEventListener('visibilitychange', () => { if (!document.hidden) checkBotId(); });
+    return () => {
+      window.removeEventListener('focus', checkBotId);
+      window.removeEventListener('visibilitychange', checkBotId);
+    };
   }, [loadConversations]);
 
   // Auto-refresh list every 30s to catch new live requests
