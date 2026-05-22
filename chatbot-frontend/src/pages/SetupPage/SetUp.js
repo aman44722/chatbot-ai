@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './AdminSettings.css';
-import { Box } from '@mui/material';
+import { Box, Typography, Button } from '@mui/material';
 import { useSelector, useDispatch } from 'react-redux';
 import ChatPreview from '../../components/Admin/ViewSetupComponent/ChatPreview';
 import LayoutSettings from '../../components/Admin/ViewSetupComponent/LayoutSettings';
@@ -8,52 +8,40 @@ import LogoSettings from '../../components/Admin/ViewSetupComponent/LogoSettings
 import TextSettings from '../../components/Admin/ViewSetupComponent/TextSettings';
 import ThemeSettings from '../../components/Admin/ViewSetupComponent/ThemeSettings';
 import { resetSettings, updateSetting } from '../../redux/botSettingsSlice';
-import axios from "axios";
 import { EditChatBotSettings, fetchUserById } from '../../api/authApi';
 import { toast, ToastContainer } from 'react-toastify';
+import TextFieldsIcon from '@mui/icons-material/TextFields';
+import ImageIcon from '@mui/icons-material/Image';
+import ViewQuiltIcon from '@mui/icons-material/ViewQuilt';
+import PaletteIcon from '@mui/icons-material/Palette';
+import SaveIcon from '@mui/icons-material/Save';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 
+const TABS = [
+  { key: 'text', label: 'Text', icon: <TextFieldsIcon /> },
+  { key: 'logo', label: 'Logo', icon: <ImageIcon /> },
+  { key: 'layout', label: 'Layout', icon: <ViewQuiltIcon /> },
+  { key: 'themes', label: 'Themes', icon: <PaletteIcon /> },
+];
 
 const SetUp = () => {
   const dispatch = useDispatch();
   const {
-    botName,
-    welcomeText,
-    description,
-    font,
-    fontSize,
-    companyLogo,
-    avatar,
-    botPosition,
-    selectedBubbleStyle,
-    borderRadius,
-    textAlign,
-    themeColors,
-    overlayOpacity,
-    chatColor,
-    uploadedImage
+    botName, welcomeText, description, font, fontSize, companyLogo,
+    avatar, botPosition, selectedBubbleStyle, borderRadius, textAlign,
+    themeColors, overlayOpacity, chatColor, uploadedImage
   } = useSelector((state) => state.botSettings);
   const [activeTab, setActiveTab] = useState('text');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [isHeaderExpanded, setIsHeaderExpanded] = useState(false);
-
-
-  // useEffect(() => {
-  //   const saved = JSON.parse(localStorage.getItem('botSettings'));
-  //   if (saved) {
-  //     dispatch(updateSetting(saved));
-  //   }
-  // }, [dispatch]);
 
   useEffect(() => {
     const fetchSettings = async () => {
       try {
         const user = JSON.parse(localStorage.getItem("user"));
         const userId = localStorage.getItem("userId");
-        // console.log("userData - ",user);
         if (user && userId) {
           const userData = await fetchUserById(userId);
-          // console.log("userData - ", userData);
-
           if (userData?.botSettings) {
             dispatch(updateSetting(userData.botSettings));
           }
@@ -62,23 +50,15 @@ const SetUp = () => {
         console.error("Failed to fetch bot settings:", err);
       }
     };
-
     fetchSettings();
   }, [dispatch]);
 
   const botSettings = useSelector((state) => state.botSettings);
 
   const handleSave = async () => {
-    // localStorage.setItem('botSettings', JSON.stringify(botSettings));
-    // alert('Settings saved!');
-    // console.log("Bot Setting Saved");
-
     try {
       const response = await EditChatBotSettings(botSettings);
-
-      if (response) {
-        toast.success('Bot settings updated!!');
-      }
+      if (response) toast.success('Bot settings updated!!');
     } catch (error) {
       console.error('Error updating settings:', error);
       alert('Failed to update settings.');
@@ -86,51 +66,60 @@ const SetUp = () => {
   };
 
   const handleReset = () => {
-    // localStorage.removeItem('botSettings');
     dispatch(resetSettings());
-    alert('Settings reset to default!');
+    toast.info('Settings reset to default!');
   };
+
   return (
-    <Box style={{ display: 'flex', height: '84vh', padding: '10px', width: '100%' }}>
+    <Box sx={{
+      display: 'flex', height: 'calc(100vh - 60px)', gap: 2, p: 1.5,
+      background: "linear-gradient(135deg, #f0f4ff 0%, #faf5ff 50%, #f0fdf4 100%)",
+    }}>
       {/* Left Panel */}
-      <Box
-        className="custom-scrollbar"
-        sx={{
-          width: '30%',
-          boxShadow: '0px 4px 20px #d8d8d8',
-          borderBottomLeftRadius: '20px',
-          borderRight: '1px solid #eee',
-          overflowY: 'auto',
-          background: '#fff',
-        }}
-      >
+      <Box className="custom-scrollbar" sx={{
+        width: { xs: '100%', md: 320 }, flexShrink: 0,
+        borderRadius: 3,
+        background: "rgba(255,255,255,0.85)", backdropFilter: "blur(12px)",
+        border: "1px solid rgba(229,231,235,0.5)",
+        overflowY: 'auto', display: 'flex', flexDirection: 'column',
+      }}>
         {/* Tab Navigation */}
-        <div style={{ position: 'sticky', top: 0, background: '#F6F9FF', padding: '16px 20px', zIndex: 9 }}>
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', overflowX: 'scroll' }}>
-            {['text', 'logo', 'layout', 'themes'].map(tab => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                style={{
-                  padding: '10px 20px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: activeTab === tab ? '#ffffff' : '#4F46E5',
-                  boxShadow: activeTab === tab ? '0 4px 8px rgba(0, 0, 0, 0.1)' : 'none',
-                  fontWeight: activeTab === tab ? '600' : '500',
-                  color: activeTab === tab ? '#333' : '#fff',
-                  cursor: 'pointer',
-                  margin: activeTab === tab ? '2px 0px' : ""
-                }}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </button>
-            ))}
-          </div>
-        </div>
+        <Box sx={{
+          position: 'sticky', top: 0, zIndex: 9,
+          background: "rgba(255,255,255,0.9)", backdropFilter: "blur(12px)",
+          borderBottom: "1px solid #f3f4f6", px: 2, py: 1.5,
+        }}>
+          <Typography sx={{ fontWeight: 700, fontSize: 16, color: "#111827", mb: 1 }}>
+            Bot Settings
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            {TABS.map(tab => {
+              const sel = activeTab === tab.key;
+              return (
+                <Button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  startIcon={tab.icon}
+                  size="small"
+                  sx={{
+                    flex: 1, borderRadius: 2, textTransform: 'none',
+                    fontWeight: sel ? 700 : 500, fontSize: 12,
+                    bgcolor: sel ? '#6366f1' : 'transparent',
+                    color: sel ? '#fff' : '#6b7280',
+                    border: sel ? 'none' : '1px solid #e5e7eb',
+                    '&:hover': { bgcolor: sel ? '#4f46e5' : '#f3f4f6' },
+                    py: 0.8,
+                  }}
+                >
+                  {tab.label}
+                </Button>
+              );
+            })}
+          </Box>
+        </Box>
 
         {/* Tab Content */}
-        <div style={{ flex: 1, padding: '15px', minHeight: '100vh' }}>
+        <Box sx={{ flex: 1, p: 2 }}>
           {activeTab === 'text' && (
             <TextSettings
               botName={botName}
@@ -180,16 +169,29 @@ const SetUp = () => {
               setUploadedImage={(value) => dispatch(updateSetting({ uploadedImage: value }))}
             />
           )}
-        </div>
+        </Box>
 
         {/* Save & Reset Footer */}
-        <div style={{ position: 'sticky', bottom: 0, background: '#F6F9FF', padding: '16px 20px', zIndex: 9, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <p style={{ fontWeight: 600, fontSize: "14px", color: "#555", margin: 0 }}>Apply Changes?</p>
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button onClick={handleReset} style={{ background: '#f44336', color: '#fff', padding: '10px 25px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Reset</button>
-            <button onClick={handleSave} style={{ background: '#4F46E5 ', color: '#fff', padding: '10px 25px', borderRadius: '8px', border: 'none', cursor: 'pointer' }}>Save</button>
-          </div>
-        </div>
+        <Box sx={{
+          position: 'sticky', bottom: 0, zIndex: 9,
+          background: "rgba(255,255,255,0.9)", backdropFilter: "blur(12px)",
+          borderTop: "1px solid #f3f4f6", px: 2, py: 1.5,
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+        }}>
+          <Typography sx={{ fontWeight: 600, fontSize: 13, color: "#374151" }}>
+            Apply Changes?
+          </Typography>
+          <Box sx={{ display: 'flex', gap: 1 }}>
+            <Button onClick={handleReset} variant="outlined" size="small" startIcon={<RestartAltIcon />}
+              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, fontSize: 12, borderColor: '#e5e7eb', color: '#6b7280', '&:hover': { borderColor: '#ef4444', color: '#ef4444' } }}>
+              Reset
+            </Button>
+            <Button onClick={handleSave} variant="contained" size="small" startIcon={<SaveIcon />}
+              sx={{ borderRadius: 2, textTransform: 'none', fontWeight: 600, fontSize: 12, bgcolor: '#6366f1', '&:hover': { bgcolor: '#4f46e5' } }}>
+              Save
+            </Button>
+          </Box>
+        </Box>
         <ToastContainer />
       </Box>
 

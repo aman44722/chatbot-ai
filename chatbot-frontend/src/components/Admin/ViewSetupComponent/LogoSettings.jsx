@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Box, Typography, IconButton } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
-import picImg from "../../../assets/images/picture.svg";
+import CloseIcon from "@mui/icons-material/Close";
+import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import avt1 from "../../../assets/images/avatar/avatar-v101.svg";
 import avt2 from "../../../assets/images/avatar/avatar-v102.svg";
 import avt3 from "../../../assets/images/avatar/avatar-v103.svg";
@@ -12,57 +14,40 @@ import avt8 from "../../../assets/images/avatar/avatar-v109.svg";
 import avt9 from "../../../assets/images/avatar/avatar-v110.svg";
 import avt10 from "../../../assets/images/avatar/avatar-v111.svg";
 
+const SectionCard = ({ title, desc, children }) => (
+  <Box sx={{
+    bgcolor: "#f9fafb", borderRadius: 2.5, p: 2.5, mb: 2,
+    border: "1px solid #f3f4f6",
+    "&:hover": { borderColor: "#e5e7eb", boxShadow: "0 2px 12px rgba(0,0,0,0.04)" },
+  }}>
+    <Typography sx={{ fontWeight: 700, fontSize: 14, color: "#111827", mb: 0.2 }}>{title}</Typography>
+    {desc && <Typography sx={{ fontSize: 11, color: "#9ca3af", mb: 1.5 }}>{desc}</Typography>}
+    {children}
+  </Box>
+);
+
 const LogoSettings = ({ companyLogo, setCompanyLogo, avatar, setAvatar }) => {
-  const fileInputRef = useRef(null);
   const scrollRef = useRef(null);
 
-  const defaultAvatars = [
-    avt1,
-    avt2,
-    avt3,
-    avt4,
-    avt5,
-    avt6,
-    avt7,
-    avt8,
-    avt9,
-    avt10,
-  ];
+  const defaultAvatars = [avt1, avt2, avt3, avt4, avt5, avt6, avt7, avt8, avt9, avt10];
   const [avatarOptions, setAvatarOptions] = useState(defaultAvatars);
   const [showLeftArrow, setShowLeftArrow] = useState(false);
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (!scrollContainer) return;
-
-    const handleScroll = () => {
-      setShowLeftArrow(scrollContainer.scrollLeft > 5);
-    };
-
+    const handleScroll = () => setShowLeftArrow(scrollContainer.scrollLeft > 5);
     scrollContainer.addEventListener("scroll", handleScroll);
     handleScroll();
-
-    return () => {
-      scrollContainer.removeEventListener("scroll", handleScroll);
-    };
+    return () => scrollContainer.removeEventListener("scroll", handleScroll);
   }, []);
 
   const scrollLeft = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: -scrollRef.current.offsetWidth * 0.1,
-        behavior: "smooth",
-      });
-    }
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: -scrollRef.current.offsetWidth * 0.2, behavior: "smooth" });
   };
 
   const scrollRight = () => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: scrollRef.current.offsetWidth * 0.1,
-        behavior: "smooth",
-      });
-    }
+    if (scrollRef.current) scrollRef.current.scrollBy({ left: scrollRef.current.offsetWidth * 0.2, behavior: "smooth" });
   };
 
   const handleAvatarUpload = (e) => {
@@ -80,219 +65,86 @@ const LogoSettings = ({ companyLogo, setCompanyLogo, avatar, setAvatar }) => {
   };
 
   return (
-    <div style={{ marginTop: "40px" }}>
-      <label style={{ fontWeight: 600, fontSize: "14px", color: "#555" }}>
-        Company Logo <span title="Upload your company logo">ⓘ</span>
-      </label>
-
-      {companyLogo ? (
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "15px",
-            margin: "15px 0",
-          }}
-        >
-          <div style={{ position: "relative" }}>
-            <img
-              src={companyLogo}
-              alt="logo"
-              style={{
-                width: "80px",
-                height: "80px",
-                borderRadius: "50%",
-                objectFit: "cover",
-              }}
-            />
-            <span
-              onClick={() => setCompanyLogo("")}
-              style={{
-                position: "absolute",
-                top: "-5px",
-                right: "-5px",
-                background: "#fff",
-                color: "#333",
-                fontSize: "12px",
-                border: "1px solid #ccc",
-                borderRadius: "50%",
-                padding: "0 5px",
-                cursor: "pointer",
-              }}
-            >
-              ✕
-            </span>
-          </div>
-        </div>
-      ) : (
-        <label
-          htmlFor="upload-logo"
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            border: "2px dashed #d1d5db",
-            borderRadius: "10px",
-            padding: "20px",
-            cursor: "pointer",
-            marginTop: "15px",
-          }}
-        >
-          <img
-            src={picImg}
-            alt="placeholder"
-            style={{ width: "40px", height: "40px", marginBottom: "10px" }}
-          />
-          <span style={{ fontWeight: 600, fontSize: "14px", color: "#555" }}>
-            File Size should be less than 5 MB
-          </span>
-          <input
-            id="upload-logo"
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              const file = e.target.files[0];
-              if (file && file.size < 5 * 1024 * 1024) {
-                const reader = new FileReader();
-                reader.onloadend = () => setCompanyLogo(reader.result);
-                reader.readAsDataURL(file);
-              } else {
-                alert("File size exceeds 5MB");
-              }
-            }}
-          />
-        </label>
-      )}
-
-      <label
-        style={{
-          marginTop: "20px",
-          fontWeight: 600,
-          fontSize: "14px",
-          color: "#555",
-          display: "block",
-        }}
-      >
-        Avatar{" "}
-        <span style={{ fontWeight: 600, fontSize: "14px", color: "#555" }}>
-          ⓘ
-        </span>
-      </label>
-
-      <div style={{ position: "relative", marginTop: "10px" }}>
-        {showLeftArrow && (
-          <button
-            onClick={scrollLeft}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: "50%",
-              transform: "translateY(-50%)",
-              zIndex: 1,
-              background: "#4F46E5",
-              color: "white",
-              border: "none",
-              cursor: "pointer",
-              height: "100%",
-              width: "20px",
-
-              borderTopRightRadius: "10px",
-              borderBottomRightRadius: "10px",
-            }}
-          >
-            ◀
-          </button>
+    <div>
+      <SectionCard title="Company Logo" desc="Upload your brand logo that appears in the chat header.">
+        {companyLogo ? (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mt: 1 }}>
+            <Box sx={{ position: "relative" }}>
+              <Box sx={{ width: 80, height: 80, borderRadius: "50%", overflow: "hidden", border: "3px solid #e5e7eb", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}>
+                <img src={companyLogo} alt="logo" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </Box>
+              <IconButton onClick={() => setCompanyLogo("")} size="small" sx={{ position: "absolute", top: -6, right: -6, bgcolor: "#fff", boxShadow: "0 2px 6px rgba(0,0,0,0.12)", "&:hover": { bgcolor: "#fee2e2" }, width: 22, height: 22 }}>
+                <CloseIcon sx={{ fontSize: 14, color: "#ef4444" }} />
+              </IconButton>
+            </Box>
+            <Typography sx={{ fontSize: 12, color: "#9ca3af" }}>Click ✕ to remove</Typography>
+          </Box>
+        ) : (
+          <Box component="label" htmlFor="upload-logo" sx={{
+            display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+            border: "2px dashed #d1d5db", borderRadius: 2.5, p: 3, cursor: "pointer", mt: 1,
+            transition: "all 0.2s", "&:hover": { borderColor: "#6366f1", bgcolor: "#6366f104" },
+          }}>
+            <CloudUploadIcon sx={{ fontSize: 36, color: "#9ca3af", mb: 1 }} />
+            <Typography sx={{ fontWeight: 600, fontSize: 13, color: "#6b7280" }}>Upload Logo</Typography>
+            <Typography sx={{ fontSize: 11, color: "#9ca3af", mt: 0.3 }}>File size must be less than 5 MB</Typography>
+            <input id="upload-logo" type="file" accept="image/*" style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file && file.size < 5 * 1024 * 1024) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => setCompanyLogo(reader.result);
+                  reader.readAsDataURL(file);
+                } else alert("File size exceeds 5MB");
+              }} />
+          </Box>
         )}
+      </SectionCard>
 
-        <div
-          ref={scrollRef}
-          style={{
-            display: "flex",
-            overflowX: "auto",
-            gap: "12px",
-            padding: "10px",
-            borderRadius: "10px",
-            border: "1px solid #ddd",
-            scrollBehavior: "smooth",
-          }}
-        >
-          <label
-            htmlFor="upload-avatar"
-            style={{
-              minWidth: "60px",
-              minHeight: "60px",
-              borderRadius: "50%",
-              backgroundColor: "#f3f4f6",
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              cursor: "pointer",
-              border: "2px solid #ccc",
-            }}
-          >
-            <AddIcon style={{ width: "54px", height: "54px" }} />
-            <input
-              id="upload-avatar"
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handleAvatarUpload}
-            />
-          </label>
+      <SectionCard title="Bot Avatar" desc="Choose an avatar for your bot from the options below.">
+        <Box sx={{ position: "relative", mt: 1 }}>
+          {showLeftArrow && (
+            <Box onClick={scrollLeft} sx={{
+              position: "absolute", left: 0, top: "50%", transform: "translateY(-50%)", zIndex: 1,
+              width: 22, height: 40, borderRadius: "0 8px 8px 0", bgcolor: "#6366f1", color: "#fff",
+              display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14,
+              "&:hover": { bgcolor: "#4f46e5" },
+            }}>◀</Box>
+          )}
 
-          {avatarOptions.map((avt, index) => (
-            <div
-              key={index}
-              onClick={() => setAvatar(avt)}
-              style={{
-                minWidth: "60px",
-                minHeight: "60px",
-                borderRadius: "50%",
-                overflow: "hidden",
-                border:
-                  avt === avatar
-                    ? "3px solid #00C896"
-                    : "2px solid transparent",
-                cursor: "pointer",
-              }}
-            >
-              <img
-                src={avt}
-                alt="avatar"
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  objectFit: "cover",
-                  borderRadius: "50%",
-                }}
-              />
-            </div>
-          ))}
-        </div>
+          <Box ref={scrollRef} sx={{
+            display: "flex", overflowX: "auto", gap: 1.5, p: 1.5,
+            borderRadius: 2.5, border: "1px solid #e5e7eb", scrollBehavior: "smooth", bgcolor: "#fff",
+          }}>
+            <Box component="label" htmlFor="upload-avatar" sx={{
+              minWidth: 56, minHeight: 56, borderRadius: "50%", bgcolor: "#f3f4f6",
+              display: "flex", justifyContent: "center", alignItems: "center",
+              cursor: "pointer", border: "2px dashed #d1d5db", "&:hover": { borderColor: "#6366f1" },
+            }}>
+              <AddIcon sx={{ width: 28, height: 28, color: "#9ca3af" }} />
+              <input id="upload-avatar" type="file" accept="image/*" style={{ display: "none" }} onChange={handleAvatarUpload} />
+            </Box>
 
-        <button
-          onClick={scrollRight}
-          style={{
-            position: "absolute",
-            right: "-10px",
-            height: "100%",
-            top: "50%",
-            transform: "translateY(-50%)",
-            zIndex: 2,
-            background: "#4F46E5",
-            border: "none",
-            cursor: "pointer",
-            width: "20px",
-            color: "white",
-            borderTopLeftRadius: "10px",
-            borderBottomLeftRadius: "10px",
-          }}
-        >
-          ▶
-        </button>
-      </div>
+            {avatarOptions.map((avt, index) => (
+              <Box key={index} onClick={() => setAvatar(avt)} sx={{
+                minWidth: 56, minHeight: 56, borderRadius: "50%", overflow: "hidden",
+                border: avt === avatar ? "3px solid #10b981" : "2px solid transparent",
+                cursor: "pointer", transition: "all 0.2s", flexShrink: 0,
+                "&:hover": { transform: "scale(1.05)" },
+              }}>
+                <img src={avt} alt="avatar" style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }} />
+              </Box>
+            ))}
+          </Box>
+
+          <Box onClick={scrollRight} sx={{
+            position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", zIndex: 1,
+            width: 22, height: 40, borderRadius: "8px 0 0 8px", bgcolor: "#6366f1", color: "#fff",
+            display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", fontSize: 14,
+            "&:hover": { bgcolor: "#4f46e5" },
+          }}>▶</Box>
+        </Box>
+      </SectionCard>
     </div>
   );
 };

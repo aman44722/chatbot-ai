@@ -43,9 +43,10 @@ const ChatPreview = ({
         padding: "20px 10px",
         marginLeft: "10px",
         justifyContent: "center",
-        backgroundColor: "#F6F9FF",
-        boxShadow: "0px 4px 20px #dbdbdb",
-        borderRadius: "10px",
+        background: "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid rgba(229,231,235,0.5)",
+        borderRadius: "16px",
         overflowY: "scroll",
         position: "relative",
       }}
