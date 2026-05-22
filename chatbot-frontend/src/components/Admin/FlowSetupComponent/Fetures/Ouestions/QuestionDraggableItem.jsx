@@ -12,6 +12,7 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CallSplitIcon from "@mui/icons-material/CallSplit";
+import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
 import { useSnackbar } from "notistack";
 
 const ItemType = "DROPPED_ITEM";
@@ -37,7 +38,6 @@ const QuestionDraggableItem = ({
     setIsHovering(true);
     setDraggingOpacity(0.3);
     setProgress(0);
-
     let value = 0;
     const interval = setInterval(() => {
       value += 10;
@@ -54,24 +54,17 @@ const QuestionDraggableItem = ({
     accept: ItemType,
     hover(draggedItem, monitor) {
       if (!ref.current) return;
-
       const dragIndex = draggedItem.index;
       const hoverIndex = index;
-
       if (dragIndex === hoverIndex) return;
-
       const hoverBoundingRect = ref.current.getBoundingClientRect();
-      const hoverMiddleY =
-        (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
+      const hoverMiddleY = (hoverBoundingRect.bottom - hoverBoundingRect.top) / 2;
       const clientOffset = monitor.getClientOffset();
       const hoverClientY = clientOffset.y - hoverBoundingRect.top;
-
       if (dragIndex < hoverIndex && hoverClientY < hoverMiddleY) return;
       if (dragIndex > hoverIndex && hoverClientY > hoverMiddleY) return;
-
       moveItem(dragIndex, hoverIndex);
       draggedItem.index = hoverIndex;
-
       triggerProgress();
     },
   });
@@ -88,121 +81,98 @@ const QuestionDraggableItem = ({
 
   return (
     <>
-      <Box
-        sx={{
+      <Box sx={{ display: "flex", alignItems: "flex-start", gap: 0.5 }}>
+        <Box ref={ref} sx={{
+          flex: 1,
           display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-end",
-          margin: "0px 0 0 4%",
-          gap: "8px",
-        }}
-      >
-        <Box
-          ref={ref}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 2,
-            border: isDragging ? "2px dashed #000" : "1px solid #E5E7EB",
-            padding: "0 16px",
-            borderRadius: "10px",
-            width: "100%",
-            backgroundColor: "#F3F4F6",
-            position: "relative",
-            boxShadow: isDragging ? "0px 0px 6px rgba(0,0,0,0.15)" : "none",
-            opacity: draggingOpacity,
-            transition: "opacity 0.3s ease-in-out",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              gap: 2,
-              padding: "0 16px",
-              borderRadius: "10px",
-              width: "95%",
-            }}
-          >
-            {/* Typography */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <Box className="icon-size-custome" sx={{ fontSize: "10px" }}>
-                {item.icon}
-              </Box>
-              <Typography
-                sx={{ whiteSpace: "pre-wrap", fontWeight: 500 }}
-                dangerouslySetInnerHTML={{ __html: item.text }}
-              />
-            </Box>
+          alignItems: "center",
+          gap: 1.5,
+          border: isDragging ? "2px dashed #6366f1" : "1px solid #f3f4f6",
+          p: "8px 14px",
+          borderRadius: 2.5,
+          bgcolor: isDragging ? "#6366f106" : "rgba(255,255,255,0.9)",
+          position: "relative",
+          boxShadow: isDragging
+            ? "0 4px 16px rgba(99,102,241,0.15)"
+            : "0 1px 3px rgba(0,0,0,0.04)",
+          opacity: draggingOpacity,
+          transition: "all 0.2s",
+          cursor: "grab",
+          "&:hover": {
+            borderColor: "#e5e7eb",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+          },
+        }}>
+          <DragIndicatorIcon sx={{ fontSize: 16, color: "#d1d5db", flexShrink: 0 }} />
 
-            {/* Icon */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <IconButton onClick={() => onEdit(item)}>
-                <EditIcon />
-              </IconButton>
-              <IconButton onClick={() => onDuplicate(item)}>
-                <ContentCopyIcon />
-              </IconButton>
-              <IconButton onClick={() => onConditional(item.id)}>
-                <CallSplitIcon />
-              </IconButton>
-              <IconButton onClick={() => setDeleteDialogOpen(true)}>
-                <DeleteIcon />
-              </IconButton>
-            </Box>
-
-            {/* Drag Progress Bar */}
-            {isHovering && (
-              <LinearProgress
-                variant="determinate"
-                value={progress}
-                sx={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "5px",
-                  borderRadius: "0 0 8px 8px",
-                }}
-              />
-            )}
+          <Box className="icon-size-custome" sx={{ fontSize: 10, color: "#6366f1", display: "flex", flexShrink: 0 }}>
+            {item.icon}
           </Box>
+
+          <Typography
+            sx={{
+              flex: 1, fontSize: 13, fontWeight: 600, color: "#111827",
+              whiteSpace: "pre-wrap", lineHeight: 1.3,
+            }}
+            dangerouslySetInnerHTML={{ __html: item.text }}
+          />
+
+          <Box sx={{ display: "flex", gap: 0.3, flexShrink: 0 }}>
+            <IconButton onClick={() => onEdit(item)} size="small" sx={{ color: "#6366f1", "&:hover": { bgcolor: "#6366f112" } }}>
+              <EditIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+            <IconButton onClick={() => onDuplicate(item)} size="small" sx={{ color: "#10b981", "&:hover": { bgcolor: "#10b98112" } }}>
+              <ContentCopyIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+            <IconButton onClick={() => onConditional(item.id)} size="small" sx={{ color: "#f59e0b", "&:hover": { bgcolor: "#f59e0b12" } }}>
+              <CallSplitIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+            <IconButton onClick={() => setDeleteDialogOpen(true)} size="small" sx={{ color: "#ef4444", "&:hover": { bgcolor: "#ef444412" } }}>
+              <DeleteIcon sx={{ fontSize: 17 }} />
+            </IconButton>
+          </Box>
+
+          {isHovering && (
+            <LinearProgress
+              variant="determinate"
+              value={progress}
+              sx={{
+                position: "absolute", bottom: 0, left: 0, width: "100%",
+                height: 3, borderRadius: "0 0 10px 10px",
+                bgcolor: "transparent",
+                "& .MuiLinearProgress-bar": { bgcolor: "#6366f1" },
+              }}
+            />
+          )}
         </Box>
 
-        {/* User Reply Static */}
-        <Box
-          sx={{
-            backgroundColor: "#3b82f6",
-            color: "#fff",
-            padding: "6px 14px",
-            borderRadius: "6px",
-            fontWeight: 500,
-            fontSize: "14px",
-          }}
-        >
+        <Box sx={{
+          bgcolor: "#3b82f6", color: "#fff",
+          px: 1.2, py: 0.5, borderRadius: 1.5,
+          fontWeight: 600, fontSize: 11, whiteSpace: "nowrap",
+          mt: 0.5, flexShrink: 0,
+        }}>
           User's reply
         </Box>
       </Box>
 
-      {/* Deletion Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={() => setDeleteDialogOpen(false)}
-      >
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
         <Box p={3} sx={{ textAlign: "center" }}>
           <Typography variant="h6" fontWeight="bold" mb={2}>
             Delete Question
           </Typography>
-          <Typography mb={3}>
+          <Typography mb={3} sx={{ color: "#6b7280", fontSize: 14 }}>
             Are you sure you want to delete this question?
           </Typography>
           <Box display="flex" justifyContent="center" gap={2}>
             <Button
               onClick={() => setDeleteDialogOpen(false)}
               variant="outlined"
-              sx={{ borderColor: "#4F46E5", color: "#4F46E5", minWidth: 100 }}
+              sx={{
+                borderColor: "#d1d5db", color: "#374151", minWidth: 100, borderRadius: "10px",
+                textTransform: "none", fontWeight: 600,
+                "&:hover": { borderColor: "#9ca3af" },
+              }}
             >
               No
             </Button>
@@ -216,10 +186,9 @@ const QuestionDraggableItem = ({
               }}
               variant="contained"
               sx={{
-                backgroundColor: "#4F46E5",
-                color: "#fff",
-                minWidth: 100,
-                ":hover": { backgroundColor: "#4338CA" },
+                bgcolor: "#ef4444", color: "#fff", minWidth: 100, borderRadius: "10px",
+                textTransform: "none", fontWeight: 600,
+                "&:hover": { bgcolor: "#dc2626" },
               }}
             >
               Yes
