@@ -45,9 +45,20 @@ const Sidebar = () => {
     localStorage.setItem('selectedBotId', selectedBot || '');
   }, [selectedBot]);
 
+  // Sync selectedBot from localStorage whenever route changes
+  useEffect(() => {
+    const stored = localStorage.getItem('selectedBotId');
+    if (stored !== selectedBot) {
+      setSelectedBot(stored || '');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
+
   const handleBotChange = (event) => {
     const botId = event.target.value;
     setSelectedBot(botId);
+    localStorage.setItem('selectedBotId', botId);
+    navigate('/app/dashboard');
   };
 
   const toggleDropdown = (text) => {
