@@ -145,7 +145,7 @@ const Sidebar = () => {
     {
       text: 'Bots',
       icon: <DnsIcon />,
-      path: '/bots',
+      path: '/app/bots',
     },
     {
       text: 'SetUp',
@@ -218,7 +218,7 @@ const Sidebar = () => {
 
   const isActive = (path) => {
     if (!path) return false;
-    const fullPath = `/app${path}`;
+    const fullPath = path.startsWith('/app') ? path : `/app${path}`;
     return location.pathname === fullPath || location.pathname === path;
   };
   const isParentActive = (item) =>
