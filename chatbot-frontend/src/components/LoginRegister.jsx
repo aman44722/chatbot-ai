@@ -24,7 +24,7 @@ const countryCodes = [
   { code: "+1", label: "🇺🇸 +1" },
 ];
 
-const rightFeatures = [
+const contentFeatures = [
   { icon: <AutoAwesomeIcon />, text: "AI-powered chatbots in minutes" },
   { icon: <SpeedIcon />, text: "No coding required" },
   { icon: <SupportAgentIcon />, text: "Live chat handoff" },
@@ -87,221 +87,8 @@ const AuthForm = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", display: "flex", fontFamily: "'Poppins', sans-serif", bgcolor: "#F9FAFB" }}>
-      {/* ===== LEFT: FORM ===== */}
-      <Box sx={{
-        flex: { xs: 1, md: "0 0 45%" },
-        display: "flex", alignItems: "center", justifyContent: "center",
-        p: { xs: 2, md: 4 },
-        position: "relative",
-        overflow: "hidden",
-      }}>
-        {/* Background decoration */}
-        <Box sx={{ position: "absolute", top: "-20%", left: "-10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-        <Box sx={{ position: "absolute", bottom: "-10%", right: "-10%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
-
-        <motion.div
-          initial={{ opacity: 0, x: -40 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          style={{ width: "100%", maxWidth: 440 }}
-        >
-          <Paper elevation={0} sx={{
-            p: { xs: 3, md: 4 }, borderRadius: 4,
-            bgcolor: "rgba(255,255,255,0.85)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(229,231,235,0.5)",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
-          }}>
-            {/* Logo */}
-            <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
-              >
-                <Box sx={{
-                  width: 48, height: 48, borderRadius: "14px",
-                  background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  boxShadow: "0 8px 24px rgba(79,70,229,0.3)",
-                }}>
-                  <SmartToyIcon sx={{ color: "#fff", fontSize: 26 }} />
-                </Box>
-              </motion.div>
-            </Box>
-
-            {/* Tabs */}
-            <Box sx={{ display: "flex", bgcolor: "#F3F4F6", borderRadius: 2, p: 0.3, mb: 3 }}>
-              {["Log In", "Sign Up"].map((tab, i) => {
-                const active = (i === 0) === isLogin;
-                return (
-                  <Box
-                    key={tab}
-                    onClick={() => { if ((i === 0) !== isLogin) toggleMode(); }}
-                    sx={{
-                      flex: 1, textAlign: "center", py: 1, borderRadius: 1.5,
-                      cursor: "pointer", fontWeight: 700, fontSize: 14,
-                      bgcolor: active ? "#fff" : "transparent",
-                      color: active ? "#4F46E5" : "#6B7280",
-                      boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
-                      transition: "all 0.2s",
-                    }}
-                  >
-                    {tab}
-                  </Box>
-                );
-              })}
-            </Box>
-
-            <AnimatePresence mode="wait">
-              <motion.form
-                key={isLogin ? "login" : "signup"}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                onSubmit={handleSubmit}
-              >
-                {!isLogin && (
-                  <TextField
-                    fullWidth margin="normal" size="small"
-                    label="Full Name"
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    required
-                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
-                  />
-                )}
-
-                <TextField
-                  fullWidth margin="normal" size="small"
-                  label="Company Email Address"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
-                />
-
-                <TextField
-                  fullWidth margin="normal" size="small"
-                  label="Password"
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
-                  InputProps={{
-                    endAdornment: (
-                      <InputAdornment position="end">
-                        <IconButton onClick={() => setShowPassword((prev) => !prev)} size="small">
-                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
-                        </IconButton>
-                      </InputAdornment>
-                    ),
-                  }}
-                />
-
-                {!isLogin && (
-                  <>
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 1, mt: 0.5 }}>
-                      {["8+ Char", "1 Lower", "1 Upper", "1 Special", "1 Num"].map((item) => (
-                        <Box key={item} sx={{ fontSize: "10px", bgcolor: "#F3F4F6", color: "#6B7280", px: 1, py: 0.4, borderRadius: "4px", fontWeight: 500 }}>
-                          {item}
-                        </Box>
-                      ))}
-                    </Box>
-
-                    <TextField
-                      fullWidth margin="normal" size="small"
-                      label="Website URL"
-                      name="website"
-                      value={formData.website}
-                      onChange={handleChange}
-                      required
-                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
-                    />
-
-                    <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
-                      <TextField
-                        select size="small"
-                        label="Code"
-                        value={formData.countryCode}
-                        name="countryCode"
-                        onChange={handleChange}
-                        sx={{ width: "30%", "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
-                      >
-                        {countryCodes.map((opt) => (
-                          <MenuItem key={opt.code} value={opt.code}>{opt.label}</MenuItem>
-                        ))}
-                      </TextField>
-                      <TextField
-                        fullWidth size="small"
-                        label="Phone Number"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleChange}
-                        required
-                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
-                      />
-                    </Box>
-
-                    <FormControlLabel
-                      control={<Checkbox name="termsAgreed" checked={formData.termsAgreed} onChange={handleChange} size="small" sx={{ "&.Mui-checked": { color: "#4F46E5" } }} />}
-                      label={<Typography variant="body2" sx={{ fontSize: 12, color: "#6B7280" }}>
-                        I agree to <a href="/terms" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Terms</a> & <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Privacy</a>
-                      </Typography>}
-                      sx={{ mt: 1 }}
-                    />
-                  </>
-                )}
-
-                {error && (
-                  <Typography color="error" align="center" mt={1} sx={{ fontSize: 13 }}>{error}</Typography>
-                )}
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  fullWidth
-                  endIcon={<ArrowForwardIcon />}
-                  sx={{
-                    mt: 2.5, py: 1.2, borderRadius: 2, textTransform: "none", fontWeight: 700, fontSize: 15,
-                    background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
-                    boxShadow: "0 4px 16px rgba(79,70,229,0.3)",
-                    "&:hover": { boxShadow: "0 8px 24px rgba(79,70,229,0.4)" },
-                  }}
-                >
-                  {isLogin ? "Login to Dashboard" : "Create Free Account"}
-                </Button>
-
-                <Typography align="center" mt={2.5} sx={{ fontSize: 13, color: "#6B7280" }}>
-                  {isLogin ? (
-                    <>Don't have an account?{" "}
-                      <Button variant="text" onClick={toggleMode} sx={{ textTransform: "none", fontWeight: 700, fontSize: 13, color: "#4F46E5", p: 0, minWidth: "auto" }}>
-                        Sign Up
-                      </Button>
-                    </>
-                  ) : (
-                    <>Already have an account?{" "}
-                      <Button variant="text" onClick={toggleMode} sx={{ textTransform: "none", fontWeight: 700, fontSize: 13, color: "#4F46E5", p: 0, minWidth: "auto" }}>
-                        Log In
-                      </Button>
-                    </>
-                  )}
-                </Typography>
-              </motion.form>
-            </AnimatePresence>
-          </Paper>
-        </motion.div>
-      </Box>
-
-      {/* ===== RIGHT: ANIMATED CONTENT ===== */}
+    <Box sx={{ height: "100vh", display: "flex", fontFamily: "'Poppins', sans-serif", bgcolor: "#F9FAFB" }}>
+      {/* ===== LEFT: ANIMATED CONTENT ===== */}
       <Box sx={{
         flex: "0 0 55%",
         display: { xs: "none", md: "flex" },
@@ -329,8 +116,8 @@ const AuthForm = () => {
         />
 
         {/* Content */}
-        <Box sx={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", maxWidth: 560, mx: "auto" }}>
-          {/* Brand */}
+        <Box sx={{ position: "relative", zIndex: 1, flex: 1, display: "flex", flexDirection: "column", justifyContent: "center", maxWidth: 540, mx: "auto" }}>
+          {/* Brand badge */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -344,12 +131,13 @@ const AuthForm = () => {
             </Box>
           </motion.div>
 
+          {/* Headline */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
           >
-            <Typography sx={{ fontSize: { md: 36, lg: 42 }, fontWeight: 800, lineHeight: 1.15, color: "#111827", mb: 2, letterSpacing: "-1px" }}>
+            <Typography sx={{ fontSize: { md: 34, lg: 40 }, fontWeight: 800, lineHeight: 1.15, color: "#111827", mb: 2, letterSpacing: "-1px" }}>
               Build Smarter{" "}
               <Box component="span" sx={{ background: "linear-gradient(135deg, #4F46E5, #7C3AED)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 Chatbots
@@ -358,12 +146,13 @@ const AuthForm = () => {
             </Typography>
           </motion.div>
 
+          {/* Description */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.6 }}
           >
-            <Typography sx={{ fontSize: 15, color: "#6B7280", lineHeight: 1.7, mb: 4 }}>
+            <Typography sx={{ fontSize: 14, color: "#6B7280", lineHeight: 1.7, mb: 3 }}>
               Create intelligent chatbots, automate conversations, and deliver instant support — all from one dashboard. No coding required.
             </Typography>
           </motion.div>
@@ -374,8 +163,8 @@ const AuthForm = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5, duration: 0.6 }}
           >
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 5 }}>
-              {rightFeatures.map((f, i) => (
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5, mb: 4 }}>
+              {contentFeatures.map((f, i) => (
                 <motion.div
                   key={i}
                   initial={{ opacity: 0, x: -20 }}
@@ -383,10 +172,10 @@ const AuthForm = () => {
                   transition={{ delay: 0.6 + i * 0.1, duration: 0.4 }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                    <Box sx={{ width: 32, height: 32, borderRadius: "8px", bgcolor: "rgba(79,70,229,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#4F46E5", fontSize: 16 }}>
+                    <Box sx={{ width: 30, height: 30, borderRadius: "8px", bgcolor: "rgba(79,70,229,0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "#4F46E5", fontSize: 15 }}>
                       {f.icon}
                     </Box>
-                    <Typography sx={{ fontSize: 14, fontWeight: 500, color: "#374151" }}>{f.text}</Typography>
+                    <Typography sx={{ fontSize: 13, fontWeight: 500, color: "#374151" }}>{f.text}</Typography>
                   </Box>
                 </motion.div>
               ))}
@@ -421,7 +210,7 @@ const AuthForm = () => {
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2, duration: 0.6 }}
           >
-            <Box sx={{ display: "flex", gap: 4, mt: 4, pt: 4, borderTop: "1px solid rgba(229,231,235,0.5)" }}>
+            <Box sx={{ display: "flex", gap: 4, mt: 3, pt: 3, borderTop: "1px solid rgba(229,231,235,0.5)" }}>
               {[
                 { value: "5K+", label: "Bots Created" },
                 { value: "500K+", label: "Conversations" },
@@ -429,13 +218,226 @@ const AuthForm = () => {
                 { value: "4.8★", label: "Rating" },
               ].map((s) => (
                 <Box key={s.label} sx={{ textAlign: "center" }}>
-                  <Typography sx={{ fontSize: 20, fontWeight: 800, color: "#4F46E5" }}>{s.value}</Typography>
-                  <Typography sx={{ fontSize: 11, color: "#9CA3AF", fontWeight: 500 }}>{s.label}</Typography>
+                  <Typography sx={{ fontSize: 18, fontWeight: 800, color: "#4F46E5" }}>{s.value}</Typography>
+                  <Typography sx={{ fontSize: 10, color: "#9CA3AF", fontWeight: 500 }}>{s.label}</Typography>
                 </Box>
               ))}
             </Box>
           </motion.div>
         </Box>
+      </Box>
+
+      {/* ===== RIGHT: FORM ===== */}
+      <Box sx={{
+        flex: { xs: 1, md: "0 0 45%" },
+        display: "flex", alignItems: "center", justifyContent: "center",
+        p: { xs: 2, md: 4 },
+        position: "relative",
+        overflow: "hidden",
+      }}>
+        {/* Background decoration */}
+        <Box sx={{ position: "absolute", top: "-20%", left: "-10%", width: 300, height: 300, borderRadius: "50%", background: "radial-gradient(circle, rgba(79,70,229,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <Box sx={{ position: "absolute", bottom: "-10%", right: "-10%", width: 250, height: 250, borderRadius: "50%", background: "radial-gradient(circle, rgba(124,58,237,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+        <motion.div
+          initial={{ opacity: 0, x: 40 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          style={{ width: "100%", maxWidth: 420, maxHeight: "90vh", overflowY: "auto" }}
+        >
+          <Paper elevation={0} sx={{
+            p: { xs: 3, md: 3.5 }, borderRadius: 4,
+            bgcolor: "rgba(255,255,255,0.85)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            border: "1px solid rgba(229,231,235,0.5)",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.04)",
+          }}>
+            {/* Logo */}
+            <Box sx={{ display: "flex", justifyContent: "center", mb: 2.5 }}>
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ type: "spring", stiffness: 200, delay: 0.1 }}
+              >
+                <Box sx={{
+                  width: 44, height: 44, borderRadius: "12px",
+                  background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  boxShadow: "0 8px 24px rgba(79,70,229,0.3)",
+                }}>
+                  <SmartToyIcon sx={{ color: "#fff", fontSize: 24 }} />
+                </Box>
+              </motion.div>
+            </Box>
+
+            {/* Tabs */}
+            <Box sx={{ display: "flex", bgcolor: "#F3F4F6", borderRadius: 2, p: 0.3, mb: 2.5 }}>
+              {["Log In", "Sign Up"].map((tab, i) => {
+                const active = (i === 0) === isLogin;
+                return (
+                  <Box
+                    key={tab}
+                    onClick={() => { if ((i === 0) !== isLogin) toggleMode(); }}
+                    sx={{
+                      flex: 1, textAlign: "center", py: 0.8, borderRadius: 1.5,
+                      cursor: "pointer", fontWeight: 700, fontSize: 13,
+                      bgcolor: active ? "#fff" : "transparent",
+                      color: active ? "#4F46E5" : "#6B7280",
+                      boxShadow: active ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+                      transition: "all 0.2s",
+                    }}
+                  >
+                    {tab}
+                  </Box>
+                );
+              })}
+            </Box>
+
+            <AnimatePresence mode="wait">
+              <motion.form
+                key={isLogin ? "login" : "signup"}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.25 }}
+                onSubmit={handleSubmit}
+              >
+                {!isLogin && (
+                  <TextField
+                    fullWidth margin="dense" size="small"
+                    label="Full Name"
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleChange}
+                    required
+                    sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                  />
+                )}
+
+                <TextField
+                  fullWidth margin="dense" size="small"
+                  label="Company Email Address"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                />
+
+                <TextField
+                  fullWidth margin="dense" size="small"
+                  label="Password"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowPassword((prev) => !prev)} size="small">
+                          {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+
+                {!isLogin && (
+                  <>
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 0.5, mt: 0.5 }}>
+                      {["8+ Char", "1 Lower", "1 Upper", "1 Special", "1 Num"].map((item) => (
+                        <Box key={item} sx={{ fontSize: "10px", bgcolor: "#F3F4F6", color: "#6B7280", px: 1, py: 0.3, borderRadius: "4px", fontWeight: 500 }}>
+                          {item}
+                        </Box>
+                      ))}
+                    </Box>
+
+                    <TextField
+                      fullWidth margin="dense" size="small"
+                      label="Website URL"
+                      name="website"
+                      value={formData.website}
+                      onChange={handleChange}
+                      required
+                      sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                    />
+
+                    <Box sx={{ display: "flex", gap: 1, mt: 0.5 }}>
+                      <TextField
+                        select size="small"
+                        label="Code"
+                        value={formData.countryCode}
+                        name="countryCode"
+                        onChange={handleChange}
+                        sx={{ width: "30%", "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                      >
+                        {countryCodes.map((opt) => (
+                          <MenuItem key={opt.code} value={opt.code}>{opt.label}</MenuItem>
+                        ))}
+                      </TextField>
+                      <TextField
+                        fullWidth size="small"
+                        label="Phone Number"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleChange}
+                        required
+                        sx={{ "& .MuiOutlinedInput-root": { borderRadius: 2, bgcolor: "#FAFAFA" } }}
+                      />
+                    </Box>
+
+                    <FormControlLabel
+                      control={<Checkbox name="termsAgreed" checked={formData.termsAgreed} onChange={handleChange} size="small" sx={{ "&.Mui-checked": { color: "#4F46E5" } }} />}
+                      label={<Typography variant="body2" sx={{ fontSize: 11, color: "#6B7280" }}>
+                        I agree to <a href="/terms" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Terms</a> & <a href="/privacy" target="_blank" rel="noreferrer" style={{ color: "#4F46E5", fontWeight: 600 }}>Privacy</a>
+                      </Typography>}
+                      sx={{ mt: 0.5 }}
+                    />
+                  </>
+                )}
+
+                {error && (
+                  <Typography color="error" align="center" mt={0.5} sx={{ fontSize: 12 }}>{error}</Typography>
+                )}
+
+                <Button
+                  type="submit"
+                  variant="contained"
+                  fullWidth
+                  endIcon={<ArrowForwardIcon />}
+                  sx={{
+                    mt: 2, py: 1.1, borderRadius: 2, textTransform: "none", fontWeight: 700, fontSize: 14,
+                    background: "linear-gradient(135deg, #4F46E5, #7C3AED)",
+                    boxShadow: "0 4px 16px rgba(79,70,229,0.3)",
+                    "&:hover": { boxShadow: "0 8px 24px rgba(79,70,229,0.4)" },
+                  }}
+                >
+                  {isLogin ? "Login to Dashboard" : "Create Free Account"}
+                </Button>
+
+                <Typography align="center" mt={2} sx={{ fontSize: 12, color: "#6B7280" }}>
+                  {isLogin ? (
+                    <>Don't have an account?{" "}
+                      <Button variant="text" onClick={toggleMode} sx={{ textTransform: "none", fontWeight: 700, fontSize: 12, color: "#4F46E5", p: 0, minWidth: "auto" }}>
+                        Sign Up
+                      </Button>
+                    </>
+                  ) : (
+                    <>Already have an account?{" "}
+                      <Button variant="text" onClick={toggleMode} sx={{ textTransform: "none", fontWeight: 700, fontSize: 12, color: "#4F46E5", p: 0, minWidth: "auto" }}>
+                        Log In
+                      </Button>
+                    </>
+                  )}
+                </Typography>
+              </motion.form>
+            </AnimatePresence>
+          </Paper>
+        </motion.div>
       </Box>
     </Box>
   );
