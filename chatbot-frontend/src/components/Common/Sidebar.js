@@ -25,7 +25,6 @@ import DnsIcon from '@mui/icons-material/Dns';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
 import MenuOpenIcon from '@mui/icons-material/MenuOpen';
 import MenuIcon from '@mui/icons-material/Menu';
-import logo from "../../assets/images/bot-logo-blue.png";
 import { useLocation, useNavigate } from 'react-router-dom';
 
 const PRIMARY_COLOR = '#6366f1';
@@ -265,18 +264,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
     >
       <Box className="sidebar-water-bg" sx={{ height: '100%', display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         <Box className="sidebar-content" sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          {/* Logo + Toggle */}
+          {/* Toggle button */}
           <Box sx={{
-            display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between',
-            py: 1.5, px: collapsed ? 0 : 1.5, minHeight: 56, gap: 1,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            py: 1.5, minHeight: 56,
             borderBottom: '1px solid rgba(243,244,246,0.8)',
           }}>
-            {!collapsed && (
-              <img style={{ width: '90px', filter: 'drop-shadow(0 2px 4px rgba(79,70,229,0.15))' }} src={logo} alt="Smart Bot Logo" />
-            )}
-            {collapsed && (
-              <img style={{ width: '32px', filter: 'drop-shadow(0 2px 4px rgba(79,70,229,0.15))' }} src={logo} alt="Smart Bot Logo" />
-            )}
             <IconButton
               onClick={onToggle}
               size="small"
