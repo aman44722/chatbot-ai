@@ -497,11 +497,14 @@ const UserMessage = () => {
   }
   if (!currentQ?.shuffleOptions) shuffledRef.current = null;
   const displayOptions = shuffledRef.current || currentQ?.options || [];
+  const visibleOptions = (displayOptions || []).filter(opt => !(typeof opt === 'object' && opt?.hidden));
   const hasOtherOption = currentQ?.otherOption;
   const isDropdown = currentQ?.style === 'dropdown';
+  const isList = currentQ?.style === 'list';
+  const layoutDir = currentQ?.flexDirection || 'row';
 
   const questionSpoken = messages.some(m => m.sender === 'bot' && m.questionId === currentQ?.id);
-  const hasOptions = !done && !liveRequested && questionSpoken && (currentQ?.options?.length > 0);
+  const hasOptions = !done && !liveRequested && questionSpoken && (visibleOptions?.length > 0);
 
   return (
     <Box sx={{
@@ -713,7 +716,7 @@ const UserMessage = () => {
                             onChange={(e) => setDropdownVal(e.target.value)}
                             sx={{ borderRadius: 2, bgcolor: '#fff' }}
                           >
-                            {displayOptions.map((opt, i) => (
+                            {visibleOptions.map((opt, i) => (
                               <MenuItem key={i} value={getOptionLabel(opt)}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                   {currentQ.imageChoices?.[i]?.image && (
@@ -737,10 +740,54 @@ const UserMessage = () => {
                           </Button>
                         </Box>
                       </Box>
+                    ) : isList ? (
+                      <Box>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          {visibleOptions.map((opt, i) => (
+                            <Button
+                              key={i}
+                              fullWidth
+                              onClick={() => handleOptionSelect(getOptionLabel(opt))}
+                              sx={{
+                                justifyContent: 'flex-start', textTransform: 'none',
+                                borderRadius: 2, px: 2, py: 1.2,
+                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
+                                fontWeight: 500,
+                                color: '#374151', bgcolor: '#fff',
+                                border: '1px solid #e5e7eb',
+                                boxShadow: '0 1px 2px rgba(0,0,0,0.04)',
+                                '&:hover': { borderColor: optionColor, color: optionColor, bgcolor: `${optionColor}04` },
+                              }}
+                            >
+                              {currentQ.imageChoices?.[i]?.image && (
+                                <img src={currentQ.imageChoices[i].image} alt="" style={{ width: 20, height: 20, borderRadius: 4, objectFit: 'cover', marginRight: 8 }} />
+                              )}
+                              {getOptionLabel(opt)}
+                            </Button>
+                          ))}
+                          {hasOtherOption && (
+                            <Button
+                              fullWidth
+                              onClick={() => { setOtherText(''); setDropdownVal('__other__'); }}
+                              sx={{
+                                justifyContent: 'flex-start', textTransform: 'none',
+                                borderRadius: 2, px: 2, py: 1.2,
+                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
+                                fontWeight: 500,
+                                color: '#888', bgcolor: '#fff',
+                                border: '2px dashed #d0d0d0',
+                                '&:hover': { borderColor: optionColor, color: optionColor },
+                              }}
+                            >
+                              {getOptionLabel('Other')}
+                            </Button>
+                          )}
+                        </Box>
+                      </Box>
                     ) : (
                       <Box>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                          {displayOptions.map((opt, i) => (
+                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, flexDirection: layoutDir }}>
+                          {visibleOptions.map((opt, i) => (
                             <Button
                               key={i}
                               onClick={() => handleOptionSelect(getOptionLabel(opt))}
@@ -750,7 +797,7 @@ const UserMessage = () => {
                                 color: '#fff', border: 'none', textAlign: 'center',
                                 fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
                                 textTransform: 'none', fontWeight: 600,
-                                px: 2.5, py: 1, minWidth: 80, flex: '0 1 auto',
+                                px: 2.5, py: 1, minWidth: 80, flex: layoutDir === 'column' ? '1 1 100%' : '0 1 auto',
                                 boxShadow: `0 3px 10px ${optionColor}30`,
                                 transition: 'all 0.2s ease',
                                 display: 'flex', alignItems: 'center', gap: 0.8,
@@ -778,6 +825,7 @@ const UserMessage = () => {
                                 fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
                                 fontWeight: 500, px: 2.5, py: 1, bgcolor: 'transparent',
                                 transition: 'all 0.2s ease',
+                                flex: layoutDir === 'column' ? '1 1 100%' : '0 1 auto',
                                 '&:hover': { borderColor: optionColor, color: optionColor, bgcolor: `${optionColor}08` },
                               }}
                             >

@@ -49,8 +49,8 @@ const SingleChoiceTab = ({
     <Box sx={{ mt: 1 }}>
       {/* Style Selector */}
       <Typography sx={{ fontWeight: 600, fontSize: 14, mb: 1, color: "#444" }}>Display Style</Typography>
-      <Box sx={{ display: "flex", gap: 1.5, mb: 2 }}>
-        {["button", "dropdown"].map((s) => (
+      <Box sx={{ display: "flex", gap: 1.5, mb: 2, flexWrap: "wrap" }}>
+        {["button", "dropdown", "list"].map((s) => (
           <Button
             key={s}
             variant={style === s ? "contained" : "outlined"}
@@ -64,7 +64,7 @@ const SingleChoiceTab = ({
               "&:hover": { borderColor: "#2563eb" },
             }}
           >
-            {s === "button" ? "Button Style" : "Dropdown Style"}
+            {s === "button" ? "Button Style" : s === "dropdown" ? "Dropdown Style" : "List View"}
           </Button>
         ))}
       </Box>
