@@ -726,17 +726,17 @@ const UserMessage = () => {
                           >
                             Submit
                           </Button>
-                          {currentQ?.skipOption && (
-                            <Button
-                              startIcon={<SkipNextIcon fontSize="small" />}
-                              onClick={handleSkip}
-                              variant="outlined" size="small"
-                              sx={{ borderRadius: 2, textTransform: 'none', color: '#888', borderColor: '#d0d0d0', fontWeight: 500, '&:hover': { borderColor: optionColor, color: optionColor } }}
-                            >
-                              Skip
-                            </Button>
-                          )}
                         </Box>
+                        {currentQ?.skipOption && (
+                          <Button
+                            startIcon={<SkipNextIcon fontSize="small" />}
+                            onClick={handleSkip}
+                            variant="text" size="small"
+                            sx={{ borderRadius: 2, textTransform: 'none', color: '#bbb', fontWeight: 400, fontSize: 12, alignSelf: 'flex-start', '&:hover': { color: optionColor, bgcolor: 'transparent' } }}
+                          >
+                            Skip
+                          </Button>
+                        )}
                       </Box>
                     ) : (
                       <Box>
@@ -785,23 +785,19 @@ const UserMessage = () => {
                               Other
                             </Button>
                           )}
-                          {currentQ?.skipOption && (
+                        </Box>
+                        {currentQ?.skipOption && (
+                          <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
                             <Button
                               startIcon={<SkipNextIcon fontSize="small" />}
                               onClick={handleSkip}
-                              sx={{
-                                borderRadius: `${Math.max(borderRadius, 8)}px`,
-                                color: '#888', border: '2px dashed #d0d0d0', textTransform: 'none',
-                                fontSize: Math.max(parseFloat(fontSize) - 1, 12) + 'px',
-                                fontWeight: 500, px: 2, py: 0.9, bgcolor: 'transparent',
-                                transition: 'all 0.2s ease',
-                                '&:hover': { borderColor: optionColor, color: optionColor, bgcolor: `${optionColor}08` },
-                              }}
+                              variant="text" size="small"
+                              sx={{ borderRadius: 2, textTransform: 'none', color: '#bbb', fontWeight: 400, fontSize: 12, p: 0.5, minWidth: 'auto', '&:hover': { color: optionColor, bgcolor: 'transparent' } }}
                             >
                               Skip
                             </Button>
-                          )}
-                        </Box>
+                          </Box>
+                        )}
                         {hasOtherOption && dropdownVal === '__other__' && (
                           <Box sx={{ display: 'flex', gap: 1, mt: 1.5 }}>
                             <TextField
