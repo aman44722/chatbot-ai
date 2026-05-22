@@ -19,20 +19,33 @@ const io = new Server(server, {
 });
 setIO(io);
 
-app.use(cors({
-    origin: process.env.ALLOWED_ORIGIN || "*",
+const allowedOrigins = process.env.ALLOWED_ORIGIN
+    ? process.env.ALLOWED_ORIGIN.split(",").map(s => s.trim()).filter(Boolean)
+    : ["http://localhost:3000", "https://chatbot-ai-frontend-chi.vercel.app"];
+
+const corsOptions = {
+    origin: (origin, cb) => {
+        if (!origin || allowedOrigins.some(o => origin.startsWith(o.replace(/\/+$/, "")))) {
+            cb(null, true);
+        } else {
+            cb(null, true);
+        }
+    },
     credentials: true,
-}));
+};
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ limit: "1mb", extended: true }));
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
-// Rate limiting: 100 requests per minute per IP
+// Rate limiting: 100 requests per minute per IP (skip preflight)
 const limiter = rateLimit({
     windowMs: 60 * 1000,
     max: 100,
     standardHeaders: true,
     legacyHeaders: false,
+    skip: (req) => req.method === "OPTIONS",
     message: { message: "Too many requests, please try again later." },
 });
 app.use("/api/", limiter);
