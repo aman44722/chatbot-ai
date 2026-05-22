@@ -57,6 +57,7 @@ const UserMessage = () => {
 
   const [dropdownVal, setDropdownVal] = useState('');
   const [otherText, setOtherText] = useState('');
+  const [pendingSkip, setPendingSkip] = useState(false);
 
   // Pre-chat state
   const [preChatDone, setPreChatDone] = useState(false);
@@ -378,6 +379,7 @@ const UserMessage = () => {
   const advanceStep = (nextStep) => {
     setDropdownVal('');
     setOtherText('');
+    setPendingSkip(false);
     setStep(nextStep);
     if (nextStep < flow.length) {
       setTimeout(() => {
@@ -400,6 +402,12 @@ const UserMessage = () => {
 
   const handleSkip = () => {
     if (done || liveRequested) return;
+    if (!pendingSkip) {
+      setPendingSkip(true);
+      setTimeout(() => setPendingSkip(false), 3000);
+      return;
+    }
+    setPendingSkip(false);
     const currentQ = flow[step];
     pushMessage('user', '⏭️ Skipped', currentQ?.id);
     advanceStep(step + 1);
@@ -878,11 +886,11 @@ const UserMessage = () => {
                     {currentQ?.skipOption && (
                       <Button
                         size="small"
-                        startIcon={<SkipNextIcon fontSize="small" />}
+                        startIcon={pendingSkip ? undefined : <SkipNextIcon fontSize="small" />}
                         onClick={handleSkip}
-                        sx={{ borderRadius: 2, textTransform: 'none', color: '#aaa', fontWeight: 400, fontSize: 13, px: 2, '&:hover': { color: optionColor, bgcolor: `${optionColor}08` } }}
+                        sx={{ borderRadius: 2, textTransform: 'none', color: pendingSkip ? '#e65100' : '#aaa', fontWeight: pendingSkip ? 700 : 400, fontSize: 13, px: 2, '&:hover': { color: optionColor, bgcolor: `${optionColor}08` } }}
                       >
-                        Skip this question
+                        {pendingSkip ? 'Confirm Skip?' : 'Skip this question'}
                       </Button>
                     )}
                   </Box>
@@ -911,11 +919,11 @@ const UserMessage = () => {
                       <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 0.5 }}>
                         <Button
                           size="small"
-                          startIcon={<SkipNextIcon fontSize="small" />}
+                          startIcon={pendingSkip ? undefined : <SkipNextIcon fontSize="small" />}
                           onClick={handleSkip}
-                          sx={{ borderRadius: 2, textTransform: 'none', color: '#aaa', fontWeight: 400, fontSize: 13, px: 2, '&:hover': { color: '#666', bgcolor: 'transparent' } }}
+                          sx={{ borderRadius: 2, textTransform: 'none', color: pendingSkip ? '#e65100' : '#aaa', fontWeight: pendingSkip ? 700 : 400, fontSize: 13, px: 2, '&:hover': { color: '#666', bgcolor: 'transparent' } }}
                         >
-                          Skip
+                          {pendingSkip ? 'Confirm Skip?' : 'Skip'}
                         </Button>
                       </Box>
                     )}
