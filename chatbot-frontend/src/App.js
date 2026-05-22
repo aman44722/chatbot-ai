@@ -49,6 +49,7 @@ function App() {
       <Route path="usertest/:chatId" element={<UserMessage />} />
 
       <Route path="login" element={<AuthForm />} />
+      <Route path="signup" element={<AuthForm />} />
 
       {/* ✅ WIDGET ROUTE – ROOT LEVEL */}
       {/* <Route path="/widget/ui:chatbotId" element={<WidgetLoader />} /> */}
