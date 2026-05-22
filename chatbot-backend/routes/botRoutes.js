@@ -17,7 +17,7 @@ router.get("/:id/settings", getBotSettings);
 router.get("/:id/flow", getBotFlow);
 
 // Protected
-router.post("/", authenticate, adminOnly, createBot);
+router.post("/", authenticate, createBot);
 router.get("/", authenticate, getBots);
 router.get("/:id", authenticate, getBot);
 router.put("/:id", authenticate, updateBot);
