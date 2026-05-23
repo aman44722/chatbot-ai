@@ -14,7 +14,7 @@ dotenv.config();
 
 const app = express();
 
-// CORS
+// CORS - Vercel serverless friendly
 const allowedOrigins = [
     "http://localhost:3000",
     "https://chatbot-ai-frontend-chi.vercel.app",
@@ -22,13 +22,16 @@ const allowedOrigins = [
 if (process.env.ALLOWED_ORIGIN) {
     process.env.ALLOWED_ORIGIN.split(",").forEach(o => allowedOrigins.push(o.trim()));
 }
-app.use(cors({
-    origin: (origin, cb) => {
-        if (!origin) return cb(null, true);
-        cb(null, allowedOrigins.some(o => origin.startsWith(o.replace(/\/+$/, "")) || origin === o));
-    },
-    credentials: true,
-}));
+function corsOrigin(origin, cb) {
+    if (!origin) return cb(null, true);
+    if (allowedOrigins.includes(origin)) return cb(null, origin);
+    for (const o of allowedOrigins) {
+        if (origin.startsWith(o.replace(/\/+$/, ""))) return cb(null, origin);
+    }
+    cb(null, origin);
+}
+app.use(cors({ origin: corsOrigin, credentials: true }));
+app.options("*", cors({ origin: corsOrigin, credentials: true }));
 
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
