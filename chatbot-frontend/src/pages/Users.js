@@ -43,12 +43,15 @@ const Users = () => {
   const [search, setSearch] = useState('');
   const navigate = useNavigate();
 
+  const botId = localStorage.getItem('selectedBotId');
+
   useEffect(() => {
-    fetchConversations()
+    setLoading(true);
+    fetchConversations(1, 50, botId)
       .then(setConversations)
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [botId]);
 
   const filtered = useMemo(() =>
     conversations.filter(c =>

@@ -28,8 +28,11 @@ const Leads = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
+  const botId = localStorage.getItem('selectedBotId');
+
   useEffect(() => {
-    fetchConversations()
+    setLoading(true);
+    fetchConversations(1, 50, botId)
       .then((convos) => {
         const extracted = convos.map(c => {
           const { email, phone } = extractContact(c.messages);
@@ -47,7 +50,7 @@ const Leads = () => {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, []);
+  }, [botId]);
 
   const filtered = leads.filter(l =>
     l.name.toLowerCase().includes(search.toLowerCase()) ||
