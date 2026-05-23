@@ -62,6 +62,12 @@ const Sidebar = ({ collapsed, onToggle }) => {
     navigate('/app/dashboard');
   };
 
+  const handleMode1Click = (path) => {
+    setSelectedBot('');
+    localStorage.removeItem('selectedBotId');
+    navigate(path);
+  };
+
   const toggleDropdown = (text) => {
     setOpenDropdown(openDropdown === text ? null : text);
   };
@@ -97,6 +103,8 @@ const Sidebar = ({ collapsed, onToggle }) => {
     { text: 'Logout', icon: <LogoutIcon />, path: '/app/logout' },
   ];
 
+  const isMode1Item = (item) => !item.children && mode1Items.some(m => m.path === item.path);
+
   const renderItem = (item) => {
     const sel = item.children
       ? item.children.some(c => isActive(c.path))
@@ -110,7 +118,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
             slotProps={{ popper: { sx: { '& .MuiTooltip-tooltip': { bgcolor: '#1f2937', fontSize: 12, fontWeight: 600, px: 1.5, py: 0.8, borderRadius: 1.5 } } } }}
           >
             <ListItemButton
-              onClick={() => item.children ? toggleDropdown(item.text) : navigate(item.path)}
+              onClick={() => item.children ? toggleDropdown(item.text) : isMode1Item(item) ? handleMode1Click(item.path) : navigate(item.path)}
               selected={sel && !item.children}
               sx={{
                 borderRadius: 2, mb: 0.3, px: 1, py: 0.8, justifyContent: 'center',
@@ -173,7 +181,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
           onClick={() =>
             item.children
               ? toggleDropdown(item.text)
-              : navigate(item.path)
+              : isMode1Item(item)
+                ? handleMode1Click(item.path)
+                : navigate(item.path)
           }
           selected={sel && !item.children}
           sx={{
