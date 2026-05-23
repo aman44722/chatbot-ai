@@ -174,7 +174,7 @@ const TRANSLATIONS = {
     closedTitle: 'ਗੱਲਬਾਤ ਬੰਦ',
     closedBody: 'ਇਹ ਚੈਟ ਸਹਾਇਤਾ ਟੀਮ ਦੁਆਰਾ ਬੰਦ ਕੀਤੀ ਗਈ ਹੈ।',
     reopen: 'ਚੈਟ ਦੁਬਾਰਾ ਖੋਲ੍ਹੋ',
-    tapOption: 'ਜਾਰੀ ਰੱਖਣ ਲਈ ਵਿਕਲਪ 'ਤੇ ਟੈਪ ਕਰੋ',
+    tapOption: 'ਜਾਰੀ ਰੱਖਣ ਲਈ ਵਿਕਲਪ `ਤੇ ਟੈਪ ਕਰੋ',
     selectSubmit: 'ਚੁਣੋ ਅਤੇ ਜਮ੍ਹਾਂ ਕਰੋ',
   },
 };
