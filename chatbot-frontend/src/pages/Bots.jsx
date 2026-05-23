@@ -16,6 +16,7 @@ import MoreVertIcon from '@mui/icons-material/MoreVert';
 import { getBots, createBot, deleteBot, updateBot } from '../api/botApi';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import DeleteBotDialog from '../components/Common/DeleteBotDialog';
 
 const iconMap = {
   setup: <SettingsIcon sx={{ fontSize: 18 }} />,
@@ -43,6 +44,8 @@ const Bots = () => {
   const [renameBot, setRenameBot] = useState(null);
   const [renameName, setRenameName] = useState('');
   const [renaming, setRenaming] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   const loadBots = async () => {
@@ -75,13 +78,21 @@ const Bots = () => {
   };
 
   const handleDelete = async (botId, botName) => {
-    if (!window.confirm(`Delete "${botName}"? This action cannot be undone.`)) return;
+    setDeleteTarget({ botId, botName });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await deleteBot(botId);
+      await deleteBot(deleteTarget.botId);
       toast.success('Bot deleted');
+      setDeleteTarget(null);
       loadBots();
     } catch (err) {
       toast.error(err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -331,6 +342,14 @@ const Bots = () => {
       </Dialog>
 
       <ToastContainer />
+
+      <DeleteBotDialog
+        open={!!deleteTarget}
+        botName={deleteTarget?.botName}
+        deleting={deleting}
+        onClose={() => { if (!deleting) setDeleteTarget(null); }}
+        onConfirm={confirmDelete}
+      />
     </Box>
   );
 };

@@ -9,6 +9,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { getBots, createBot, deleteBot } from '../api/botApi';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
+import DeleteBotDialog from '../components/Common/DeleteBotDialog';
 
 const Dashboard = () => {
   const [bots, setBots] = useState([]);
@@ -16,6 +17,8 @@ const Dashboard = () => {
   const [openCreate, setOpenCreate] = useState(false);
   const [newBotName, setNewBotName] = useState('');
   const [creating, setCreating] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const navigate = useNavigate();
 
   const loadBots = async () => {
@@ -48,13 +51,21 @@ const Dashboard = () => {
   };
 
   const handleDelete = async (botId, botName) => {
-    if (!window.confirm(`Delete "${botName}"? This action cannot be undone.`)) return;
+    setDeleteTarget({ botId, botName });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
     try {
-      await deleteBot(botId);
+      await deleteBot(deleteTarget.botId);
       toast.success('Bot deleted');
+      setDeleteTarget(null);
       loadBots();
     } catch (err) {
       toast.error(err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -182,6 +193,14 @@ const Dashboard = () => {
       </Dialog>
 
       <ToastContainer />
+
+      <DeleteBotDialog
+        open={!!deleteTarget}
+        botName={deleteTarget?.botName}
+        deleting={deleting}
+        onClose={() => { if (!deleting) setDeleteTarget(null); }}
+        onConfirm={confirmDelete}
+      />
     </Box>
   );
 };

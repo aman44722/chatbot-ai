@@ -13,6 +13,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import EditIcon from '@mui/icons-material/Edit';
 import { getBotById, updateBot, deleteBot } from '../api/botApi';
 import { toast, ToastContainer } from 'react-toastify';
+import DeleteBotDialog from '../components/Common/DeleteBotDialog';
 
 const actions = [
   { key: 'setup', label: 'Setup', icon: <SettingsIcon />, path: '/app/setup' },
@@ -30,6 +31,8 @@ const BotDetail = () => {
   const [renameOpen, setRenameOpen] = useState(false);
   const [renameName, setRenameName] = useState('');
   const [renaming, setRenaming] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (botId) {
@@ -72,14 +75,18 @@ const BotDetail = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm(`Delete "${bot.name}"? This action cannot be undone.`)) return;
+  const handleDelete = () => setDeleteOpen(true);
+
+  const confirmDelete = async () => {
+    setDeleting(true);
     try {
       await deleteBot(botId);
       toast.success('Bot deleted');
       navigate('/app/dashboard');
     } catch (err) {
       toast.error(err);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -206,6 +213,14 @@ const BotDetail = () => {
       </Dialog>
 
       <ToastContainer />
+
+      <DeleteBotDialog
+        open={deleteOpen}
+        botName={bot?.name}
+        deleting={deleting}
+        onClose={() => { if (!deleting) setDeleteOpen(false); }}
+        onConfirm={confirmDelete}
+      />
     </Box>
   );
 };
