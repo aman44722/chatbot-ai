@@ -743,34 +743,4 @@ function SecurityTab() {
   );
 }
 
-// ──────────────────────────────────────────────
-// SectionCard component
-// ──────────────────────────────────────────────
-function SectionCard({ children, accent, ...sx }) {
-  return (
-    <Paper elevation={0}
-      sx={{
-        ...sx,
-        position: "relative",
-        borderRadius: 4,
-        overflow: "hidden",
-        background: "rgba(255,255,255,0.92)",
-        backdropFilter: "blur(12px)",
-        border: "1px solid rgba(255,255,255,0.7)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
-        "&::before": accent ? {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "4px",
-          height: "100%",
-          background: `linear-gradient(180deg, ${accent}, ${accent}66)`,
-          borderRadius: "0 2px 2px 0",
-        } : {},
-      }}
-    >
-      {children}
-    </Paper>
-  );
-}
+
