@@ -1,0 +1,62 @@
+@keyframes analyticsWaterFlow {
+  0% { background-position: 0% 50%, 100% 50%, 0% 0%; }
+  25% { background-position: 50% 30%, 70% 70%, 0% 0%; }
+  50% { background-position: 100% 50%, 0% 50%, 0% 0%; }
+  75% { background-position: 50% 70%, 30% 30%, 0% 0%; }
+  100% { background-position: 0% 50%, 100% 50%, 0% 0%; }
+}
+
+@keyframes analyticsKpiFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.analytics-water-bg {
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+}
+
+.analytics-water-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 20% 30%, rgba(99,102,241,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.06) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(79,70,229,0.04) 0%, transparent 50%);
+  background-size: 200% 200%;
+  animation: analyticsWaterFlow 12s ease-in-out infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.analytics-content {
+  position: relative;
+  z-index: 1;
+}
+
+.analytics-kpi-card {
+  animation: analyticsKpiFloat 4s ease-in-out infinite;
+}
+
+.analytics-kpi-card:nth-child(2) {
+  animation-delay: 0.5s;
+}
+
+.analytics-kpi-card:nth-child(3) {
+  animation-delay: 1s;
+}
+
+.analytics-kpi-card:nth-child(4) {
+  animation-delay: 1.5s;
+}
+
+.analytics-glass-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.analytics-glass-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.08) !important;
+}
