@@ -80,8 +80,10 @@ exports.updateBot = async (req, res) => {
 
 exports.deleteBot = async (req, res) => {
     try {
-        const bot = await Bot.findByIdAndDelete(req.params.id);
+        const bot = await Bot.findById(req.params.id);
         if (!bot) return res.status(404).json({ message: "Bot not found" });
+        if (String(bot.userId) !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+        await Bot.findByIdAndDelete(req.params.id);
         res.json({ message: "Bot deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Failed to delete bot" });

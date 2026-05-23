@@ -25,7 +25,7 @@ router.post("/", authenticate, createBot);
 router.get("/", authenticate, getBots);
 router.get("/:id", authenticate, getBot);
 router.put("/:id", authenticate, updateBot);
-router.delete("/:id", authenticate, adminOnly, deleteBot);
+router.delete("/:id", authenticate, deleteBot);
 router.get("/:id/whitelist", authenticate, getBotWhitelist);
 router.post("/:id/whitelist", authenticate, saveBotWhitelist);
 router.get("/:id/language", authenticate, getBotLanguage);
