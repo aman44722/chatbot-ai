@@ -5,6 +5,7 @@ import {
   Box, Paper, Typography, Avatar, Chip, CircularProgress, IconButton, Button
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 
 export default function ConversationView() {
   const { id } = useParams();
@@ -45,7 +46,13 @@ export default function ConversationView() {
         <Box sx={{ flex: 1 }}>
           <Typography fontWeight={700}>{convo.userName || "Anonymous"}</Typography>
           <Typography variant="caption" color="text.secondary">
-            Session: {convo.sessionId} • {new Date(convo.updatedAt).toLocaleString()}
+            <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+              {convo.botName && (
+                <Chip icon={<SmartToyIcon sx={{ fontSize: 12 }} />} label={convo.botName} size="small" sx={{ height: 18, fontSize: 10 }} />
+              )}
+              <span>Session: {convo.sessionId.slice(-8)}</span>
+              <span>{new Date(convo.updatedAt).toLocaleString()}</span>
+            </Box>
           </Typography>
         </Box>
         <Chip label={convo.status} size="small" color={convo.status === "active" ? "success" : "default"} />

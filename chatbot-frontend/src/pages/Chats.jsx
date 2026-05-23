@@ -14,6 +14,7 @@ import RefreshIcon from "@mui/icons-material/Refresh";
 import DownloadIcon from "@mui/icons-material/Download";
 import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import FlashOnIcon from "@mui/icons-material/FlashOn";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 import { fetchConversations, fetchConversationById, updateConversationStatus, sendAdminMessage, fetchMessagesBySession } from "../api/conversationApi";
 import { connectSocket, joinConversation, leaveConversation } from "../api/socket";
 
@@ -485,16 +486,24 @@ export default function Chats() {
                       <CircularProgress size={46} thickness={2.5} sx={{ color: BLUE, position: "absolute", top: -2, left: -2, zIndex: 1 }} />
                     )}
                   </Box>
-                  <Box sx={{ flex: 1, minWidth: 0 }}>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
                     <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                       <Typography fontSize={13.5} fontWeight={isSelected ? 700 : 600} noWrap sx={{ maxWidth: 120 }}>
                         {name}
                       </Typography>
                       <Typography fontSize={11} color="text.secondary">{timeAgo(c.updatedAt)}</Typography>
                     </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
                       {isClosed && <Chip label="closed" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: "#888", bgcolor: "#f0f0f0" }} />}
                       {isItemLive && <Chip label="🔴 Live" size="small" sx={{ height: 14, fontSize: 9, px: 0.3, color: ORANGE, bgcolor: "#fff3e0", fontWeight: 700 }} />}
+                      {c.botName && (
+                        <Chip
+                          icon={<SmartToyIcon sx={{ fontSize: 10 }} />}
+                          label={c.botName}
+                          size="small"
+                          sx={{ height: 16, fontSize: 9, "& .MuiChip-icon": { ml: 0.3, fontSize: 10 } }}
+                        />
+                      )}
                       <Typography fontSize={12} color="text.secondary" noWrap sx={{ maxWidth: 150 }}>
                         {preview}
                       </Typography>
@@ -769,6 +778,7 @@ export default function Chats() {
               Conversation Info
             </Typography>
             {[
+              { label: "Bot", value: convo.botName || convo.chatbotId?.slice(-8) || "—" },
               { label: "Total Messages", value: convo?.messages?.length || 0 },
               { label: "User Answers", value: userMessages },
               { label: "Bot Questions", value: botMessages },

@@ -6,6 +6,7 @@ import {
   Avatar, Chip, TextField, InputAdornment, CircularProgress, Divider
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 
 export default function Conversations() {
   const [list, setList] = useState([]);
@@ -13,17 +14,43 @@ export default function Conversations() {
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const loadConversations = async (silent = false) => {
+    if (!silent) setLoading(true);
     const botId = localStorage.getItem('selectedBotId') || '';
-    fetchConversations(1, 50, botId)
-      .then(setList)
-      .catch(console.error)
-      .finally(() => setLoading(false));
+    try {
+      const data = await fetchConversations(1, 50, botId);
+      setList(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadConversations();
+  }, []);
+
+  // Re-fetch when selectedBotId changes
+  useEffect(() => {
+    let lastBotId = localStorage.getItem('selectedBotId');
+    const checkBotId = () => {
+      const current = localStorage.getItem('selectedBotId');
+      if (current !== lastBotId) { lastBotId = current; loadConversations(true); }
+    };
+    window.addEventListener('focus', checkBotId);
+    window.addEventListener('visibilitychange', () => { if (!document.hidden) checkBotId(); });
+    return () => {
+      window.removeEventListener('focus', checkBotId);
+      window.removeEventListener('visibilitychange', checkBotId);
+    };
   }, []);
 
   const filtered = list.filter(c =>
     (c.userName || c.sessionId).toLowerCase().includes(search.toLowerCase())
   );
+
+  const selectedBotId = localStorage.getItem('selectedBotId');
 
   if (loading) return (
     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "60vh" }}>
@@ -34,7 +61,9 @@ export default function Conversations() {
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h5" fontWeight={700} mb={0.5}>Conversations</Typography>
-      <Typography color="text.secondary" mb={3}>{list.length} total conversations</Typography>
+      <Typography color="text.secondary" mb={3}>
+        {list.length} total {selectedBotId ? `(filtered by selected bot)` : `(all bots — select a bot in sidebar to filter)`}
+      </Typography>
 
       <TextField
         placeholder="Search conversations..."
@@ -56,9 +85,8 @@ export default function Conversations() {
         ) : (
           <List disablePadding>
             {filtered.map((c, i) => (
-              <>
+              <div key={c._id}>
                 <ListItem
-                  key={c._id}
                   button
                   onClick={() => navigate(`/app/conversations/${c._id}`)}
                   sx={{ py: 1.5, "&:hover": { bgcolor: "#f5f7ff" } }}
@@ -74,7 +102,19 @@ export default function Conversations() {
                         {c.userName || `Anonymous (${c.sessionId.slice(-8)})`}
                       </Typography>
                     }
-                    secondary={`${c.messages?.length || 0} messages • ${new Date(c.updatedAt).toLocaleString()}`}
+                    secondary={
+                      <Box component="span" sx={{ display: "flex", alignItems: "center", gap: 0.5, flexWrap: "wrap" }}>
+                        {c.botName && (
+                          <Chip
+                            icon={<SmartToyIcon sx={{ fontSize: 12 }} />}
+                            label={c.botName}
+                            size="small"
+                            sx={{ height: 20, fontSize: 10, "& .MuiChip-icon": { ml: 0.5 } }}
+                          />
+                        )}
+                        <span>{`${c.messages?.length || 0} messages • ${new Date(c.updatedAt).toLocaleString()}`}</span>
+                      </Box>
+                    }
                   />
                   <Chip
                     label={c.status}
@@ -83,7 +123,7 @@ export default function Conversations() {
                   />
                 </ListItem>
                 {i < filtered.length - 1 && <Divider />}
-              </>
+              </div>
             ))}
           </List>
         )}

@@ -24,12 +24,21 @@ exports.getConversations = async (req, res) => {
         const [conversations, total] = await Promise.all([
             Conversation.find(filter)
                 .select("chatbotId botId sessionId userName status updatedAt messages")
+                .populate("botId", "name")
                 .sort({ updatedAt: -1 })
                 .skip(skip)
                 .limit(limit),
             Conversation.countDocuments(filter),
         ]);
-        res.json({ conversations, total, page, limit, pages: Math.ceil(total / limit) });
+
+        const enriched = conversations.map(c => {
+            const cObj = c.toObject();
+            cObj.botName = c.botId?.name || null;
+            cObj.botId = c.botId?._id || c.botId;
+            return cObj;
+        });
+
+        res.json({ conversations: enriched, total, page, limit, pages: Math.ceil(total / limit) });
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch conversations" });
     }
@@ -42,7 +51,7 @@ exports.getConversationById = async (req, res) => {
         // Look up by _id first, fall back to sessionId
         let conversation;
         if (id.length === 24 && /^[a-f0-9]{24}$/i.test(id)) {
-            conversation = await Conversation.findById(id);
+            conversation = await Conversation.findById(id).populate("botId", "name");
         } else {
             // getConversations filter for auth uses chatbotId OR user's botIds
             const userBots = await Bot.find({ userId: req.user.id }).select('_id').lean();
@@ -50,10 +59,15 @@ exports.getConversationById = async (req, res) => {
             conversation = await Conversation.findOne({
                 sessionId: id,
                 $or: [{ chatbotId: req.user.id }, { botId: { $in: botIds } }],
-            });
+            }).populate("botId", "name");
         }
         if (!conversation) return res.status(404).json({ message: "Conversation not found" });
-        res.json({ conversation });
+
+        const cObj = conversation.toObject();
+        cObj.botName = conversation.botId?.name || null;
+        cObj.botId = conversation.botId?._id || conversation.botId;
+
+        res.json({ conversation: cObj });
     } catch (err) {
         res.status(500).json({ message: "Failed to fetch conversation" });
     }
