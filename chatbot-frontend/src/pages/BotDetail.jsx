@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
-  Box, Typography, Button, Paper, Switch, CircularProgress,
+  Box, Typography, Button, Paper, Switch, CircularProgress, TextField, Dialog, DialogTitle, DialogContent, DialogActions, IconButton,
 } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
@@ -10,6 +10,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import EditIcon from '@mui/icons-material/Edit';
 import { getBotById, updateBot, deleteBot } from '../api/botApi';
 import { toast, ToastContainer } from 'react-toastify';
 
@@ -26,6 +27,9 @@ const BotDetail = () => {
   const navigate = useNavigate();
   const [bot, setBot] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [renameOpen, setRenameOpen] = useState(false);
+  const [renameName, setRenameName] = useState('');
+  const [renaming, setRenaming] = useState(false);
 
   useEffect(() => {
     if (botId) {
@@ -45,6 +49,26 @@ const BotDetail = () => {
       toast.success(`Bot ${newStatus === 'active' ? 'activated' : 'deactivated'}`);
     } catch (err) {
       toast.error(err);
+    }
+  };
+
+  const handleRenameOpen = () => {
+    setRenameName(bot.name);
+    setRenameOpen(true);
+  };
+
+  const handleRename = async () => {
+    if (!renameName.trim()) return;
+    setRenaming(true);
+    try {
+      const res = await updateBot(botId, { name: renameName.trim() });
+      setBot(res.bot || { ...bot, name: renameName.trim() });
+      toast.success('Bot renamed successfully!');
+      setRenameOpen(false);
+    } catch (err) {
+      toast.error(err);
+    } finally {
+      setRenaming(false);
     }
   };
 
@@ -100,7 +124,12 @@ const BotDetail = () => {
             <SmartToyIcon sx={{ color: '#fff', fontSize: 30 }} />
           </Box>
           <Box sx={{ flex: 1 }}>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>{bot.name}</Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography variant="h4" sx={{ fontWeight: 700 }}>{bot.name}</Typography>
+              <IconButton size="small" onClick={handleRenameOpen} sx={{ color: '#9ca3af', '&:hover': { color: '#6366f1' } }}>
+                <EditIcon fontSize="small" />
+              </IconButton>
+            </Box>
             <Typography sx={{ color: '#9ca3af' }}>
               Created {new Date(bot.createdAt).toLocaleDateString()}
             </Typography>
@@ -146,6 +175,35 @@ const BotDetail = () => {
           </Paper>
         ))}
       </Box>
+
+      <Dialog open={renameOpen} onClose={() => setRenameOpen(false)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Rename Bot</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Bot Name"
+            value={renameName}
+            onChange={(e) => setRenameName(e.target.value)}
+            sx={{ mt: 1 }}
+            placeholder="Enter new bot name"
+            onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setRenameOpen(false)} sx={{ textTransform: 'none', color: '#6b7280' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleRename}
+            variant="contained"
+            disabled={!renameName.trim() || renaming}
+            sx={{ textTransform: 'none', borderRadius: 2, bgcolor: '#6366f1' }}
+          >
+            {renaming ? 'Renaming...' : 'Rename'}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <ToastContainer />
     </Box>

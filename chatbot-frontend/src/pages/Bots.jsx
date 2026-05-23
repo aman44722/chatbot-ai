@@ -5,6 +5,7 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -39,6 +40,9 @@ const Bots = () => {
   const [newBotName, setNewBotName] = useState('');
   const [creating, setCreating] = useState(false);
   const [menuOpen, setMenuOpen] = useState(null);
+  const [renameBot, setRenameBot] = useState(null);
+  const [renameName, setRenameName] = useState('');
+  const [renaming, setRenaming] = useState(false);
   const navigate = useNavigate();
 
   const loadBots = async () => {
@@ -89,6 +93,28 @@ const Bots = () => {
       loadBots();
     } catch (err) {
       toast.error(err);
+    }
+  };
+
+  const handleRenameOpen = (bot) => {
+    setRenameBot(bot);
+    setRenameName(bot.name);
+    setMenuOpen(null);
+  };
+
+  const handleRename = async () => {
+    if (!renameName.trim() || !renameBot) return;
+    setRenaming(true);
+    try {
+      await updateBot(renameBot._id, { name: renameName.trim() });
+      toast.success('Bot renamed successfully!');
+      setRenameBot(null);
+      setRenameName('');
+      loadBots();
+    } catch (err) {
+      toast.error(err);
+    } finally {
+      setRenaming(false);
     }
   };
 
@@ -176,9 +202,17 @@ const Bots = () => {
                         onClick={() => setMenuOpen(null)}
                       >
                         <Box
-                          sx={{ px: 2, py: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' }, borderRadius: '8px 8px 0 0' }}
+                          sx={{ px: 2, py: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' }, borderRadius: '8px 8px 0 0', display: 'flex', alignItems: 'center', gap: 1 }}
+                          onClick={() => handleRenameOpen(bot)}
+                        >
+                          <EditIcon sx={{ fontSize: 16, color: '#6366f1' }} />
+                          <Typography sx={{ fontSize: 13, color: '#374151' }}>Rename</Typography>
+                        </Box>
+                        <Box
+                          sx={{ px: 2, py: 1, cursor: 'pointer', '&:hover': { bgcolor: '#f5f5f5' }, borderRadius: '0 0 8px 8px', display: 'flex', alignItems: 'center', gap: 1 }}
                           onClick={() => handleDelete(bot._id, bot.name)}
                         >
+                          <DeleteIcon sx={{ fontSize: 16, color: '#ef4444' }} />
                           <Typography sx={{ fontSize: 13, color: '#ef4444' }}>Delete</Typography>
                         </Box>
                       </Paper>
@@ -263,6 +297,35 @@ const Bots = () => {
             sx={{ textTransform: 'none', borderRadius: 2, bgcolor: '#6366f1' }}
           >
             {creating ? 'Creating...' : 'Create'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Dialog open={!!renameBot} onClose={() => setRenameBot(null)} maxWidth="sm" fullWidth>
+        <DialogTitle sx={{ fontWeight: 700 }}>Rename Bot</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Bot Name"
+            value={renameName}
+            onChange={(e) => setRenameName(e.target.value)}
+            sx={{ mt: 1 }}
+            placeholder="Enter new bot name"
+            onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setRenameBot(null)} sx={{ textTransform: 'none', color: '#6b7280' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleRename}
+            variant="contained"
+            disabled={!renameName.trim() || renaming}
+            sx={{ textTransform: 'none', borderRadius: 2, bgcolor: '#6366f1' }}
+          >
+            {renaming ? 'Renaming...' : 'Rename'}
           </Button>
         </DialogActions>
       </Dialog>
