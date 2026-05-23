@@ -31,6 +31,7 @@ import AvTimerIcon from "@mui/icons-material/AvTimer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SaveIcon from "@mui/icons-material/Save";
 import UpgradeIcon from "@mui/icons-material/Upgrade";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { getBotWhitelist, saveBotWhitelist, getBotLanguage, saveBotLanguage } from "../api/botApi";
 
 const NAV = [
@@ -258,7 +259,15 @@ function LanguageTab() {
         {saving ? "Saving..." : "Save"}
       </Button>
       {saved && (
-        <Chip label="Saved successfully" color="success" size="small" sx={{ mt: 1.5, borderRadius: 2, fontWeight: 600 }} />
+        <Chip icon={<CheckCircleIcon />} label="Saved successfully" color="success" size="small"
+          sx={{
+            mt: 1.5, borderRadius: 2, fontWeight: 700, fontSize: 13, px: 0.5,
+            bgcolor: "#ecfdf5", color: "#059669",
+            "& .MuiChip-icon": { color: "#10b981", fontSize: 18 },
+            animation: "fadeSlideIn 0.3s ease",
+            "@keyframes fadeSlideIn": { "0%": { opacity: 0, transform: "translateY(-6px)" }, "100%": { opacity: 1, transform: "translateY(0)" } },
+          }}
+        />
       )}
 
       {locked && (
@@ -370,7 +379,15 @@ function WhitelistTab() {
           {loading ? "Saving..." : "Save"}
         </Button>
         {saved && (
-          <Chip label="Saved successfully" color="success" size="small" sx={{ mt: 1.5, borderRadius: 2, fontWeight: 600 }} />
+          <Chip icon={<CheckCircleIcon />} label="Saved successfully" color="success" size="small"
+            sx={{
+              mt: 1.5, borderRadius: 2, fontWeight: 700, fontSize: 13, px: 0.5,
+              bgcolor: "#ecfdf5", color: "#059669",
+              "& .MuiChip-icon": { color: "#10b981", fontSize: 18 },
+              animation: "fadeSlideIn 0.3s ease",
+              "@keyframes fadeSlideIn": { "0%": { opacity: 0, transform: "translateY(-6px)" }, "100%": { opacity: 1, transform: "translateY(0)" } },
+            }}
+          />
         )}
       </SectionCard>
     </Box>
