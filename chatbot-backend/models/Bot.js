@@ -8,7 +8,7 @@ const QuestionSchema = new mongoose.Schema({
     flexDirection: { type: String, default: 'row' },
     media: { type: String, default: '' },
     options: { type: [mongoose.Schema.Types.Mixed], default: [] },
-    skipOption: { type: Boolean, default: 'false' },
+    skipOption: { type: Boolean, default: false },
     errorMessage: { type: String, default: '' },
     validations: {
         minLength: { type: Number },

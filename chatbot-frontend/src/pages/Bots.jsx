@@ -189,7 +189,7 @@ const Bots = () => {
                 <Box sx={{ p: 2, pb: 1 }}>
                   <Grid container spacing={1}>
                     {actions.map((act) => (
-                      <Grid item xs={12 / 5} key={act.key}>
+                      <Grid item xs={2.4} key={act.key}>
                         <Button
                           fullWidth
                           onClick={() => handleNavigate(bot._id, act.tab)}

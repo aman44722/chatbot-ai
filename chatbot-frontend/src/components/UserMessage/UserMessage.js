@@ -220,6 +220,10 @@ const UserMessage = () => {
       setNameError('Please enter your name to continue.');
       return;
     }
+    if (loading) {
+      setNameError('Still loading... please wait.');
+      return;
+    }
     setNameError('');
     setStartingChat(true);
 
@@ -740,16 +744,35 @@ const UserMessage = () => {
                             {hasOtherOption && <MenuItem value="__other__">Other</MenuItem>}
                           </Select>
                         </FormControl>
-                        <Box sx={{ display: 'flex', gap: 1 }}>
-                          <Button
-                            variant="contained" size="small"
-                            disabled={!dropdownVal || dropdownVal === '__other__'}
-                            onClick={() => handleOptionSelect(dropdownVal)}
-                            sx={{ flex: 1, borderRadius: 2, textTransform: 'none', bgcolor: headerColor, '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' } }}
-                          >
-                            Submit
-                          </Button>
-                        </Box>
+                        {dropdownVal === '__other__' ? (
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <TextField
+                              fullWidth size="small" placeholder="Type your answer..."
+                              value={otherText}
+                              onChange={(e) => setOtherText(e.target.value)}
+                              sx={{ '& .MuiOutlinedInput-root': { borderRadius: 2, bgcolor: '#fff' } }}
+                            />
+                            <Button
+                              variant="contained" size="small"
+                              disabled={!otherText.trim()}
+                              onClick={() => handleOptionSelect(otherText.trim())}
+                              sx={{ borderRadius: 2, textTransform: 'none', bgcolor: headerColor, whiteSpace: 'nowrap', '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' } }}
+                            >
+                              Submit
+                            </Button>
+                          </Box>
+                        ) : (
+                          <Box sx={{ display: 'flex', gap: 1 }}>
+                            <Button
+                              variant="contained" size="small"
+                              disabled={!dropdownVal}
+                              onClick={() => handleOptionSelect(dropdownVal)}
+                              sx={{ flex: 1, borderRadius: 2, textTransform: 'none', bgcolor: headerColor, '&:hover': { bgcolor: headerColor, filter: 'brightness(0.9)' } }}
+                            >
+                              Submit
+                            </Button>
+                          </Box>
+                        )}
                       </Box>
                     ) : isList ? (
                       <Box>

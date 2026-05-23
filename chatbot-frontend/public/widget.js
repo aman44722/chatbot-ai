@@ -3,8 +3,9 @@
         var cfg = window.A2BOT_CONFIG || {};
         if (!cfg.id) return console.warn("A2BOT: missing id in window.A2BOT_CONFIG");
         var botId = cfg.id;
-        if (window.__A2BOT_INITED_FOR === botId) return;
-        window.__A2BOT_INITED_FOR = botId;
+        if (!window.__A2BOT_INITED) window.__A2BOT_INITED = {};
+        if (window.__A2BOT_INITED[botId]) return;
+        window.__A2BOT_INITED[botId] = true;
 
         var appOrigin = cfg.origin || window.location.origin;
         if (appOrigin.slice(-1) === "/") appOrigin = appOrigin.slice(0, -1);

@@ -3,7 +3,12 @@ import axios from "axios";
 const API = (process.env.REACT_APP_AUTH_API || "http://localhost:5000/api/auth").replace("/api/auth", "/api/conversation");
 
 // Read fresh token on every call
-const getToken = () => JSON.parse(localStorage.getItem("user"))?.token;
+const getToken = () => {
+  try {
+    const u = localStorage.getItem("user");
+    return u ? JSON.parse(u)?.token : null;
+  } catch { return null; }
+};
 
 const authHeader = () => ({
     headers: { Authorization: `Bearer ${getToken()}` },

@@ -133,7 +133,7 @@ exports.updateConversationStatus = async (req, res) => {
 
         const io = getIO();
         if (io) {
-            io.to(`${convo.chatbotId}:${convo.sessionId}`).emit("status-updated", { chatbotId, sessionId: convo.sessionId, status });
+            io.to(`${convo.chatbotId}:${convo.sessionId}`).emit("status-updated", { chatbotId: convo.chatbotId, sessionId: convo.sessionId, status });
         }
 
         res.json({ ok: true, status: convo.status });

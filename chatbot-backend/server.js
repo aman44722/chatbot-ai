@@ -24,7 +24,7 @@ if (process.env.ALLOWED_ORIGIN) {
 app.use(cors({
     origin: (origin, cb) => {
         if (!origin) return cb(null, true);
-        cb(null, allowedOrigins.some(o => origin.startsWith(o.replace(/\/+$/, "")) || origin === o) || true);
+        cb(null, allowedOrigins.some(o => origin.startsWith(o.replace(/\/+$/, "")) || origin === o));
     },
     credentials: true,
 }));
