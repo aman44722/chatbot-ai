@@ -6,6 +6,17 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CheckIcon from "@mui/icons-material/Check";
+import WebIcon from "@mui/icons-material/Web";
+import CameraAltIcon from "@mui/icons-material/CameraAlt";
+import CodeIcon from "@mui/icons-material/Code";
+import ForumIcon from "@mui/icons-material/Forum";
+import DescriptionIcon from "@mui/icons-material/Description";
+import SmartphoneIcon from "@mui/icons-material/Smartphone";
+import LaunchIcon from "@mui/icons-material/Launch";
+import WidgetsIcon from "@mui/icons-material/Widgets";
+import StorageIcon from "@mui/icons-material/Storage";
+import StorefrontIcon from "@mui/icons-material/Storefront";
+import ExtensionIcon from "@mui/icons-material/Extension";
 import { useNavigate } from "react-router-dom";
 import { getBotWhitelist } from "../../api/botApi";
 
@@ -22,17 +33,17 @@ window.A2BOT_CONFIG = { id: "${chatbotId}", origin: "${origin}", api: "${api}" }
 }
 
 const TABS = [
-    { id: "website-blog", label: "Website/Blog Installation" },
-    { id: "instagram", label: "Instagram Installation" },
-    { id: "website", label: "Website Installation" },
-    { id: "messenger", label: "Messenger Installation" },
-    { id: "wordpress", label: "WordPress Installation" },
-    { id: "mobile-app", label: "Mobile App Installation" },
-    { id: "landing-page", label: "Landing Page Installation" },
-    { id: "widget", label: "Widget Installation" },
-    { id: "drupal", label: "Drupal Installation" },
-    { id: "shopify", label: "Shopify Installation" },
-    { id: "other-cms", label: "Other CMS Installation" },
+    { id: "website-blog", label: "Website/Blog Installation", icon: WebIcon },
+    { id: "instagram", label: "Instagram Installation", icon: CameraAltIcon },
+    { id: "website", label: "Website Installation", icon: CodeIcon },
+    { id: "messenger", label: "Messenger Installation", icon: ForumIcon },
+    { id: "wordpress", label: "WordPress Installation", icon: DescriptionIcon },
+    { id: "mobile-app", label: "Mobile App Installation", icon: SmartphoneIcon },
+    { id: "landing-page", label: "Landing Page Installation", icon: LaunchIcon },
+    { id: "widget", label: "Widget Installation", icon: WidgetsIcon },
+    { id: "drupal", label: "Drupal Installation", icon: StorageIcon },
+    { id: "shopify", label: "Shopify Installation", icon: StorefrontIcon },
+    { id: "other-cms", label: "Other CMS Installation", icon: ExtensionIcon },
 ];
 
 const Install = () => {
@@ -105,6 +116,9 @@ const Install = () => {
 </div>` : "";
 
     const tabSx = (id) => ({
+        display: "flex",
+        alignItems: "center",
+        gap: 1.5,
         px: 2.5,
         py: 1.4,
         cursor: "pointer",
@@ -470,11 +484,15 @@ const Install = () => {
             <Box sx={{ display: "flex", gap: 3, maxWidth: 1200, mx: "auto" }}>
                 <Box sx={{ width: 240, flexShrink: 0 }}>
                     <Paper sx={{ borderRadius: 2.5, overflow: "hidden" }}>
-                        {TABS.map((tab) => (
-                            <Box key={tab.id} onClick={() => setActiveTab(tab.id)} sx={tabSx(tab.id)}>
-                                {tab.label}
-                            </Box>
-                        ))}
+                        {TABS.map((tab) => {
+                            const Icon = tab.icon;
+                            return (
+                                <Box key={tab.id} onClick={() => setActiveTab(tab.id)} sx={tabSx(tab.id)}>
+                                    <Icon sx={{ fontSize: 18, flexShrink: 0 }} />
+                                    {tab.label}
+                                </Box>
+                            );
+                        })}
                     </Paper>
                 </Box>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
