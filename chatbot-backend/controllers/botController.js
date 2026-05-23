@@ -92,11 +92,12 @@ exports.deleteBot = async (req, res) => {
 
 exports.getBotSettings = async (req, res) => {
     try {
-        const bot = await Bot.findById(req.params.id).select("botSettings defaultLanguage languagePrefStatement");
+        const bot = await Bot.findById(req.params.id).select("botSettings defaultLanguage languagePrefStatement status");
         if (!bot) return res.status(404).json({ message: "Bot not found" });
         const data = bot.botSettings ? bot.botSettings.toObject() : {};
         data.defaultLanguage = bot.defaultLanguage;
         data.languagePrefStatement = bot.languagePrefStatement;
+        data.status = bot.status;
         res.json(data);
     } catch (error) {
         res.status(500).json({ message: "Error fetching bot settings" });

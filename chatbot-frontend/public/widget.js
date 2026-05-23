@@ -19,7 +19,16 @@
         fetch(botsApi + "/" + botId + "/settings")
             .then(function (r) { return r.ok ? r.json() : {}; })
             .catch(function () { return {}; })
-            .then(function (layout) { patchWidget(layout, appOrigin, botId); });
+            .then(function (layout) {
+                if (layout.status === 'inactive') {
+                    var rootEl = document.getElementById("a2bot-root-" + botId);
+                    if (rootEl) rootEl.style.display = "none";
+                    var panelEl = document.getElementById("a2bot-panel-" + botId);
+                    if (panelEl) panelEl.style.display = "none";
+                    return;
+                }
+                patchWidget(layout, appOrigin, botId);
+            });
 
     } catch (e) {
         console.error("A2BOT widget error:", e);

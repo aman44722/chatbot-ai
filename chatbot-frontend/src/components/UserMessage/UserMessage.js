@@ -11,6 +11,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 const AUTH_API = process.env.REACT_APP_AUTH_API || 'http://localhost:5000/api/auth';
 const BOTS_API = AUTH_API.replace('/api/auth', '/api/bots');
@@ -199,6 +200,7 @@ const UserMessage = () => {
   const [liveLoading, setLiveLoading] = useState(false);
   const [chatClosed, setChatClosed] = useState(false);
   const [reopening, setReopening] = useState(false);
+  const [deactivated, setDeactivated] = useState(false);
   const [confirmClose, setConfirmClose] = useState(false);
 
   const [dropdownVal, setDropdownVal] = useState('');
@@ -240,6 +242,12 @@ const UserMessage = () => {
         }
         setBotSettings(botSettingsData);
         setFlow(flowData);
+
+        if (botSettingsData.status === 'inactive') {
+          setDeactivated(true);
+          setLoading(false);
+          return;
+        }
 
         // Restore from localStorage only — no API call needed
         const saved = loadState(chatId);
@@ -665,6 +673,20 @@ const UserMessage = () => {
 
   const questionSpoken = messages.some(m => m.sender === 'bot' && m.questionId === currentQ?.id);
   const hasOptions = !done && !liveRequested && questionSpoken && (visibleOptions?.length > 0);
+
+  if (deactivated) {
+    return (
+      <Box sx={{ width: '100%', height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: '#f9fafb', p: 3 }}>
+        <Box sx={{ width: 64, height: 64, borderRadius: '50%', bgcolor: '#fef2f2', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2 }}>
+          <SmartToyIcon sx={{ fontSize: 32, color: '#ef4444' }} />
+        </Box>
+        <Typography sx={{ fontSize: 18, fontWeight: 700, color: '#1f2937', mb: 1 }}>This chatbot is currently deactivated</Typography>
+        <Typography sx={{ fontSize: 14, color: '#6b7280', textAlign: 'center', maxWidth: 300 }}>
+          The owner has disabled this bot. Please check back later.
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{
