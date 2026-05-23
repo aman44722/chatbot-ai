@@ -6,6 +6,7 @@ import {
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import CheckIcon from "@mui/icons-material/Check";
+import LockIcon from "@mui/icons-material/Lock";
 import WebIcon from "@mui/icons-material/Web";
 import CameraAltIcon from "@mui/icons-material/CameraAlt";
 import CodeIcon from "@mui/icons-material/Code";
@@ -220,6 +221,34 @@ const Install = () => {
         </Box>
     );
 
+    const renderWhitelistRequired = (c) => (
+        <Box sx={{ textAlign: "center", py: 4, px: 2 }}>
+            <Box sx={{
+                width: 56, height: 56, borderRadius: "50%",
+                background: `linear-gradient(135deg, ${c}, ${c}66)`,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                mx: "auto", mb: 2,
+            }}>
+                <LockIcon sx={{ fontSize: 26, color: "#fff" }} />
+            </Box>
+            <Typography fontWeight={700} fontSize={16} color="text.primary" mb={0.5}>
+                Domain Whitelist Required
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={2.5} sx={{ maxWidth: 380, mx: "auto", lineHeight: 1.5 }}>
+                Add your domain to the whitelist first to unlock the installation snippet.
+                Without this, the widget will not load on external sites.
+            </Typography>
+            <Button variant="contained"
+                onClick={() => navigate({ pathname: "/app/settings", search: "?tab=whitelist" })}
+                sx={{
+                    ...gradientBtn(c, c + "88"), px: 3.5,
+                    boxShadow: `0 4px 20px ${c}44`,
+                }}>
+                Go to Settings → Whitelist
+            </Button>
+        </Box>
+    );
+
     const renderSectionHeader = (title, subtitle, color) => (
         <Box sx={{
             background: `linear-gradient(135deg, ${color}, ${color}dd)`,
@@ -283,17 +312,12 @@ const Install = () => {
                     <Paper sx={{ ...glassCard, overflow: "hidden" }}>
                         {renderSectionHeader("Embed Script", "Paste before closing </body> tag on every page", c)}
                         <Box sx={{ px: 3, pb: 3 }}>
-                            {!hasWhitelist && (
-                                <Alert severity="warning" sx={{ mb: 2, borderRadius: 2 }}>
-                                    No whitelisted domains yet. Add your domain in{" "}
-                                    <strong style={{ cursor: "pointer", textDecoration: "underline" }}
-                                        onClick={() => navigate({ pathname: "/app/settings", search: "?tab=whitelist" })}>
-                                        Settings → Whitelist
-                                    </strong>.
-                                </Alert>
-                            )}
-                            {renderSnippetField(loading ? "Loading..." : snippet, "snippet")}
-                            {renderCopyPreviewRow(snippet, "snippet", previewWidget)}
+                            {hasWhitelist ? (
+                                <>
+                                    {renderSnippetField(loading ? "Loading..." : snippet, "snippet")}
+                                    {renderCopyPreviewRow(snippet, "snippet", previewWidget)}
+                                </>
+                            ) : renderWhitelistRequired(c)}
                         </Box>
                     </Paper>
                 </Box>
@@ -301,17 +325,22 @@ const Install = () => {
         );
     };
 
+
     const renderWebsiteBlog = () => {
         const c = TAB_COLORS["website-blog"];
         return (
             <Paper sx={{ ...glassCard, overflow: "hidden" }}>
                 {renderSectionHeader("Website / Blog Installation", "Paste snippet before </body> on your blog platform", c)}
                 <Box sx={{ px: 3, pb: 3 }}>
-                    {renderSnippetField(loading ? "Loading..." : snippet, "snippet")}
-                    {renderCopyPreviewRow(snippet, "snippet", previewWidget)}
-                    <Alert severity="info" sx={{ mt: 2.5, borderRadius: 2 }}>
-                        <Typography variant="body2">Works on Blogger, WordPress.com, Wix, Weebly, and other blog platforms.</Typography>
-                    </Alert>
+                    {hasWhitelist ? (
+                        <>
+                            {renderSnippetField(loading ? "Loading..." : snippet, "snippet")}
+                            {renderCopyPreviewRow(snippet, "snippet", previewWidget)}
+                            <Alert severity="info" sx={{ mt: 2.5, borderRadius: 2 }}>
+                                <Typography variant="body2">Works on Blogger, WordPress.com, Wix, Weebly, and other blog platforms.</Typography>
+                            </Alert>
+                        </>
+                    ) : renderWhitelistRequired(c)}
                 </Box>
             </Paper>
         );
@@ -386,8 +415,12 @@ const Install = () => {
         <Paper sx={{ ...glassCard, overflow: "hidden" }}>
             {renderSectionHeader(`${name} Installation`, instructions, color)}
             <Box sx={{ px: 3, pb: 3 }}>
-                {renderSnippetField(loading ? "Loading..." : snippet, "snippet")}
-                {renderCopyPreviewRow(snippet, "snippet", previewWidget)}
+                {hasWhitelist ? (
+                    <>
+                        {renderSnippetField(loading ? "Loading..." : snippet, "snippet")}
+                        {renderCopyPreviewRow(snippet, "snippet", previewWidget)}
+                    </>
+                ) : renderWhitelistRequired(color)}
             </Box>
         </Paper>
     );
@@ -484,8 +517,12 @@ const Install = () => {
             <Paper sx={{ ...glassCard, overflow: "hidden" }}>
                 {renderSectionHeader("Widget Installation", "Embed as a fixed-size iframe element", c)}
                 <Box sx={{ px: 3, pb: 3 }}>
-                    {renderSnippetField(iframeCode, "iframe")}
-                    {renderCopyPreviewRow(iframeCode, "iframe", previewWidget)}
+                    {hasWhitelist ? (
+                        <>
+                            {renderSnippetField(iframeCode, "iframe")}
+                            {renderCopyPreviewRow(iframeCode, "iframe", previewWidget)}
+                        </>
+                    ) : renderWhitelistRequired(c)}
                 </Box>
             </Paper>
         );
