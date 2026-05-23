@@ -8,6 +8,7 @@ const rateLimit = require("express-rate-limit");
 const authRoutes = require('./routes/authRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
 const botRoutes = require('./routes/botRoutes');
+const analyticsRoutes = require('./routes/analyticsRoutes');
 
 dotenv.config();
 
@@ -58,6 +59,7 @@ app.use('/api', async (req, res, next) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/conversation', conversationRoutes);
 app.use('/api/bots', botRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get("/", (req, res) => {
     res.send("Chatbot Backend is running");
