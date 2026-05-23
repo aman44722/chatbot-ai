@@ -36,6 +36,39 @@ const clearSession = (chatId) => {
   localStorage.removeItem(`a2bot_state_${chatId}`);
 };
 
+const TRANSLATIONS = {
+  English: {
+    closeTitle: 'Close this chat?',
+    closeBody: 'Your chat history will be cleared and you\'ll start a new conversation. This cannot be undone.',
+    closeCancel: 'Cancel',
+    closeConfirm: 'Close Chat',
+    preChatName: 'Before we start, what\'s your name?',
+    namePlaceholder: 'Enter your name...',
+    startChat: 'Start Chat',
+    closedTitle: 'Conversation Closed',
+    closedBody: 'This chat has been closed by the support team.',
+    reopen: 'Reopen Chat',
+    tapOption: 'Tap an option to continue',
+    selectSubmit: 'Select and submit',
+  },
+  Hindi: {
+    closeTitle: 'चैट बंद करें?',
+    closeBody: 'आपका चैट इतिहास साफ़ हो जाएगा और आप एक नई बातचीत शुरू करेंगे। इसे पूर्ववत नहीं किया जा सकता।',
+    closeCancel: 'रद्द करें',
+    closeConfirm: 'चैट बंद करें',
+    preChatName: 'शुरू करने से पहले, आपका नाम क्या है?',
+    namePlaceholder: 'अपना नाम दर्ज करें...',
+    startChat: 'चैट शुरू करें',
+    closedTitle: 'बातचीत बंद हुई',
+    closedBody: 'यह चैट सहायता टीम द्वारा बंद कर दी गई है।',
+    reopen: 'चैट फिर से खोलें',
+    tapOption: 'जारी रखने के लिए विकल्प पर टैप करें',
+    selectSubmit: 'चुनें और जमा करें',
+  },
+};
+
+const t = (lang, key) => TRANSLATIONS[lang]?.[key] || TRANSLATIONS.English[key] || key;
+
 const UserMessage = () => {
   const { chatId } = useParams();
 
@@ -583,18 +616,18 @@ const UserMessage = () => {
 
       {/* Confirm close dialog */}
       <Dialog open={confirmClose} onClose={() => setConfirmClose(false)} PaperProps={{ sx: { borderRadius: 3, p: 1, minWidth: 280 } }}>
-        <DialogTitle sx={{ fontWeight: 700, fontSize: 16, pb: 1 }}>Close this chat?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: 16, pb: 1 }}>{t(botSettings.defaultLanguage, 'closeTitle')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            Your chat history will be cleared and you'll start a new conversation. This cannot be undone.
+            {t(botSettings.defaultLanguage, 'closeBody')}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 2, pb: 2, gap: 1 }}>
           <Button onClick={() => setConfirmClose(false)} variant="outlined" size="small" sx={{ borderRadius: 2, textTransform: 'none', flex: 1 }}>
-            Cancel
+            {t(botSettings.defaultLanguage, 'closeCancel')}
           </Button>
           <Button onClick={handleConfirmClose} variant="contained" color="error" size="small" sx={{ borderRadius: 2, textTransform: 'none', flex: 1 }}>
-            Close Chat
+            {t(botSettings.defaultLanguage, 'closeConfirm')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -616,13 +649,13 @@ const UserMessage = () => {
 
           <Box sx={{ bgcolor: '#fff', borderRadius: 2.5, p: 2.5, boxShadow: '0 2px 12px rgba(0,0,0,0.07)' }}>
             <Typography fontWeight={600} fontSize={14} mb={1.5}>
-              Before we start, what's your name?
+              {t(botSettings.defaultLanguage, 'preChatName')}
             </Typography>
             <TextField
               inputRef={nameInputRef}
               fullWidth
               size="small"
-              placeholder="Enter your name..."
+              placeholder={t(botSettings.defaultLanguage, 'namePlaceholder')}
               value={nameInput}
               onChange={e => { setNameInput(e.target.value); setNameError(''); }}
               onKeyDown={e => e.key === 'Enter' && handleStartChat()}
@@ -642,7 +675,7 @@ const UserMessage = () => {
                 textTransform: 'none',
               }}
             >
-              {startingChat ? 'Starting...' : 'Start Chat'}
+              {startingChat ? 'Starting...' : t(botSettings.defaultLanguage, 'startChat')}
             </Button>
           </Box>
         </Box>
@@ -888,7 +921,7 @@ const UserMessage = () => {
                       </Box>
                     )}
                     <Typography sx={{ mt: 1, color: '#aaa', fontSize: 11 }}>
-                      {isDropdown ? 'Select and submit' : 'Tap an option to continue'}
+                      {isDropdown ? t(botSettings.defaultLanguage, 'selectSubmit') : t(botSettings.defaultLanguage, 'tapOption')}
                     </Typography>
                   </Box>
                 </Box>
@@ -902,10 +935,10 @@ const UserMessage = () => {
               <Box sx={{ p: 2, bgcolor: '#fafafa', borderRadius: 2.5, border: '1px solid #e0e0e0', textAlign: 'center' }}>
                 <LockOutlinedIcon sx={{ fontSize: 28, color: '#bbb', mb: 0.5 }} />
                 <Typography fontSize={13} fontWeight={700} color="text.secondary" mb={0.5}>
-                  Conversation Closed
+                  {t(botSettings.defaultLanguage, 'closedTitle')}
                 </Typography>
                 <Typography fontSize={12} color="text.secondary" mb={1.5}>
-                  This chat has been closed by the support team.
+                  {t(botSettings.defaultLanguage, 'closedBody')}
                 </Typography>
                 <Button
                   fullWidth
@@ -920,7 +953,7 @@ const UserMessage = () => {
                     '&:hover': { bgcolor: `${headerColor}11`, borderColor: headerColor },
                   }}
                 >
-                  {reopening ? 'Reopening...' : 'Reopen Chat'}
+                  {reopening ? 'Reopening...' : t(botSettings.defaultLanguage, 'reopen')}
                 </Button>
               </Box>
             </Box>
