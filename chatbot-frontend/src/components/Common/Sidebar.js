@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './style.css';
 import {
   Drawer, List, ListItemButton, ListItemIcon, ListItemText,
-  Collapse, Box, Select, MenuItem, FormControl, Typography, Divider, IconButton,
+  Collapse, Box, Select, MenuItem, FormControl, Typography, Divider, IconButton, Tooltip,
 } from '@mui/material';
 import { getBots } from '../../api/botApi';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
@@ -106,53 +106,58 @@ const Sidebar = ({ collapsed, onToggle }) => {
     if (collapsed) {
       return (
         <React.Fragment key={item.text}>
-          <ListItemButton
-            onClick={() => item.children ? toggleDropdown(item.text) : navigate(item.path)}
-            selected={sel && !item.children}
-            sx={{
-              borderRadius: 2, mb: 0.3, px: 1, py: 0.8, justifyContent: 'center',
-              '&.Mui-selected': { background: `${PRIMARY_COLOR}18` },
-              '&:hover': { bgcolor: 'rgba(99,102,241,0.1)' },
-            }}
-            title={item.text}
+          <Tooltip title={item.text} placement="right" arrow
+            slotProps={{ popper: { sx: { '& .MuiTooltip-tooltip': { bgcolor: '#1f2937', fontSize: 12, fontWeight: 600, px: 1.5, py: 0.8, borderRadius: 1.5 } } } }}
           >
-            <ListItemIcon sx={{ minWidth: 0, color: sel ? PRIMARY_COLOR : '#6b7280', justifyContent: 'center' }}>
-              <Box sx={{
-                width: 32, height: 32, borderRadius: '9px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                bgcolor: sel ? `${PRIMARY_COLOR}18` : 'transparent',
-              }}>
-                {item.icon}
-              </Box>
-            </ListItemIcon>
-          </ListItemButton>
+            <ListItemButton
+              onClick={() => item.children ? toggleDropdown(item.text) : navigate(item.path)}
+              selected={sel && !item.children}
+              sx={{
+                borderRadius: 2, mb: 0.3, px: 1, py: 0.8, justifyContent: 'center',
+                '&.Mui-selected': { background: `${PRIMARY_COLOR}18` },
+                '&:hover': { bgcolor: 'rgba(99,102,241,0.1)' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, color: sel ? PRIMARY_COLOR : '#6b7280', justifyContent: 'center' }}>
+                <Box sx={{
+                  width: 32, height: 32, borderRadius: '9px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  bgcolor: sel ? `${PRIMARY_COLOR}18` : 'transparent',
+                }}>
+                  {item.icon}
+                </Box>
+              </ListItemIcon>
+            </ListItemButton>
+          </Tooltip>
           {item.children && (
             <Collapse in={isOpen} timeout="auto" unmountOnExit>
               <List component="div" disablePadding>
                 {item.children.map((child) => {
                   const childSel = isActive(child.path);
                   return (
-                    <ListItemButton
-                      key={child.text}
-                      onClick={() => navigate(child.path)}
-                      selected={childSel}
-                      sx={{
-                        borderRadius: 1.5, mb: 0.2, px: 1, py: 0.5, justifyContent: 'center',
-                        '&.Mui-selected': { background: `${PRIMARY_COLOR}18` },
-                        '&:hover': { bgcolor: 'rgba(99,102,241,0.08)' },
-                      }}
-                      title={child.text}
+                    <Tooltip key={child.text} title={child.text} placement="right" arrow
+                      slotProps={{ popper: { sx: { '& .MuiTooltip-tooltip': { bgcolor: '#1f2937', fontSize: 12, fontWeight: 600, px: 1.5, py: 0.8, borderRadius: 1.5 } } } }}
                     >
-                      <ListItemIcon sx={{ minWidth: 0, color: childSel ? PRIMARY_COLOR : '#9ca3af', justifyContent: 'center' }}>
-                        <Box sx={{
-                          width: 26, height: 26, borderRadius: '7px',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          bgcolor: childSel ? `${PRIMARY_COLOR}18` : 'transparent',
-                        }}>
-                          {child.icon}
-                        </Box>
-                      </ListItemIcon>
-                    </ListItemButton>
+                      <ListItemButton
+                        onClick={() => navigate(child.path)}
+                        selected={childSel}
+                        sx={{
+                          borderRadius: 1.5, mb: 0.2, px: 1, py: 0.5, justifyContent: 'center',
+                          '&.Mui-selected': { background: `${PRIMARY_COLOR}18` },
+                          '&:hover': { bgcolor: 'rgba(99,102,241,0.08)' },
+                        }}
+                      >
+                        <ListItemIcon sx={{ minWidth: 0, color: childSel ? PRIMARY_COLOR : '#9ca3af', justifyContent: 'center' }}>
+                          <Box sx={{
+                            width: 26, height: 26, borderRadius: '7px',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            bgcolor: childSel ? `${PRIMARY_COLOR}18` : 'transparent',
+                          }}>
+                            {child.icon}
+                          </Box>
+                        </ListItemIcon>
+                      </ListItemButton>
+                    </Tooltip>
                   );
                 })}
               </List>
