@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
+const User = require('../models/User');
 
-const authenticate = (req, res, next) => {
+const authenticate = async (req, res, next) => {
     const token = req.header('Authorization')?.split(' ')[1];
 
     if (!token) return res.status(401).json({ message: "No token provided" });
@@ -13,7 +14,12 @@ const authenticate = (req, res, next) => {
             return res.status(401).json({ message: "User ID not found in token" });
         }
 
-        req.user = { id: userId };
+        const user = await User.findById(userId).select("role email fullName plan");
+        if (!user) {
+            return res.status(401).json({ message: "User not found" });
+        }
+
+        req.user = { id: userId, role: user.role, email: user.email, fullName: user.fullName };
         req.userId = userId;
         next();
     } catch (err) {

@@ -40,8 +40,12 @@ const userSchema = new mongoose.Schema(
     {
         role: {
             type: String,
-            enum: ['admin', 'user'],
+            enum: ['admin', 'analyst', 'supervisor', 'agent', 'user'],
             default: 'user',
+        },
+        twoFactor: {
+            enabled: { type: Boolean, default: false },
+            secret: { type: String, default: null },
         },
         email: {
             type: String,

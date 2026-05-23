@@ -8,6 +8,8 @@ const conversationRoutes = require('./routes/conversationRoutes');
 const botRoutes = require('./routes/botRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const planRoutes = require('./routes/planRoutes');
+const userRoutes = require('./routes/userRoutes');
+const twoFactorRoutes = require('./routes/twoFactorRoutes');
 
 dotenv.config();
 
@@ -62,6 +64,8 @@ app.use('/api/conversation', conversationRoutes);
 app.use('/api/bots', botRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/plans', planRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/2fa', twoFactorRoutes);
 
 app.get("/", (req, res) => {
     res.send("Chatbot Backend is running");

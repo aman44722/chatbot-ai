@@ -33,6 +33,7 @@ import Templates from './pages/Templates';
 import Partners from './pages/Partners';
 import Referral from './pages/Referral';
 import Plans from './pages/Plans';
+import UserManagement from './pages/UserManagement';
 
 
 function App() {
@@ -96,6 +97,7 @@ function App() {
           <Route path="partners" element={<Partners />} />
           <Route path="referral" element={<Referral />} />
           <Route path="plans" element={<Plans />} />
+          <Route path="users/manage" element={<UserManagement />} />
 
 
         </Route>

@@ -15,6 +15,7 @@ import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 import DownloadIcon from '@mui/icons-material/Download';
 import BarChartIcon from '@mui/icons-material/BarChart';
 import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import SettingsIcon from '@mui/icons-material/Settings';
 import PeopleIcon from '@mui/icons-material/People';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -85,6 +86,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     { text: 'Plans', icon: <WorkspacePremiumIcon />, path: '/app/plans' },
     { text: 'Partners', icon: <GroupIcon />, path: '/app/partners' },
     { text: 'Referral', icon: <ShareIcon />, path: '/app/referral' },
+    ...(isAdmin ? [{ text: 'User Management', icon: <AdminPanelSettingsIcon />, path: '/app/users/manage' }] : []),
   ];
 
   const mode2Items = [
@@ -104,6 +106,9 @@ const Sidebar = ({ collapsed, onToggle }) => {
     { text: 'Settings', icon: <SettingsIcon />, path: '/app/settings' },
     { text: 'Logout', icon: <LogoutIcon />, path: '/app/logout' },
   ];
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const isAdmin = user?.role === 'admin';
 
   const isMode1Item = (item) => !item.children && mode1Items.some(m => m.path === item.path);
 

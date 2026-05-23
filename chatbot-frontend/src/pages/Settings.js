@@ -32,6 +32,7 @@ import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SaveIcon from "@mui/icons-material/Save";
 import UpgradeIcon from "@mui/icons-material/Upgrade";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import LockIcon from "@mui/icons-material/Lock";
 import { getBotWhitelist, saveBotWhitelist, getBotLanguage, saveBotLanguage } from "../api/botApi";
 
 const NAV = [
@@ -51,6 +52,7 @@ const NAV = [
   },
   { id: "advanced", label: "Advanced", icon: <SettingsSuggestIcon />, color: "#6366f1" },
   { id: "sla", label: "SLA", icon: <AvTimerIcon />, color: "#f97316" },
+  { id: "security", label: "Security", icon: <LockIcon />, color: "#ef4444" },
 ];
 
 const ALLOWED_TABS = new Set(NAV.map((n) => n.id));
@@ -218,6 +220,7 @@ export default function SettingsPage() {
             {active === "language" && <LanguageTab />}
             {active === "autotrigger" && <AutoTriggerTab />}
             {active === "whitelist" && <WhitelistTab />}
+            {active === "security" && <SecurityTab />}
             {!["language", "autotrigger", "whitelist"].includes(active) && (
               <Box sx={{ height: "100%", minHeight: 500, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2.5 }}>
                 <Box sx={{
@@ -593,5 +596,181 @@ function WhitelistTab() {
         </Box>
       </SectionCard>
     </Box>
+  );
+}
+
+// ─── Security Tab (2FA) ───────────────────────
+const TF_API = (process.env.REACT_APP_AUTH_API || "http://localhost:5000/api/auth").replace("/api/auth", "/api/2fa");
+
+function SecurityTab() {
+  const [enabled, setEnabled] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [qrUrl, setQrUrl] = useState(null);
+  const [secret, setSecret] = useState(null);
+  const [token, setToken] = useState("");
+  const [step, setStep] = useState("idle"); // idle | setup | verify | done
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const getToken = () => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    return user?.token || "";
+  };
+
+  useEffect(() => {
+    fetch(`${TF_API}/status`, { headers: { Authorization: `Bearer ${getToken()}` } })
+      .then((r) => r.json())
+      .then((d) => setEnabled(d.enabled))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSetup = async () => {
+    setSaving(true);
+    try {
+      const res = await fetch(`${TF_API}/generate`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      setQrUrl(data.qrUrl);
+      setSecret(data.secret);
+      setStep("verify");
+    } catch { setMessage("Failed to generate 2FA"); }
+    finally { setSaving(false); }
+  };
+
+  const handleVerify = async () => {
+    if (!token) return;
+    setSaving(true);
+    try {
+      const res = await fetch(`${TF_API}/verify`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      const data = await res.json();
+      if (data.enabled) {
+        setEnabled(true);
+        setStep("done");
+      } else {
+        setMessage(data.message || "Verification failed");
+      }
+    } catch { setMessage("Verification failed"); }
+    finally { setSaving(false); }
+  };
+
+  const handleDisable = async () => {
+    setSaving(true);
+    try {
+      await fetch(`${TF_API}/disable`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      setEnabled(false);
+      setStep("idle");
+      setQrUrl(null);
+      setSecret(null);
+      setToken("");
+      setMessage("2FA disabled");
+    } catch { setMessage("Failed to disable"); }
+    finally { setSaving(false); }
+  };
+
+  if (loading) return <CircularProgress sx={{ display: "block", mx: "auto", my: 4 }} />;
+
+  return (
+    <SectionCard accent="#ef4444">
+      <Box sx={{ p: 3 }}>
+        <Typography fontWeight={700} fontSize={17} mb={0.5}>Two-Factor Authentication</Typography>
+        <Typography variant="body2" color="text.secondary" mb={3}>
+          Add an extra layer of security to your account using an authenticator app.
+        </Typography>
+
+        {step === "done" && (
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <Box sx={{ width: 56, height: 56, borderRadius: "50%", bgcolor: "#dcfce7", display: "flex", alignItems: "center", justifyContent: "center", mx: "auto", mb: 2 }}>
+              <CheckCircleIcon sx={{ fontSize: 28, color: "#10b981" }} />
+            </Box>
+            <Typography fontWeight={700} fontSize={16} mb={1}>2FA is Active</Typography>
+            <Button variant="outlined" color="error" onClick={handleDisable} disabled={saving}
+              sx={{ textTransform: "none", borderRadius: 2, mt: 1 }}>
+              Disable 2FA
+            </Button>
+          </Box>
+        )}
+
+        {step === "verify" && qrUrl && (
+          <Box sx={{ textAlign: "center", py: 2 }}>
+            <Typography fontWeight={600} fontSize={14} mb={2}>Scan this QR Code with your authenticator app</Typography>
+            <Box component="img" src={qrUrl} alt="2FA QR Code"
+              sx={{ width: 180, height: 180, borderRadius: 2, mb: 2, border: "1px solid #e5e7eb" }} />
+            {secret && (
+              <Typography variant="caption" color="#6b7280" sx={{ display: "block", mb: 2, wordBreak: "break-all", fontFamily: "monospace", fontSize: 11 }}>
+                Secret: {secret}
+              </Typography>
+            )}
+            <Box sx={{ display: "flex", gap: 1.5, justifyContent: "center", mt: 1 }}>
+              <TextField size="small" placeholder="Enter 6-digit code" value={token} onChange={(e) => setToken(e.target.value)}
+                sx={{ width: 180 }}
+                InputProps={{ sx: { borderRadius: 2, fontSize: 14, textAlign: "center", letterSpacing: 2 } }} />
+              <Button variant="contained" onClick={handleVerify} disabled={saving || token.length < 6}
+                sx={{ textTransform: "none", borderRadius: 2, bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" } }}>
+                Verify & Enable
+              </Button>
+            </Box>
+          </Box>
+        )}
+
+        {step === "idle" && !enabled && (
+          <Box sx={{ textAlign: "center", py: 3 }}>
+            <LockIcon sx={{ fontSize: 40, color: "#ef4444", mb: 1 }} />
+            <Typography variant="body2" color="#6b7280" mb={2}>2FA is not enabled yet</Typography>
+            <Button variant="contained" onClick={handleSetup} disabled={saving}
+              sx={{ textTransform: "none", borderRadius: 2, bgcolor: "#ef4444", "&:hover": { bgcolor: "#dc2626" } }}>
+              Set Up 2FA
+            </Button>
+          </Box>
+        )}
+
+        {message && (
+          <Typography variant="caption" color={message.includes("failed") ? "error" : "#10b981"} sx={{ display: "block", textAlign: "center", mt: 2 }}>
+            {message}
+          </Typography>
+        )}
+      </Box>
+    </SectionCard>
+  );
+}
+
+// ──────────────────────────────────────────────
+// SectionCard component
+// ──────────────────────────────────────────────
+function SectionCard({ children, accent, ...sx }) {
+  return (
+    <Paper elevation={0}
+      sx={{
+        ...sx,
+        position: "relative",
+        borderRadius: 4,
+        overflow: "hidden",
+        background: "rgba(255,255,255,0.92)",
+        backdropFilter: "blur(12px)",
+        border: "1px solid rgba(255,255,255,0.7)",
+        boxShadow: "0 8px 32px rgba(0,0,0,0.06)",
+        "&::before": accent ? {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "4px",
+          height: "100%",
+          background: `linear-gradient(180deg, ${accent}, ${accent}66)`,
+          borderRadius: "0 2px 2px 0",
+        } : {},
+      }}
+    >
+      {children}
+    </Paper>
   );
 }
