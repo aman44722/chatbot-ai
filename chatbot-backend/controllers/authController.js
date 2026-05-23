@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Bot = require("../models/Bot");
+const Plan = require("../models/Plan");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
@@ -22,6 +23,8 @@ exports.registerUser = async (req, res) => {
 
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        const freePlan = await Plan.findOne({ slug: "free" });
+
         const newUser = new User({
             email,
             password: hashedPassword,
@@ -30,6 +33,8 @@ exports.registerUser = async (req, res) => {
             phone,
             countryCode,
             termsAccepted,
+            plan: freePlan ? freePlan._id : undefined,
+            planLimits: freePlan ? freePlan.limits : undefined,
         });
 
         await newUser.save();
@@ -70,6 +75,12 @@ exports.loginUser = async (req, res) => {
             expiresIn: "7d",
         });
 
+        let planSlug = null;
+        if (user.plan) {
+            const plan = await Plan.findById(user.plan);
+            planSlug = plan ? plan.slug : null;
+        }
+
         res.status(200).json({
             token,
             user: {
@@ -79,6 +90,8 @@ exports.loginUser = async (req, res) => {
                 website: user.website,
                 phone: user.phone,
                 role: user.role,
+                plan: planSlug,
+                planLimits: user.planLimits,
             },
         });
     } catch (error) {

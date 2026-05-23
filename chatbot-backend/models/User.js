@@ -86,6 +86,17 @@ const userSchema = new mongoose.Schema(
         gst: {
             type: String,
         },
+        plan: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Plan",
+        },
+        planLimits: {
+            chatbots: { type: Number, default: 1 },
+            chatsPerMonth: { type: Number, default: 100 },
+            waUserChatsPerMonth: { type: Number, default: 0 },
+            liveAgents: { type: Number, default: 0 },
+            languages: { type: Number, default: 1 },
+        },
         botSettings: {
             botName: { type: String, default: 'chatbot' },
             welcomeText: { type: String, default: 'Hey' },

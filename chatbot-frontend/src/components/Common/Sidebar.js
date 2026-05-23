@@ -14,6 +14,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import SwapCallsIcon from '@mui/icons-material/SwapCalls';
 import DownloadIcon from '@mui/icons-material/Download';
 import BarChartIcon from '@mui/icons-material/BarChart';
+import WorkspacePremiumIcon from '@mui/icons-material/WorkspacePremium';
 import SettingsIcon from '@mui/icons-material/Settings';
 import PeopleIcon from '@mui/icons-material/People';
 import ChatIcon from '@mui/icons-material/Chat';
@@ -81,6 +82,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
     { text: 'Bot', icon: <DnsIcon />, path: '/app/dashboard' },
     { text: 'AI Agents', icon: <SmartToyIcon />, path: '/app/ai-agents' },
     { text: 'Templates', icon: <WidgetsIcon />, path: '/app/templates' },
+    { text: 'Plans', icon: <WorkspacePremiumIcon />, path: '/app/plans' },
     { text: 'Partners', icon: <GroupIcon />, path: '/app/partners' },
     { text: 'Referral', icon: <ShareIcon />, path: '/app/referral' },
   ];
@@ -378,6 +380,29 @@ const Sidebar = ({ collapsed, onToggle }) => {
               </>
             )}
           </Box>
+
+          {!collapsed && (
+            <Box sx={{ px: 2, py: 1.5, borderTop: '1px solid rgba(243,244,246,0.8)' }}>
+              <Box
+                onClick={() => navigate('/app/plans')}
+                sx={{
+                  display: 'flex', alignItems: 'center', gap: 1, cursor: 'pointer',
+                  bgcolor: '#f0f4ff', borderRadius: 2, px: 1.5, py: 1,
+                  '&:hover': { bgcolor: '#e0e7ff' },
+                }}
+              >
+                <WorkspacePremiumIcon sx={{ fontSize: 18, color: '#6366f1' }} />
+                <Box>
+                  <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#6366f1', lineHeight: 1.2 }}>
+                    {JSON.parse(localStorage.getItem('user') || '{}')?.plan || 'Free'}
+                  </Typography>
+                  <Typography sx={{ fontSize: 10, color: '#94a3b8', lineHeight: 1.2 }}>
+                    Manage Plan
+                  </Typography>
+                </Box>
+              </Box>
+            </Box>
+          )}
         </Box>
       </Box>
     </Drawer>
