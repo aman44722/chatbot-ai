@@ -79,6 +79,10 @@ const Sidebar = ({ collapsed, onToggle }) => {
     return location.pathname === fullPath;
   };
 
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  const currentUserRole = user?.role;
+  const isAdmin = currentUserRole === 'admin';
+
   const mode1Items = [
     { text: 'Bot', icon: <DnsIcon />, path: '/app/dashboard' },
     { text: 'AI Agents', icon: <SmartToyIcon />, path: '/app/ai-agents' },
@@ -106,9 +110,6 @@ const Sidebar = ({ collapsed, onToggle }) => {
     { text: 'Settings', icon: <SettingsIcon />, path: '/app/settings' },
     { text: 'Logout', icon: <LogoutIcon />, path: '/app/logout' },
   ];
-
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const isAdmin = user?.role === 'admin';
 
   const isMode1Item = (item) => !item.children && mode1Items.some(m => m.path === item.path);
 
