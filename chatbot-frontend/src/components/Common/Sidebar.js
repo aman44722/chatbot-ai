@@ -17,7 +17,6 @@ import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import PeopleIcon from '@mui/icons-material/People';
 import ChatIcon from '@mui/icons-material/Chat';
-import AssignmentIcon from '@mui/icons-material/Assignment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ExpandLess from '@mui/icons-material/ExpandLess';
 import ExpandMore from '@mui/icons-material/ExpandMore';
@@ -82,7 +81,7 @@ const Sidebar = ({ collapsed, onToggle }) => {
 
   const mode2Items = [
     {
-      text: 'Setups',
+      text: 'Setup',
       icon: <BuildIcon />,
       children: [
         { text: 'View Setup', icon: <VisibilityIcon />, path: '/app/setup' },
@@ -90,12 +89,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
         { text: 'Install', icon: <DownloadIcon />, path: '/app/install' },
       ],
     },
+    { text: 'Chats', icon: <ChatIcon />, path: '/app/chats' },
+    { text: 'Users', icon: <PeopleIcon />, path: '/app/users' },
+    { text: 'Leads', icon: <ContactMailIcon />, path: '/app/leads' },
     { text: 'Analytics', icon: <BarChartIcon />, path: '/app/analytics' },
     { text: 'Settings', icon: <SettingsIcon />, path: '/app/settings' },
-    { text: 'Users', icon: <PeopleIcon />, path: '/app/users' },
-    { text: 'Chats', icon: <ChatIcon />, path: '/app/chats' },
-    { text: 'Bot Answers', icon: <AssignmentIcon />, path: '/app/answers' },
-    { text: 'Leads', icon: <ContactMailIcon />, path: '/app/leads' },
     { text: 'Logout', icon: <LogoutIcon />, path: '/app/logout' },
   ];
 
@@ -354,6 +352,11 @@ const Sidebar = ({ collapsed, onToggle }) => {
             {selectedBot && (
               <>
                 <Divider sx={{ mx: collapsed ? 1 : 2, my: 1 }} />
+                {!collapsed && (
+                  <Typography sx={{ fontSize: 11, fontWeight: 600, color: '#9ca3af', px: 2, pb: 0.5, pt: 0.5 }}>
+                    MODEL 2
+                  </Typography>
+                )}
                 <List sx={{ px: collapsed ? 0 : 0.5 }}>
                   {mode2Items.map(renderItem)}
                 </List>
