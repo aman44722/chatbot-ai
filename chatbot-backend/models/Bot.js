@@ -76,6 +76,8 @@ const botSchema = new mongoose.Schema({
     botSettings: { type: BotSettingsSchema, default: () => ({}) },
     flowSetupSetting: { type: FlowSetupSettingSchema, default: () => ({}) },
     whitelist: { type: [String], default: [] },
+    defaultLanguage: { type: String, default: 'English' },
+    languagePrefStatement: { type: String, default: 'Please choose a language of your preference.' },
 }, { timestamps: true });
 
 module.exports = mongoose.model("Bot", botSchema);

@@ -77,6 +77,30 @@ export const getBotWhitelist = async (botId) => {
   }
 };
 
+export const getBotLanguage = async (botId) => {
+  try {
+    const response = await axios.get(`${API_URL}/${botId}/language`, {
+      headers: { Authorization: `Bearer ${getToken()}` },
+    });
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to fetch language settings";
+  }
+};
+
+export const saveBotLanguage = async (botId, language, prefStatement) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}/${botId}/language`,
+      { language, prefStatement },
+      { headers: { Authorization: `Bearer ${getToken()}`, "Content-Type": "application/json" } }
+    );
+    return response.data;
+  } catch (error) {
+    throw error.response?.data?.message || "Failed to save language settings";
+  }
+};
+
 export const saveBotWhitelist = async (botId, domains) => {
   try {
     const response = await axios.post(

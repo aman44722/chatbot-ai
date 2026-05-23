@@ -140,3 +140,31 @@ exports.saveBotWhitelist = async (req, res) => {
         res.status(500).json({ message: "Error saving whitelist" });
     }
 };
+
+exports.getBotLanguage = async (req, res) => {
+    try {
+        const bot = await Bot.findById(req.params.id).select("defaultLanguage languagePrefStatement userId");
+        if (!bot) return res.status(404).json({ message: "Bot not found" });
+        if (String(bot.userId) !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+        res.json({ ok: true, language: bot.defaultLanguage, prefStatement: bot.languagePrefStatement });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching language settings" });
+    }
+};
+
+exports.saveBotLanguage = async (req, res) => {
+    try {
+        const { language, prefStatement } = req.body;
+        const bot = await Bot.findById(req.params.id);
+        if (!bot) return res.status(404).json({ message: "Bot not found" });
+        if (String(bot.userId) !== req.user.id) return res.status(403).json({ message: "Forbidden" });
+
+        bot.defaultLanguage = language;
+        bot.languagePrefStatement = prefStatement;
+        await bot.save();
+
+        res.json({ ok: true, language: bot.defaultLanguage, prefStatement: bot.languagePrefStatement });
+    } catch (error) {
+        res.status(500).json({ message: "Error saving language settings" });
+    }
+};

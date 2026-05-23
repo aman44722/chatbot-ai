@@ -31,7 +31,7 @@ import AvTimerIcon from "@mui/icons-material/AvTimer";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import SaveIcon from "@mui/icons-material/Save";
 import UpgradeIcon from "@mui/icons-material/Upgrade";
-import { getBotWhitelist, saveBotWhitelist } from "../api/botApi";
+import { getBotWhitelist, saveBotWhitelist, getBotLanguage, saveBotLanguage } from "../api/botApi";
 
 const NAV = [
   { id: "language", label: "Language", icon: <TranslateIcon />, color: "#6366f1" },
@@ -198,9 +198,32 @@ function FormRow({ label, hint, children }) {
 }
 
 function LanguageTab() {
-  const [language, setLanguage] = useState("Bengali");
+  const [language, setLanguage] = useState("English");
   const [prefStatement, setPrefStatement] = useState("Please choose a language of your preference.");
+  const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
   const locked = false;
+  const navigate = useNavigate();
+  const botId = localStorage.getItem('selectedBotId');
+
+  useEffect(() => {
+    if (!botId) return;
+    getBotLanguage(botId).then(res => {
+      setLanguage(res.language);
+      setPrefStatement(res.prefStatement);
+    }).catch(() => {});
+  }, [botId]);
+
+  const handleSave = async () => {
+    if (!botId) return alert("Select a bot first");
+    setSaving(true);
+    setSaved(false);
+    try {
+      await saveBotLanguage(botId, language, prefStatement);
+      setSaved(true);
+    } catch (e) { alert(e); }
+    finally { setSaving(false); }
+  };
 
   return (
     <Box>
@@ -219,11 +242,6 @@ function LanguageTab() {
                 <MenuItem key={lng} value={lng}>{lng}</MenuItem>
               ))}
             </Select>
-            <Button variant="contained" disabled={locked}
-              startIcon={<SaveIcon />}
-              sx={{ borderRadius: "10px", textTransform: "none", fontWeight: 600, px: 3, bgcolor: "#6366f1", "&:hover": { bgcolor: "#4f46e5" } }}>
-              Save
-            </Button>
           </Box>
         </FormRow>
       </SectionCard>
@@ -233,11 +251,15 @@ function LanguageTab() {
           onChange={(e) => setPrefStatement(e.target.value)} multiline minRows={3} fullWidth
           disabled={locked}
           sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px", bgcolor: "#fff" } }} />
-        <Button variant="contained" disabled={locked} startIcon={<SaveIcon />}
-          sx={{ mt: 2, borderRadius: "10px", textTransform: "none", fontWeight: 600, px: 3, bgcolor: "#6366f1", "&:hover": { bgcolor: "#4f46e5" } }}>
-          Save
-        </Button>
       </SectionCard>
+
+      <Button variant="contained" onClick={handleSave} disabled={saving || locked} startIcon={saving ? undefined : <SaveIcon />}
+        sx={{ borderRadius: "10px", textTransform: "none", fontWeight: 600, px: 4, bgcolor: "#6366f1", "&:hover": { bgcolor: "#4f46e5" } }}>
+        {saving ? "Saving..." : "Save"}
+      </Button>
+      {saved && (
+        <Chip label="Saved successfully" color="success" size="small" sx={{ mt: 1.5, borderRadius: 2, fontWeight: 600 }} />
+      )}
 
       {locked && (
         <Box sx={{ textAlign: "center", mt: 4, p: 3, bgcolor: "#fef3c7", borderRadius: 2.5, border: "1px solid #fde68a" }}>
