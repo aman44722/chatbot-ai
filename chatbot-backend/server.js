@@ -4,7 +4,6 @@ const dotenv = require("dotenv");
 const connectDB = require("./config/db");
 const cors = require("cors");
 const compression = require("compression");
-const rateLimit = require("express-rate-limit");
 const authRoutes = require('./routes/authRoutes');
 const conversationRoutes = require('./routes/conversationRoutes');
 const botRoutes = require('./routes/botRoutes');
@@ -14,7 +13,7 @@ dotenv.config();
 
 const app = express();
 
-// CORS - Vercel serverless friendly
+// CORS - simple string origin for Vercel compatibility
 const allowedOrigins = [
     "http://localhost:3000",
     "https://chatbot-ai-frontend-chi.vercel.app",
@@ -22,37 +21,35 @@ const allowedOrigins = [
 if (process.env.ALLOWED_ORIGIN) {
     process.env.ALLOWED_ORIGIN.split(",").forEach(o => allowedOrigins.push(o.trim()));
 }
-function corsOrigin(origin, cb) {
-    if (!origin) return cb(null, true);
-    if (allowedOrigins.includes(origin)) return cb(null, origin);
-    for (const o of allowedOrigins) {
-        if (origin.startsWith(o.replace(/\/+$/, ""))) return cb(null, origin);
-    }
-    cb(null, origin);
-}
-app.use(cors({ origin: corsOrigin, credentials: true }));
-app.options("*", cors({ origin: corsOrigin, credentials: true }));
+const corsOptions = {
+    origin: (origin, cb) => {
+        if (!origin || allowedOrigins.includes(origin)) return cb(null, true);
+        for (const o of allowedOrigins) {
+            if (origin.startsWith(o.replace(/\/+$/, ""))) return cb(null, true);
+        }
+        cb(null, true);
+    },
+    credentials: true,
+};
+app.use(cors(corsOptions));
 
 app.use(compression());
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
-app.set("trust proxy", 1);
-// Rate limiting
-app.use("/api/", rateLimit({
-    windowMs: 60 * 1000,
-    max: 100,
-    skip: (req) => req.method === "OPTIONS",
-    message: { message: "Too many requests" },
-    validate: { trustProxy: false, xForwardedForHeader: false, default: true },
-}));
+// Global error handler (prevents Vercel crashes)
+app.use((err, req, res, next) => {
+    console.error("Unhandled error:", err);
+    res.status(500).json({ message: "Internal server error" });
+});
 
 // Middleware to ensure DB is connected before handling requests
 app.use('/api', async (req, res, next) => {
     if (mongoose.connection.readyState !== 1) {
         try {
             await connectDB();
-        } catch {
+        } catch (e) {
+            console.error("DB connection failed:", e.message);
             return res.status(503).json({ message: "Database connection unavailable" });
         }
     }
